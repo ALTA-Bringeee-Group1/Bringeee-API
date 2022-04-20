@@ -1,14 +1,17 @@
 package main
 
 import (
-	"github.com/labstack/echo/middleware"
+	"bringeee-capstone/configs"
+	"bringeee-capstone/utils"
+
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-	config := config.Get()
-	db := utilities.NewMysqlGorm(config)
-	utilities.Migrate(db)
+	config := configs.Get()
+	db := utils.NewMysqlGorm(config)
+	utils.Migrate(db)
 
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

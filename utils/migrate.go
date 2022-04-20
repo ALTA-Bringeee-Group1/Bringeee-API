@@ -1,6 +1,10 @@
 package utils
 
-import "gorm.io/gorm"
+import (
+	"bringeee-capstone/entities"
+
+	"gorm.io/gorm"
+)
 
 func Migrate(db *gorm.DB) {
 	db.AutoMigrate(
