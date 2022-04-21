@@ -1,0 +1,324 @@
+openapi: '3.0.2'
+
+info:
+    title: Event Planner
+    version: v1.0.0
+    description: Event management system API, written in Golang.
+
+servers:
+    - url: 'https://tupulung.wildani.com'
+      description: Production
+    - url: 'https://virtserver.swaggerhub.com/{owner}/{api}/{version}'
+      description: Mocking
+
+tags:
+    - name: Auth
+      description: Authentication system
+    - name: Customer
+      description: Manage user data
+
+components:
+    securitySchemes:
+        JWTAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: 'Use token for authorization'
+
+    schemas:
+        auth-request:
+            type: object
+            properties:
+                email:
+                    type: string
+                    example: john@mail.com
+                password:
+                    type: string
+                    example: john123
+        customer-request:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: John
+                email:
+                    type: string
+                    example: john@mail.com
+                password:
+                    type: string
+                    example: john123
+                gender:
+                    type: string
+                    example: male
+                address:
+                    type: string
+                    example: Groove st. Ave, Dallas
+                phone_number:
+                    type: string
+                    example: "082333444555"
+                avatar:
+                    type: string
+                    example: https://source.unsplash.com/1200x400/?sea
+                dob:
+                    type: string
+                    example: 2000/07/28
+        customer-response:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    example: 7
+                name:
+                    type: string
+                    example: John
+                email:
+                    type: string
+                    example: john@mail.com
+                gender:
+                    type: string
+                    example: male
+                address:
+                    type: string
+                    example: Groove st. Ave, Dallas
+                phone_number:
+                    type: string
+                    example: "082333444555"
+                role:
+                    type: string
+                    example: customer
+                avatar:
+                    type: string
+                    example: https://source.unsplash.com/1200x400/?sea
+                created_at:
+                    type: string
+                    example: 2012/07/28T10:02:37.000+0700
+                updated_at:
+                    type: string
+                    example: 2012/07/28T10:02:37.000+0700  
+paths:
+    /api/auth:
+        post:
+            tags:
+                - 'Auth'
+            description: Log in the registered user into the system
+            summary: Login to the system
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth-request'
+            responses:
+                '200':
+                    description: success authenticating single user
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: string
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth'
+                                            me:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth/me'
+                                    data:
+                                        type: object
+                                        properties:
+                                            token:
+                                                type: string
+                                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                                            user:
+                                                $ref: '#/components/schemas/customer-response'
+                '400':
+                    description: bad request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ERROR'
+                                    code:
+                                        type: string
+                                        example: 400
+                                    error:
+                                        type: string
+                                        example: 'bad request'
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth'
+                '404':
+                    description: not found
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ERROR'
+                                    code:
+                                        type: string
+                                        example: 404
+                                    error:
+                                        type: string
+                                        example: 'not found'
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth'
+                '500':
+                    description: server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ERROR'
+                                    code:
+                                        type: string
+                                        example: 500
+                                    error:
+                                        type: string
+                                        example: 'server error, cannot update database'
+
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth'
+    /api/auth/me:
+        get:
+            tags:
+                - 'Auth'
+            security:
+                - JWTAuth: []
+            description: Get currently authenticated userdata
+            summary: Get currently authenticated userdata
+            parameters:
+                - in: header
+                  name: Authorization
+                  required: true
+                  schema:
+                      type: string
+                      example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+            responses:
+                '200':
+                    description: success authenticating single user
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: string
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth/me'
+                                    data:
+                                        type: object
+                                        properties:
+                                            token:
+                                                type: string
+                                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                                            user:
+                                                $ref: '#/components/schemas/customer-response'
+                '400':
+                    description: bad request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ERROR'
+                                    code:
+                                        type: string
+                                        example: 400
+                                    error:
+                                        type: string
+                                        example: 'bad request'
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth'
+                '404':
+                    description: not found
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ERROR'
+                                    code:
+                                        type: string
+                                        example: 404
+                                    error:
+                                        type: string
+                                        example: 'not found'
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth'
+                '500':
+                    description: server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ERROR'
+                                    code:
+                                        type: string
+                                        example: 500
+                                    error:
+                                        type: string
+                                        example: 'server error'
+
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'http://bringeee.com/api/auth'
+   
