@@ -69,6 +69,19 @@ type CustomerResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type AdminResponse struct {
+	ID uint `json:"id"`
+	Email string `json:"email"`
+	Name string `json:"name"`
+	DOB string `json:"dob"`
+	Gender string `json:"gender"`
+	Address string `json:"address"`
+	PhoneNumber string `json:"phone_number"`
+	Avatar string `json:"avatar"`
+	Role string `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
 
 // File request: avatar, ktp_file, stnk_file, driver_license_file, vehicle_picture
 type CreateDriverRequest struct {
