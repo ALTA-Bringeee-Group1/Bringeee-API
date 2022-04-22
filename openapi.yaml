@@ -384,9 +384,6 @@ components:
         order_request:
             type: object
             properties:
-                id:
-                    type: number
-                    example: 17
                 destination_start_province:
                     type: string
                     example: Jawa Timur
@@ -455,65 +452,58 @@ components:
                     example: 17
                 driver:
                     $ref: '#/components/schemas/driver_response'
-                user_id:
+                customer_id:
                     type: number
                     example: 11
-                user:
+                customer:
                     $ref: '#/components/schemas/customer_response'
-                destination:
-                    type: object
-                    properties:
-                        id:
-                            type: number
-                            example: 13
-                        destination_start_province:
-                            type: string
-                            example: Jawa Timur
-                        destination_start_city:
-                            type: string
-                            example: Malang
-                        destination_start_district:
-                            type: string
-                            example: Kasin
-                        destination_start_address:
-                            type: string
-                            example: Jl. Tanimbar no.22, Kasin, Malang
-                        destination_start_postal:
-                            type: string
-                            example: 65111
-                        destination_start_lat:
-                            type: string
-                            example: 271.33912
-                        destination_start_long:
-                            type: string
-                            example: 11.223387
-                        destination_end_province:
-                            type: string
-                            example: Jawa Timur
-                        destination_end_city:
-                            type: string
-                            example: Surabaya
-                        destination_end_district:
-                            type: string
-                            example: Gubeng
-                        destination_end_address:
-                            type: string
-                            example: Jl. Ciliwuhng no.21 gg 3, Gubeng, Surabaya
-                        destination_end_postal:
-                            type: string
-                            example: 63129
-                        destination_end_lat:
-                            type: string
-                            example: 270.7761
-                        destination_end_long:
-                            type: string
-                            example: 11.2231
+                destination_start_province:
+                    type: string
+                    example: Jawa Timur
+                destination_start_city:
+                    type: string
+                    example: Malang
+                destination_start_district:
+                    type: string
+                    example: Kasin
+                destination_start_address:
+                    type: string
+                    example: Jl. Tanimbar no.22, Kasin, Malang
+                destination_start_postal:
+                    type: string
+                    example: 65111
+                destination_start_lat:
+                    type: string
+                    example: 271.33912
+                destination_start_long:
+                    type: string
+                    example: 11.223387
+                destination_end_province:
+                    type: string
+                    example: Jawa Timur
+                destination_end_city:
+                    type: string
+                    example: Surabaya
+                destination_end_district:
+                    type: string
+                    example: Gubeng
+                destination_end_address:
+                    type: string
+                    example: Jl. Ciliwuhng no.21 gg 3, Gubeng, Surabaya
+                destination_end_postal:
+                    type: string
+                    example: 63129
+                destination_end_lat:
+                    type: string
+                    example: 270.7761
+                destination_end_long:
+                    type: string
+                    example: 11.2231
                 truck_type_id:
                     type: number
                     example: 123
-
-                # todo: truck type
-
+                truck_type:
+                    $ref: '#/components/schemas/truck_type_response'
                 order_picture:
                     type: string
                     example: https://source.unsplash.com/600x600/?random
@@ -549,6 +539,30 @@ components:
                     example: 2012-07-28T07:02:13:000+07:00
                 updated_at:
                     type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+        truck_type_response:
+            type: object
+            properties:
+                id:
+                    type: number
+                    example: 77
+                truck_type:
+                    type: string
+                    example: Mobil Box (A)
+                max_volume:
+                    type: number
+                    example: 737
+                max_weight:
+                    type: number
+                    example: 500
+                price_per_distance:
+                    type: number
+                    example: 50000
+                created_at:
+                    type: number
+                    example: 2012-07-28T07:02:13:000+07:00
+                updated_at:
+                    type: number
                     example: 2012-07-28T07:02:13:000+07:00
         order_history_response:
             type: object
@@ -1001,14 +1015,9 @@ paths:
                 - JWTAuthCustomer: []
                 - JWTAuthDriver: []
                 - JWTAuthAdmin: []
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/auth_request'
             responses:
                 '200':
-                    description: Success authenticating user
+                    description: Success getting authenticated user
                     content:
                         application/json:
                             schema:
@@ -2382,6 +2391,29 @@ paths:
                                 $ref: '#/components/schemas/error_bad_response'
                 '500':
                     description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/export/orders:
+        post:
+            tags:
+                - 'Admin'
+            description: Get order report
+            summary: Get order report
+            security:
+                - JWTAuthAdmin: []
+            responses:
+                '200':
+                    description: success getting report
+                    content:
+                        text/csv:
+                            schema:
+                                type: string
+                                format: binary
+                                example: binary format
+                '500':
+                    description: server error
                     content:
                         application/json:
                             schema:
