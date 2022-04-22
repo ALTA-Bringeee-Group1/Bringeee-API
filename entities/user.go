@@ -32,7 +32,7 @@ type Driver struct {
 	Status string
 	VehiclePicture string
 	User User `gorm:"foreignKey:UserID;references:ID"`
-	// todo: TruckType
+	TruckType TruckType `gorm:"foreignKey:TruckTypeID;references:ID"`
 }
 
 // File request: avatar
@@ -110,7 +110,7 @@ type DriverResponse struct {
 	Avatar string 				`json:"avatar"`
 	Role string 				`json:"role"`
 	TruckTypeID uint 			`json:"truck_type_id"`
-	// todo: TruckType
+	TruckType TruckTypeResponse `json:"truck_type"`
 	KtpFile string 				`json:"ktp_file"`
 	StnkFile string 			`json:"stnk_file"`
 	DriverLicenseFile string 	`json:"driver_license_file"`
