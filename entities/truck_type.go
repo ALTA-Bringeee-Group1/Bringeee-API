@@ -7,7 +7,7 @@ import (
 )
 
 type TruckType struct {
-	gorm.DB
+	gorm.Model
 	TruckType string
 	MaxVolume int
 	MaxWeight int

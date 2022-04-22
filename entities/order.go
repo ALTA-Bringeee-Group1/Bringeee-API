@@ -7,7 +7,7 @@ import (
 )
 
 type Order struct {
-	gorm.DB
+	gorm.Model
 	DriverID uint
 	CustomerID uint
 	DestinationID uint
@@ -28,7 +28,7 @@ type Order struct {
 }
 
 type Destination struct {
-	gorm.DB
+	gorm.Model
 	DestinationStartProvince string
 	DestinationStartCity string
 	DestinationStartDistrict string
@@ -46,7 +46,7 @@ type Destination struct {
 }
 
 type OrderHistory struct {
-	gorm.DB
+	gorm.Model
 	Log string
 	Actor string
 	OrderID uint
