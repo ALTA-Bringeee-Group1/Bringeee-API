@@ -1,231 +1,1052 @@
-openapi: '3.0.2'
+openapi: '3.0.3'
 
 info:
-    title: Event Planner
-    version: v1.0.0
-    description: Event management system API, written in Golang.
-
-servers:
-    - url: 'https://tupulung.wildani.com'
-      description: Production
-    - url: 'https://virtserver.swaggerhub.com/{owner}/{api}/{version}'
-      description: Mocking
-
-tags:
-    - name: Auth
-      description: Authentication system
-    - name: Customer
-      description: Manage user data
+    title: Bringeee-API
+    version: v1.0
+    description: Cargo Agency management system API spesification built with echo golang
 
 components:
     securitySchemes:
-        JWTAuth:
+        JWTAuthCustomer:
             type: http
             scheme: bearer
             bearerFormat: JWT
-            description: 'Use token for authorization'
-
+            description: 'Use customer token for authorization'
+        JWTAuthDriver:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: 'Use driver token for authorization'
+        JWTAuthAdmin:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: 'Use admin token for authorization'
     schemas:
-        auth-request:
+        auth_request:
             type: object
             properties:
                 email:
                     type: string
-                    example: john@mail.com
+                    example: ahmad@mail.com
                 password:
                     type: string
-                    example: john123
-        customer-request:
+                    example: ahmad123
+        auth_response:
             type: object
             properties:
+                status:
+                    type: string
+                    example: OK
+                token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                data:
+                    $ref: '#/components/schemas/customer_response'
+        auth_driver_response:
+            type: object
+            properties:
+                status:
+                    type: string
+                    example: OK
+                token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                data:
+                    $ref: '#/components/schemas/driver_response'
+
+        pagination:
+            type: object
+            properties:
+                page:
+                    type: number
+                    example: 1
+                limit:
+                    type: number
+                    example: 50
+                total_pages:
+                    type: number
+                    example: 7
+                total_records:
+                    type: number
+                    example: 331
+        success_list_response:
+            type: object
+            properties:
+                status:
+                    type: string
+                    example: 'OK'
+                error:
+                    type: string
+                    example: null
+                links:
+                    type: object
+                    properties:
+                        self:
+                            type: string
+                            example: 'somelink'
+                data:
+                    type: string
+                    example: some custom formatted data
+                pagination:
+                    $ref: '#/components/schemas/pagination'
+        success_response:
+            type: object
+            properties:
+                status:
+                    type: string
+                    example: 'OK'
+                error:
+                    type: string
+                    example: null
+                links:
+                    type: object
+                    properties:
+                        self:
+                            type: string
+                            example: 'somelink'
+                data:
+                    type: object
+                    properties:
+                        id:
+                            type: number
+                            example: 21
+        error_validation_response:
+            type: object
+            properties:
+                status:
+                    type: string
+                    example: 'ERROR'
+                code:
+                    type: number
+                    example: 422
+                error:
+                    type: string
+                    example: 'Form validation error'
+                errors:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            name:
+                                type: string
+                                example: 'input_field'
+                            error:
+                                type: string
+                                example: 'input_field is required'
+                links:
+                    type: object
+                    properties:
+                        self:
+                            type: string
+                            example: 'https://sandbox.something.com/somelink'
+        error_unauthorized:
+            type: object
+            properties:
+                status:
+                    type: string
+                    example: 'ERROR'
+                code:
+                    type: number
+                    example: 401
+                error:
+                    type: string
+                    example: 'Unauthorized user'
+                links:
+                    type: object
+                    properties:
+                        self:
+                            type: string
+                            example: 'https://sandbox.something.com/somelink'
+        error_server_response:
+            type: object
+            properties:
+                status:
+                    type: string
+                    example: 'ERROR'
+                code:
+                    type: number
+                    example: 500
+                error:
+                    type: string
+                    example: 'server error'
+                links:
+                    type: object
+                    properties:
+                        self:
+                            type: string
+                            example: 'https://sandbox.something.com/somelink'
+        error_bad_response:
+            type: object
+            properties:
+                status:
+                    type: string
+                    example: 'ERROR'
+                code:
+                    type: number
+                    example: 400
+                error:
+                    type: string
+                    example: 'bad request, param is invalid'
+                links:
+                    type: object
+                    properties:
+                        self:
+                            type: string
+                            example: 'https://sandbox.something.com/somelink'
+
+        customer_request:
+            type: object
+            properties:
+                email:
+                    type: string
+                    example: ahmad@mail.com
+                password:
+                    type: string
+                    example: ahmadsecretpass
                 name:
                     type: string
-                    example: John
-                email:
+                    example: Ahmad
+                dob:
                     type: string
-                    example: john@mail.com
-                password:
-                    type: string
-                    example: john123
+                    example: 2001-08-09
                 gender:
                     type: string
                     example: male
                 address:
                     type: string
-                    example: Groove st. Ave, Dallas
+                    example: Dallas Westbrook ave.
                 phone_number:
                     type: string
-                    example: "082333444555"
+                    example: 082123123123
                 avatar:
                     type: string
-                    example: https://source.unsplash.com/1200x400/?sea
-                dob:
-                    type: string
-                    example: 2000/07/28
-        customer-response:
+                    format: binary
+        customer_response:
             type: object
             properties:
                 id:
-                    type: integer
-                    example: 7
-                name:
-                    type: string
-                    example: John
+                    type: number
+                    example: 11
                 email:
                     type: string
-                    example: john@mail.com
+                    example: ahmad@mail.com
+                password:
+                    type: string
+                    example: ahmadsecretpass
+                name:
+                    type: string
+                    example: Ahmad
+                dob:
+                    type: string
+                    example: 2001-08-09
                 gender:
                     type: string
                     example: male
                 address:
                     type: string
-                    example: Groove st. Ave, Dallas
+                    example: Dallas Westbrook ave.
                 phone_number:
                     type: string
-                    example: "082333444555"
+                    example: 082123123123
+                avatar:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
                 role:
                     type: string
                     example: customer
-                avatar:
-                    type: string
-                    example: https://source.unsplash.com/1200x400/?sea
                 created_at:
                     type: string
-                    example: 2012/07/28T10:02:37.000+0700
+                    example: 2012-07-28T07:02:13:000+07:00
                 updated_at:
                     type: string
-                    example: 2012/07/28T10:02:37.000+0700  
+                    example: 2012-07-28T07:02:13:000+07:00
+        driver_request:
+            type: object
+            properties:
+                id:
+                    type: number
+                    example: 12
+                driver_id:
+                    type: number
+                    example: 12
+                email:
+                    type: string
+                    example: ahmad@mail.com
+                password:
+                    type: string
+                    example: ahmadsecretpass
+                name:
+                    type: string
+                    example: Ahmad
+                dob:
+                    type: string
+                    example: 2001-08-09
+                gender:
+                    type: string
+                    example: male
+                address:
+                    type: string
+                    example: Dallas Westbrook ave.
+                phone_number:
+                    type: string
+                    example: 082123123123
+                avatar:
+                    type: string
+                    format: binary
+                truck_type_id:
+                    type: string
+                    example: 33
+                ktp_file:
+                    type: string
+                    format: binary
+                stnk_file:
+                    type: string
+                    format: binary
+                driver_license_file:
+                    type: string
+                    format: binary
+                age:
+                    type: number
+                    example: 22
+                vehicle_identifier:
+                    type: string
+                    example: N 494 EY
+                nik:
+                    type: string
+                    example: 33030012300004
+                vehicle_picture:
+                    type: string
+                    format: binary
+        driver_response:
+            type: object
+            properties:
+                email:
+                    type: string
+                    example: ahmad@mail.com
+                password:
+                    type: string
+                    example: ahmadsecretpass
+                name:
+                    type: string
+                    example: Ahmad
+                dob:
+                    type: string
+                    example: 2001-08-09
+                gender:
+                    type: string
+                    example: male
+                address:
+                    type: string
+                    example: Dallas Westbrook ave.
+                phone_number:
+                    type: string
+                    example: 082123123123
+                avatar:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                role:
+                    type: string
+                    example: driver
+                truck_type_id:
+                    type: string
+                    example: 33
+
+                # todo: truck type detail
+
+                ktp_file:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                stnk_file:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                driver_license_file:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                age:
+                    type: number
+                    example: 22
+                vehicle_identifier:
+                    type: string
+                    example: N 494 EY
+                nik:
+                    type: string
+                    example: 33030012300004
+                vehicle_picture:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                created_at:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+                updated_at:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+        order_request:
+            type: object
+            properties:
+                id:
+                    type: number
+                    example: 17
+                destination_start_province:
+                    type: string
+                    example: Jawa Timur
+                destination_start_city:
+                    type: string
+                    example: Malang
+                destination_start_district:
+                    type: string
+                    example: Kasin
+                destination_start_address:
+                    type: string
+                    example: Jl. Tanimbar no.22, Kasin, Malang
+                destination_start_postal:
+                    type: string
+                    example: 65111
+                destination_start_lat:
+                    type: string
+                    example: 271.33912
+                destination_start_long:
+                    type: string
+                    example: 11.223387
+                destination_end_province:
+                    type: string
+                    example: Jawa Timur
+                destination_end_city:
+                    type: string
+                    example: Surabaya
+                destination_end_district:
+                    type: string
+                    example: Gubeng
+                destination_end_address:
+                    type: string
+                    example: Jl. Ciliwuhng no.21 gg 3, Gubeng, Surabaya
+                destination_end_postal:
+                    type: string
+                    example: 63129
+                destination_end_lat:
+                    type: string
+                    example: 270.7761
+                destination_end_long:
+                    type: string
+                    example: 11.2231
+                truck_type_id:
+                    type: number
+                    example: 123
+                order_picture:
+                    type: string
+                    format: binary
+                total_volume:
+                    type: string
+                    example: 227
+                total_weight:
+                    type: string
+                    example: 30
+                description:
+                    type: string
+                    example: Lorem ipsum dolor sit amet consectetur, adipisicing elit. Blanditiis incidunt nobis culpa consequatur! Maxime velit sunt veritatis qui quos consectetur.
+        order_response:
+            type: object
+            properties:
+                id:
+                    type: number
+                    example: 17
+                driver_id:
+                    type: number
+                    example: 17
+                driver:
+                    $ref: '#/components/schemas/driver_response'
+                user_id:
+                    type: number
+                    example: 11
+                user:
+                    $ref: '#/components/schemas/customer_response'
+                destination:
+                    type: object
+                    properties:
+                        id:
+                            type: number
+                            example: 13
+                        destination_start_province:
+                            type: string
+                            example: Jawa Timur
+                        destination_start_city:
+                            type: string
+                            example: Malang
+                        destination_start_district:
+                            type: string
+                            example: Kasin
+                        destination_start_address:
+                            type: string
+                            example: Jl. Tanimbar no.22, Kasin, Malang
+                        destination_start_postal:
+                            type: string
+                            example: 65111
+                        destination_start_lat:
+                            type: string
+                            example: 271.33912
+                        destination_start_long:
+                            type: string
+                            example: 11.223387
+                        destination_end_province:
+                            type: string
+                            example: Jawa Timur
+                        destination_end_city:
+                            type: string
+                            example: Surabaya
+                        destination_end_district:
+                            type: string
+                            example: Gubeng
+                        destination_end_address:
+                            type: string
+                            example: Jl. Ciliwuhng no.21 gg 3, Gubeng, Surabaya
+                        destination_end_postal:
+                            type: string
+                            example: 63129
+                        destination_end_lat:
+                            type: string
+                            example: 270.7761
+                        destination_end_long:
+                            type: string
+                            example: 11.2231
+                truck_type_id:
+                    type: number
+                    example: 123
+
+                # todo: truck type
+
+                order_picture:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                total_volume:
+                    type: string
+                    example: 227
+                total_weight:
+                    type: string
+                    example: 30
+                distance:
+                    type: string
+                    example: 32
+                estimated_price:
+                    type: string
+                    example: 310000
+                fix_price:
+                    type: string
+                    example: null
+                transaction_id:
+                    type: string
+                    example: null
+                status:
+                    type: string
+                    example: REQUESTED
+                description:
+                    type: string
+                    example: Lorem ipsum dolor sit amet consectetur, adipisicing elit. Blanditiis incidunt nobis culpa consequatur! Maxime velit sunt veritatis qui quos consectetur.
+                arrived_picture:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                created_at:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+                updated_at:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+        order_history_response:
+            type: object
+            properties:
+                log:
+                    type: string
+                    example: 'Order is requested by customer'
+                actor:
+                    type: string
+                    example: 'customer'
+                created_at:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+                updated_at:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+        payment_request:
+            type: object
+            properties:
+                payment_method:
+                    type: string
+                    example: BNI
+        payment_response:
+            type: object
+            properties:
+                order_id:
+                    type: number
+                    example: 17
+                payment_method:
+                    type: string
+                    example: BNI - Virtual Account
+                bill_number:
+                    type: string
+                    example: 9888500212345678
+                bank:
+                    type: string
+                    example: BNI
+                gross_amount:
+                    type: string
+                    example: 370000
+                transaction_time:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+                transaction_expire:
+                    type: string
+                    example: 2012-07-29T21:02:13:000+07:00
+        province_response:
+            type: object
+            properties:
+                prov_id:
+                    type: number
+                    example: 77
+                prov_name:
+                    type: string
+                    example: Jawa Tengah
+        city_response:
+            type: object
+            properties:
+                city_id:
+                    type: number
+                    example: 77
+                city_name:
+                    type: string
+                    example: Solo
+                prov_id:
+                    type: number
+                    example: 21
+        district_response:
+            type: object
+            properties:
+                dis_id:
+                    type: number
+                    example: 21
+                dis_name:
+                    type: string
+                    example: Kayutangan
+                city_id:
+                    type: number
+                    example: 117
+
+tags:
+    - name: Auth & Registration
+      description: Can be accessed publicly
+
+    - name: Customer
+      description: Can be accessed publicly
+
 paths:
+    # ------------------------------------------------
+    # Auth & Registration
+    # ------------------------------------------------
+    # Registrasi User
+    /api/customers:
+        post:
+            description: Register a customer
+            summary: Register a customer
+            tags:
+                - 'Auth & Registration'
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/customer_request'
+            responses:
+                '200':
+                    description: success registrating user
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.something.com/customers'
+                                    data:
+                                        $ref: '#/components/schemas/customer_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '422':
+                    description: validation failure
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
+                '500':
+                    description: server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        put:
+            description: Edit profile for authenticated user
+            summary: Edit profile for authenticated user
+            tags:
+                - 'Customer'
+            security:
+                - JWTAuthCustomer: []
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/customer_request'
+            responses:
+                '200':
+                    description: success registrating user
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.something.com/customers'
+                                    data:
+                                        $ref: '#/components/schemas/customer_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '422':
+                    description: validation failure
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
+                '500':
+                    description: server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        delete:
+            tags:
+                - 'Customer'
+            description: Close/delete authenticated customer
+            summary: Close/delete authenticated customer
+            security:
+                - JWTAuthCustomer: []
+            responses:
+                '200':
+                    description: Success creating order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    # Registrasi Driver
+    /api/drivers:
+        post:
+            description: Register a customer
+            summary: Register a customer
+            tags:
+                - 'Auth & Registration'
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/customer_request'
+            responses:
+                '200':
+                    description: success registrating user
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    error:
+                                        type: string
+                                        example: null
+                                    code:
+                                        type: number
+                                        example: 200
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.something.com/customers'
+                                    data:
+                                        $ref: '#/components/schemas/driver_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '422':
+                    description: validation failure
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
+                '500':
+                    description: server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        put:
+            description: Edit profile for authenticated driver
+            summary: Edit profile for authenticated driver
+            tags:
+                - 'Driver'
+            security:
+                - JWTAuthDriver: []
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/driver_request'
+            responses:
+                '200':
+                    description: success registrating user
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.something.com/drivers'
+                                    data:
+                                        $ref: '#/components/schemas/driver_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '422':
+                    description: validation failure
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
+                '500':
+                    description: server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        delete:
+            tags:
+                - 'Driver'
+            description: Close/delete authenticated driver
+            summary: Close/delete authenticated driver
+            security:
+                - JWTAuthDriver: []
+            responses:
+                '200':
+                    description: Success creating order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        get:
+            description: Get list of drivers
+            summary: Get list of drivers
+            tags:
+                - 'Admin'
+            security:
+                - JWTAuthAdmin: []
+            parameters:
+                - in: query
+                  name: name
+                  description: Search driver by name
+                  schema:
+                      type: string
+                      example: Ahmad
+                - in: query
+                  name: gender
+                  description: Filter drivers by gender
+                  schema:
+                      type: string
+                      example: male
+                - in: query
+                  name: truck_type
+                  description: Filter drivers by truck type
+                  schema:
+                      type: number
+                      example: 27
+                - in: query
+                  name: sortName
+                  description: Sort name alphabetically
+                  schema:
+                      type: boolean
+                      example: 1
+                - in: query
+                  name: sortAge
+                  description: Sort drivers by age
+                  schema:
+                      type: boolean
+                      example: 1
+            responses:
+                '200':
+                    description: Success getting list of drivers
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/driver_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+
+    # Auth login
     /api/auth:
         post:
             tags:
-                - 'Auth'
+                - 'Auth & Registration'
             description: Log in the registered user into the system
             summary: Login to the system
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/auth-request'
+                            $ref: '#/components/schemas/auth_request'
             responses:
                 '200':
-                    description: success authenticating single user
+                    description: Success authenticating user
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    status:
-                                        type: string
-                                        example: 'OK'
-                                    code:
-                                        type: string
-                                        example: 200
-                                    error:
-                                        type: string
-                                        example: null
-                                    links:
-                                        type: object
-                                        properties:
-                                            self:
-                                                type: string
-                                                example: 'http://bringeee.com/api/auth'
-                                            me:
-                                                type: string
-                                                example: 'http://bringeee.com/api/auth/me'
-                                    data:
-                                        type: object
-                                        properties:
-                                            token:
-                                                type: string
-                                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                                            user:
-                                                $ref: '#/components/schemas/customer-response'
+                                $ref: '#/components/schemas/auth_driver_response'
                 '400':
-                    description: bad request
+                    description: Bad Request
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    status:
-                                        type: string
-                                        example: 'ERROR'
-                                    code:
-                                        type: string
-                                        example: 400
-                                    error:
-                                        type: string
-                                        example: 'bad request'
-                                    links:
-                                        type: object
-                                        properties:
-                                            self:
-                                                type: string
-                                                example: 'http://bringeee.com/api/auth'
-                '404':
-                    description: not found
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    status:
-                                        type: string
-                                        example: 'ERROR'
-                                    code:
-                                        type: string
-                                        example: 404
-                                    error:
-                                        type: string
-                                        example: 'not found'
-                                    links:
-                                        type: object
-                                        properties:
-                                            self:
-                                                type: string
-                                                example: 'http://bringeee.com/api/auth'
+                                $ref: '#/components/schemas/error_validation_response'
                 '500':
-                    description: server error
+                    description: Bad Request
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    status:
-                                        type: string
-                                        example: 'ERROR'
-                                    code:
-                                        type: string
-                                        example: 500
-                                    error:
-                                        type: string
-                                        example: 'server error, cannot update database'
-
-                                    links:
-                                        type: object
-                                        properties:
-                                            self:
-                                                type: string
-                                                example: 'http://bringeee.com/api/auth'
+                                $ref: '#/components/schemas/error_server_response'
     /api/auth/me:
         get:
             tags:
-                - 'Auth'
-            security:
-                - JWTAuth: []
+                - 'Auth & Registration'
             description: Get currently authenticated userdata
             summary: Get currently authenticated userdata
-            parameters:
-                - in: header
-                  name: Authorization
-                  required: true
-                  schema:
-                      type: string
-                      example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+            security:
+                - JWTAuthCustomer: []
+                - JWTAuthDriver: []
+                - JWTAuthAdmin: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/auth_request'
             responses:
                 '200':
-                    description: success authenticating single user
+                    description: Success authenticating user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/auth_driver_response'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    # ------------------------------------------------
+    # Customer - Orders
+    # ------------------------------------------------
+    /api/customers/orders:
+        get:
+            tags:
+                - 'Customer'
+            description: Get customer's order
+            summary: Get customer's order
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: query
+                  name: status
+                  description: order status, can be multiple values separated by comma
+                  schema:
+                      type: string
+                      example: CONFIRMED,MANIFESTED,ON_PROCESS,ARRIVED,CANCELLED
+            responses:
+                '200':
+                    description: Success getting list of customer's order
                     content:
                         application/json:
                             schema:
@@ -235,7 +1056,7 @@ paths:
                                         type: string
                                         example: 'OK'
                                     code:
-                                        type: string
+                                        type: number
                                         example: 200
                                     error:
                                         type: string
@@ -245,17 +1066,44 @@ paths:
                                         properties:
                                             self:
                                                 type: string
-                                                example: 'http://bringeee.com/api/auth/me'
+                                                example: 'somelink'
                                     data:
-                                        type: object
-                                        properties:
-                                            token:
-                                                type: string
-                                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                                            user:
-                                                $ref: '#/components/schemas/customer-response'
-                '400':
-                    description: bad request
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/order_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    /api/customers/orders/{orderID}:
+        get:
+            tags:
+                - 'Customer'
+            description: Get customer's detail order
+            summary: Get customer's detail order
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success getting detail of single customer's order
                     content:
                         application/json:
                             schema:
@@ -263,21 +1111,94 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: 'ERROR'
-                                    code:
-                                        type: string
-                                        example: 400
+                                        example: 'OK'
                                     error:
                                         type: string
-                                        example: 'bad request'
+                                        example: null
                                     links:
                                         type: object
                                         properties:
                                             self:
                                                 type: string
-                                                example: 'http://bringeee.com/api/auth'
-                '404':
-                    description: not found
+                                                example: 'somelink'
+                                    data:
+                                        $ref: '#/components/schemas/order_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        post:
+            tags:
+                - 'Customer'
+            description: Create order
+            summary: Create order
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/order_request'
+            responses:
+                '200':
+                    description: Success getting of single customer's order
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '422':
+                    description: Validation failure
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/customers/orders/{orderID}/histories:
+        get:
+            tags:
+                - 'Customer'
+            description: Get customer's detail order histories timeline
+            summary: Get customer's detail order histories timeline
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success getting detail of single customer's order
                     content:
                         application/json:
                             schema:
@@ -285,40 +1206,1318 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: 'ERROR'
+                                        example: 'OK'
                                     code:
-                                        type: string
-                                        example: 404
+                                        type: number
+                                        example: 200
                                     error:
                                         type: string
-                                        example: 'not found'
+                                        example: null
                                     links:
                                         type: object
                                         properties:
                                             self:
                                                 type: string
-                                                example: 'http://bringeee.com/api/auth'
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/order_history_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    /api/customers/orders/{orderID}/confirm:
+        post:
+            tags:
+                - 'Customer'
+            description: Confirm order detail changes from admin
+            summary: Confirm order detail changes from admin
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success confirming customer's order
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    /api/customers/orders/{orderID}/cancel:
+        post:
+            tags:
+                - 'Customer'
+            description: Cancel order
+            summary: Cancel order
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success cancelling customer's order
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/customers/orders/{orderID}/payment:
+        post:
+            tags:
+                - 'Customer'
+            description: Create an order's payment
+            summary: Create an order's payment
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/payment_request'
+            responses:
+                '200':
+                    description: Success creating order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/payment_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        get:
+            tags:
+                - 'Customer'
+            description: Create an order's payment
+            summary: Create an order's payment
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success creating order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/payment_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    # ------------------------------------------------
+    # Midtrans - Web hooks
+    # ------------------------------------------------
+    /api/payments/confirm:
+        post:
+            tags:
+                - 'Payment'
+            description: Webhook Payment notification
+            summary: Webhook Payment notification
+            security:
+                - JWTAuthCustomer: []
+            responses:
+                '200':
+                    description: Success creating order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    # ------------------------------------------------
+    # Drivers
+    # ------------------------------------------------
+    /api/drivers/orders:
+        get:
+            tags:
+                - 'Driver'
+            description: Get available order for driver
+            summary: Get available order for driver
+            security:
+                - JWTAuthDriver: []
+            parameters:
+                - in: query
+                  name: sortVolume
+                  schema:
+                      type: boolean
+                      example: true
+                - in: query
+                  name: sortWeight
+                  schema:
+                      type: boolean
+                      example: true
+                - in: query
+                  name: sortDistance
+                  schema:
+                      type: boolean
+                      example: true
+            responses:
+                '200':
+                    description: Success getting list of available order for driver
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/order_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/drivers/orders/{orderID}/take_order:
+        post:
+            tags:
+                - 'Driver'
+            description: Take order for shipping
+            summary: Take order for shipping
+            security:
+                - JWTAuthDriver: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success taking order for shipping by driver
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    /api/drivers/orders/{orderID}/finish_order:
+        post:
+            tags:
+                - 'Driver'
+            description: Take order for shipping
+            summary: Take order for shipping
+            security:
+                - JWTAuthDriver: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                arrived_picture:
+                                    type: string
+                                    format: binary
+            responses:
+                '200':
+                    description: Success taking order for shipping by driver
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/drivers/current_order:
+        get:
+            tags:
+                - 'Driver'
+            description: Get currently shipping order by authenticated driver
+            summary: Get currently shipping order by authenticated driver
+            security:
+                - JWTAuthDriver: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success getting detail of single order
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        $ref: '#/components/schemas/order_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    # ------------------------------------------------
+    # Admin
+    # ------------------------------------------------
+    /api/orders:
+        get:
+            tags:
+                - 'Admin'
+            description: List orders
+            summary: List orders
+            security:
+                - JWTAuthAdmin: []
+            parameters:
+                - in: query
+                  name: status
+                  description: filter orders by status, can be multiple values separated by comma
+                  schema:
+                      type: string
+                      example: REQUESTED,CONFIRMED,ON_PROCESS,DELIVERED
+                - in: query
+                  name: truck_type
+                  description: Truck
+                  schema:
+                      type: number
+                      example: 2
+                - in: query
+                  name: sortVolume
+                  schema:
+                      type: boolean
+                      example: true
+                - in: query
+                  name: sortWeight
+                  schema:
+                      type: boolean
+                      example: true
+                - in: query
+                  name: sortDistance
+                  schema:
+                      type: boolean
+                      example: true
+            responses:
+                '200':
+                    description: Success getting list of available order for driver
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/order_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/orders/{orderID}/histories:
+        get:
+            tags:
+                - 'Admin'
+            description: Get detail order history timeline
+            summary: Get detail order history timeline
+            security:
+                - JWTAuthAdmin: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success getting order's history timeline
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/order_history_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/orders/{orderID}/confirm:
+        post:
+            tags:
+                - 'Admin'
+            description: Confirm order detail
+            summary: Confirm order detail
+            security:
+                - JWTAuthAdmin: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success confirming customer's order
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/orders/{orderID}/cancel:
+        post:
+            tags:
+                - 'Admin'
+            description: Cancel order
+            summary: Cancel order
+            security:
+                - JWTAuthAdmin: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success cancelling customer's order
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    /api/orders/{orderID}:
+        get:
+            tags:
+                - 'Driver'
+                - 'Admin'
+            description: Get detail order
+            summary: Get detail order
+            security:
+                - JWTAuthDriver: []
+                - JWTAuthAdmin: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success getting detail of single order
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        $ref: '#/components/schemas/order_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        patch:
+            tags:
+                - 'Admin'
+            description: Update order's fixed price by admin
+            summary: Update order's fixed price
+            security:
+                - JWTAuthAdmin: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                fixed_price:
+                                    type: number
+                                    example: 370000
+            responses:
+                '200':
+                    description: Success getting detail of single order
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/drivers/{driverID}:
+        get:
+            tags:
+                - 'Admin'
+            description: Get detail driver
+            summary: Get detail driver
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success getting detail of a single driver
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        $ref: '#/components/schemas/driver_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        put:
+            description: Edit profile for authenticated driver
+            summary: Edit profile for authenticated driver
+            tags:
+                - 'Admin'
+            security:
+                - JWTAuthDriver: []
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/driver_request'
+            parameters:
+                - in: path
+                  required: true
+                  name: driverID
+                  schema:
+                      type: string
+                      example: 27
+            responses:
+                '200':
+                    description: success updating driver
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '422':
+                    description: validation failure
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
                 '500':
                     description: server error
                     content:
                         application/json:
                             schema:
+                                $ref: '#/components/schemas/error_server_response'
+        delete:
+            tags:
+                - 'Admin'
+            description: Close/delete driver
+            summary: Close/delete driver
+            security:
+                - JWTAuthDriver: []
+            parameters:
+                - in: path
+                  required: true
+                  name: driverID
+                  schema:
+                      type: string
+                      example: 27
+            responses:
+                '200':
+                    description: Success creating order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/customers/{customerID}:
+        get:
+            tags:
+                - 'Admin'
+            description: Get detail customer
+            summary: Get detail customer
+            security:
+                - JWTAuthAdmin: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success getting detail of single customer
+                    content:
+                        application/json:
+                            schema:
                                 type: object
                                 properties:
                                     status:
                                         type: string
-                                        example: 'ERROR'
-                                    code:
-                                        type: string
-                                        example: 500
+                                        example: 'OK'
                                     error:
                                         type: string
-                                        example: 'server error'
-
+                                        example: null
                                     links:
                                         type: object
                                         properties:
                                             self:
                                                 type: string
-                                                example: 'http://bringeee.com/api/auth'
-   
+                                                example: 'somelink'
+                                    data:
+                                        $ref: '#/components/schemas/customer_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        put:
+            description: Update customer data
+            summary: Update customer data
+            tags:
+                - 'Admin'
+            security:
+                - JWTAuthDriver: []
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/customer_request'
+            parameters:
+                - in: path
+                  required: true
+                  name: customerID
+                  schema:
+                      type: string
+                      example: 27
+            responses:
+                '200':
+                    description: success updating driver
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '422':
+                    description: validation failure
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
+                '500':
+                    description: server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        delete:
+            tags:
+                - 'Admin'
+            description: Close/delete driver
+            summary: Close/delete driver
+            security:
+                - JWTAuthDriver: []
+            parameters:
+                - in: path
+                  required: true
+                  name: customerID
+                  schema:
+                      type: string
+                      example: 27
+            responses:
+                '200':
+                    description: Success creating order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/stats/aggregates/order_count:
+        get:
+            tags:
+                - 'Admin'
+            description: Get orders count for statistic
+            summary: Get orders count for statistic
+            security:
+                - JWTAuthAdmin: []
+            responses:
+                '200':
+                    description: Type 200
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: OK
+                                    error:
+                                        type: string
+                                        example: nil
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.somelink.com/'
+                                    data:
+                                        type: object
+                                        properties:
+                                            count:
+                                                type: number
+                                                example: 227
+                                            unit:
+                                                type: string
+                                                example: paket kargo
+                                            entity:
+                                                type: string
+                                                example: order
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/stats/aggregates/drivers_count:
+        get:
+            tags:
+                - 'Admin'
+            description: Get drivers count for statistic
+            summary: Get drivers count for statistic
+            security:
+                - JWTAuthAdmin: []
+            responses:
+                '200':
+                    description: Type 200
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: OK
+                                    error:
+                                        type: string
+                                        example: nil
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.somelink.com/'
+                                    data:
+                                        type: object
+                                        properties:
+                                            count:
+                                                type: number
+                                                example: 227
+                                            unit:
+                                                type: string
+                                                example: people
+                                            entity:
+                                                type: string
+                                                example: order
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/stats/aggregates/truck_types_count:
+        get:
+            tags:
+                - 'Admin'
+            description: Get truck type count for statistic
+            summary: Get truck type count for statistic
+            security:
+                - JWTAuthAdmin: []
+            responses:
+                '200':
+                    description: Type 200
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: OK
+                                    error:
+                                        type: string
+                                        example: nil
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.somelink.com/'
+                                    data:
+                                        type: object
+                                        properties:
+                                            count:
+                                                type: number
+                                                example: 227
+                                            unit:
+                                                type: string
+                                                example: type
+                                            entity:
+                                                type: string
+                                                example: truck type
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/stats/aggregates/customer_count:
+        get:
+            tags:
+                - 'Admin'
+            description: Get customers count for statistic
+            summary: Get customers count for statistic
+            security:
+                - JWTAuthAdmin: []
+            responses:
+                '200':
+                    description: Type 200
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: OK
+                                    error:
+                                        type: string
+                                        example: nil
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.somelink.com/'
+                                    data:
+                                        type: object
+                                        properties:
+                                            count:
+                                                type: number
+                                                example: 227
+                                            unit:
+                                                type: string
+                                                example: people
+                                            entity:
+                                                type: string
+                                                example: customer
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/stats/orders:
+        get:
+            tags:
+                - 'Admin'
+            summary: Order statistic by period of time
+            description: Order statistic by period of time
+            parameters:
+                - in: query
+                  required: true
+                  name: periodDay
+                  schema:
+                      type: string
+                      example: 7
+            responses:
+                '200':
+                    description: success getting statistic order
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: OK
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'https://sandbox.somelink.com/'
+                                    data:
+                                        type: array
+                                        minItems: 3
+                                        items:
+                                            type: object
+                                            properties:
+                                                label:
+                                                    type: string
+                                                    example: 2012-12-07T00:00:00:000+07:00
+                                                value:
+                                                    type: number
+                                                    example: 772
+                '400':
+                    description: bad request, could be from bad query param
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_bad_response'
+                '500':
+                    description: Server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    /api/provinces:
+        get:
+            tags:
+                - 'Wilayah'
+            description: Get list of provinces
+            summary: get list of provinces
+            responses:
+                '200':
+                    description: success getting list of provinces
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/province_response'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+    /api/provinces/{provinceID}/cities:
+        get:
+            tags:
+                - 'Wilayah'
+            description: Get list of cities
+            summary: get list of cities
+            parameters:
+                - in: path
+                  name: provinceID
+                  description: Filter cities by province ID
+                  required: true
+                  schema:
+                      type: string
+                      example: 77
+            responses:
+                '200':
+                    description: success getting list of cities
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/city_response'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
+    /api/provinces/{provinceID}/cities/{cityID}/districts:
+        get:
+            tags:
+                - 'Wilayah'
+            description: Get list of districts
+            summary: get list of districts
+            parameters:
+                - in: path
+                  name: provinceID
+                  description: Filter districts by city ID
+                  required: true
+                  schema:
+                      type: string
+                      example: 77
+            responses:
+                '200':
+                    description: success getting list of districts
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/district_response'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
