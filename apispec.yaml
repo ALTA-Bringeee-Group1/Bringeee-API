@@ -35,24 +35,18 @@ components:
         auth_response:
             type: object
             properties:
-                status:
-                    type: string
-                    example: OK
                 token:
                     type: string
                     example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                data:
+                user:
                     $ref: '#/components/schemas/customer_response'
         auth_driver_response:
             type: object
             properties:
-                status:
-                    type: string
-                    example: OK
                 token:
                     type: string
                     example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                data:
+                user:
                     $ref: '#/components/schemas/driver_response'
 
         pagination:
@@ -351,9 +345,8 @@ components:
                 truck_type_id:
                     type: string
                     example: 33
-
-                # todo: truck type detail
-
+                truck_tupe:
+                    $ref: '#/components/schemas/truck_type_response'
                 ktp_file:
                     type: string
                     example: https://source.unsplash.com/600x600/?random
@@ -992,7 +985,22 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/auth_driver_response'
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        $ref: '#/components/schemas/auth_driver_response'
                 '400':
                     description: Bad Request
                     content:
