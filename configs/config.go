@@ -62,7 +62,7 @@ func initConfig() *AppConfig {
 	// set config based on .env
 	config.App.Port = os.Getenv("APP_PORT")
 	config.App.BaseURL = os.Getenv("APP_BASE_URL")
-	config.App.ENV = os.Getenv("")
+	config.App.ENV = os.Getenv("APP_ENV")
 	config.Database.Host = os.Getenv("DB_HOST")
 	config.Database.Port = os.Getenv("DB_PORT")
 	config.Database.Username = os.Getenv("DB_USERNAME")
