@@ -11,14 +11,12 @@ type City struct {
 	CityID uint `gorm:"primarykey"`
 	CityName string
 	ProvID uint
-	Province Province `gorm:"foreignKey:ProvID;references:ProvID"`
 }
 
 type District struct {
 	DisID uint `gorm:"primarykey"`
 	DisName string
 	CityID uint
-	City City `gorm:"foreignKey:CityID;references:CityID"`
 }
 
 
