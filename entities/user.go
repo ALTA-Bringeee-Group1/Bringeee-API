@@ -9,11 +9,115 @@ import (
 type User struct {
 	gorm.Model
 	Email    string `gorm:"unique"`
-	Password string
 	Name     string
+	Password string
+	DOB      time.Time
 	Gender   string
 	Address  string
+	PhoneNumber string
 	Avatar   string
-	DOB      time.Time
 	Role     string
+}
+
+type Driver struct {
+	gorm.Model
+	UserID uint
+	TruckTypeID int
+	KtpFile string
+	StnkFile string
+	DriverLicenseFile string
+	Age int
+	VehicleIdentifier string
+	NIK string
+	Status string
+	VehiclePicture string
+	User User `gorm:"foreignKey:UserID;references:ID"`
+	// todo: TruckType
+}
+
+// File request: avatar
+type CreateCustomerRequest struct {
+	Email string 		`form:"email" validate:"required,email"`
+	Password string 	`form:"password" validate:"required"`
+	Name string 		`form:"name" validate:"required"`
+	DOB string 			`form:"dob" validate:"required"`
+	Gender string 		`form:"gender" validate:"required"`
+	Address string 		`form:"address" validate:"required"`
+	PhoneNumber string 	`form:"phone_number" validate:"required"`
+}
+
+type UpdateCustomerRequest struct {
+	Email string `form:"email"`
+	Password string `form:"password"`
+	Name string `form:"name"`
+	DOB string `form:"dob"`
+	Gender string `form:"gender"`
+	Address string `form:"address"`
+	PhoneNumber string `form:"phone_number"`
+}
+type CustomerResponse struct {
+	ID uint `json:"id"`
+	Email string `json:"email"`
+	Name string `json:"name"`
+	DOB string `json:"dob"`
+	Gender string `json:"gender"`
+	Address string `json:"address"`
+	PhoneNumber string `json:"phone_number"`
+	Avatar string `json:"avatar"`
+	Role string `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+
+// File request: avatar, ktp_file, stnk_file, driver_license_file, vehicle_picture
+type CreateDriverRequest struct {
+	Email string 				`form:"email" validate:"required,email"`
+	Password string 			`form:"password" validate:"required"`
+	Name string 				`form:"name" validate:"required"`
+	DOB string 					`form:"dob" validate:"required"`
+	Gender string 				`form:"gender" validate:"required"`
+	Address string 				`form:"address" validate:"required"`
+	PhoneNumber string 			`form:"phone_number" validate:"required"`
+	TruckTypeID uint			`form:"truck_type_id" validate:"required"` 
+	Age int 					`form:"age" validate:"required"`
+	VehicleIdentifier string	`form:"vehicle_identifier" validate:"required"`
+	NIK string					`form:"nik" validate:"required"`
+}
+
+type UpdateDriverRequest struct {
+	Email string 				`form:"email"`
+	Password string 			`form:"password"`
+	Name string 				`form:"name"`
+	DOB string 					`form:"dob"`
+	Gender string 				`form:"gender"`
+	Address string 				`form:"address"`
+	PhoneNumber string 			`form:"phone_number"`
+	TruckTypeID uint			`form:"truck_type_id"` 
+	Age int 					`form:"age"`
+	VehicleIdentifier string	`form:"vehicle_identifier"`
+	NIK string					`form:"nik"`
+}
+
+type DriverResponse struct {
+	ID uint 					`json:"id"`
+	Email string 				`json:"email"`
+	Name string 				`json:"name"`
+	DOB string 					`json:"dob"`
+	Gender string 				`json:"gender"`
+	Address string 				`json:"address"`
+	PhoneNumber string 			`json:"phone_number"`
+	Avatar string 				`json:"avatar"`
+	Role string 				`json:"role"`
+	TruckTypeID uint 			`json:"truck_type_id"`
+	// todo: TruckType
+	KtpFile string 				`json:"ktp_file"`
+	StnkFile string 			`json:"stnk_file"`
+	DriverLicenseFile string 	`json:"driver_license_file"`
+	Age string 					`json:"age"`
+	VehicleIdentifier string 	`json:"vehicle_identifier"`
+	NIK string 					`json:"nik"`
+	VehiclePicture string 		`json:"vehicle_picture"`
+	CreatedAt time.Time 		`json:"created_at"`
+	UpdatedAt time.Time 		`json:"updated_at"`
 }
