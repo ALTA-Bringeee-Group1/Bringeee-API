@@ -84,6 +84,20 @@ type CustomerCreateOrderRequest struct {
 	Description string `form:"description"`
 }
 
+type CreatePaymentRequest struct {
+	PaymentMethod string `form:"payment_method"`
+}
+
+type PaymentResponse struct {
+	OrderID string 				`json:"order_id"`
+	PaymentMethod string 		`json:"payment_method"`
+	BillNumber string 			`json:"bill_number"`
+	Bank string 				`json:"bank"`
+	GrossAmount int64 			`json:"gross_amount"`
+	TransactionTime time.Time	`json:"transaction_time"`
+	TransactionExpire time.Time `json:"transaction_expire"`
+}
+
 
 // file request: arrived_picture
 type DriverFinishOrderRequest struct {
