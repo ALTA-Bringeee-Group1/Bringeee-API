@@ -14,11 +14,12 @@ func (err WebError) Error() string {
 }
 
 type ValidationError struct {
-	Code    int
-	Message string
+	Code    			int
+	ProductionMessage 	string
+	DevelopmentMessage 	string
 	Errors  []ValidationErrorItem
 }
 
 func (err ValidationError) Error() string {
-	return err.Message
+	return map[bool]string{ true: err.ProductionMessage, false: err.DevelopmentMessage }[configs.Get().App.ENV == "production"]
 }
