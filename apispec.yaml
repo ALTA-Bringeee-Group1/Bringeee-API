@@ -1398,7 +1398,7 @@ paths:
     # ------------------------------------------------
     # Midtrans - Web hooks
     # ------------------------------------------------
-    /api/payments/confirm:
+    /api/payments/webhook:
         post:
             tags:
                 - 'Payment'
@@ -1580,13 +1580,6 @@ paths:
             summary: Get currently shipping order by authenticated driver
             security:
                 - JWTAuthDriver: []
-            parameters:
-                - in: path
-                  name: orderID
-                  required: true
-                  schema:
-                      type: number
-                      example: 27
             responses:
                 '200':
                     description: Success getting detail of single order
@@ -1932,7 +1925,7 @@ paths:
                 - JWTAuthCustomer: []
             parameters:
                 - in: path
-                  name: orderID
+                  name: driverID
                   required: true
                   schema:
                       type: number
@@ -2052,7 +2045,7 @@ paths:
                 - JWTAuthAdmin: []
             parameters:
                 - in: path
-                  name: orderID
+                  name: customerID
                   required: true
                   schema:
                       type: number
@@ -2523,6 +2516,13 @@ paths:
             parameters:
                 - in: path
                   name: provinceID
+                  description: city ID
+                  required: true
+                  schema:
+                      type: string
+                      example: 77
+                - in: path
+                  name: cityID
                   description: Filter districts by city ID
                   required: true
                   schema:
