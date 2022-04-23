@@ -7,6 +7,7 @@ import (
 	"bringeee-capstone/entities"
 	web "bringeee-capstone/entities/web"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/jinzhu/copier"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -26,10 +27,10 @@ func NewAuthService(userRepo userRepository.UserRepositoryInterface) *AuthServic
  * -------------------------------
  * Mencari user berdasarkan ID
  */
-func (service AuthService) LoginCustomer(authReq entities.AuthRequest) (entities.CustomerAuthResponse, error) {
+func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, error) {
 
 	// Get user by username via repository
-	user, err := service.userRepo.FindBy("email", authReq.Email)
+	user, err := service.userRepo.FindByCustomer("email", authReq.Email)
 	if err != nil {
 		return entities.CustomerAuthResponse{}, web.WebError{Code: 401, Message: "Invalid credential"}
 	}
@@ -38,6 +39,25 @@ func (service AuthService) LoginCustomer(authReq entities.AuthRequest) (entities
 	match := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(authReq.Password))
 	if match != nil {
 		return entities.CustomerAuthResponse{}, web.WebError{Code: 401, Message: "Invalid password"}
+	}
+
+	// if role == driver
+	if user.Role == "driver" {
+		// Konversi menjadi user response
+		driver, _ := service.userRepo.FindDriver(int(user.ID))
+		userRes := entities.DriverResponse{}
+		copier.Copy(&userRes, &driver)
+
+		// Create token
+		token, err := middleware.CreateToken(int(userRes.ID), userRes.Name, userRes.Role)
+		if err != nil {
+			return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Error create token"}
+		}
+
+		return entities.DriverAuthResponse{
+			Token: token,
+			User:  userRes,
+		}, nil
 	}
 
 	// Konversi menjadi user response
@@ -61,13 +81,32 @@ func (service AuthService) LoginCustomer(authReq entities.AuthRequest) (entities
  * -------------------------------
  * Mendapatkan userdata yang sedang login
  */
-func (service AuthService) CustomerMe(Id int) (entities.CustomerAuthResponse, error) {
+func (service AuthService) Me(Id int, token interface{}) (interface{}, error) {
 
+	userJWT := token.(*jwt.Token)
 	// Get userdata via repository
-	user, err := service.userRepo.Find(Id)
+	user, err := service.userRepo.FindCustomer(Id)
 
 	// Konversi user ke user response
-	userRes := entities.UserResponse{}
+	if user.Role == "driver" {
+		userRes := entities.DriverResponse{}
+		copier.Copy(&userRes, &user)
+		authRes := entities.DriverAuthResponse{
+			Token: userJWT.Raw,
+			User:  userRes,
+		}
+		return authRes, err
+	}
+	if user.Role == "admin" {
+		userRes := entities.AdminResponse{}
+		copier.Copy(&userRes, &user)
+		authRes := entities.AdminAuthResponse{
+			Token: userJWT.Raw,
+			User:  userRes,
+		}
+		return authRes, err
+	}
+	userRes := entities.CustomerResponse{}
 	copier.Copy(&userRes, &user)
 
 	// Bentuk auth response

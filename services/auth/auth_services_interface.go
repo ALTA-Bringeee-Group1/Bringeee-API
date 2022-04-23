@@ -5,10 +5,6 @@ import (
 )
 
 type AuthServiceInterface interface {
-	LoginCustomer(AuthReq entities.AuthRequest) (entities.CustomerAuthResponse, error)
-	LoginDriver(AuthReq entities.AuthRequest) (entities.DriverAuthResponse, error)
-	LoginAdmin(AuthReq entities.AuthRequest) (entities.AdminAuthResponse, error)
-	CustomerMe(Id int) (entities.CustomerAuthResponse, error)
-	DriverMe(Id int) (entities.DriverAuthResponse, error)
-	AdminMe(Id int) (entities.AdminAuthResponse, error)
+	Login(AuthReq entities.AuthRequest) (interface{}, error)
+	Me(Id int, token interface{}) (interface{}, error)
 }
