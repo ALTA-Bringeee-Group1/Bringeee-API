@@ -53,6 +53,14 @@ type OrderHistory struct {
 	Order Order `gorm:"foreignKey:OrderID;references:ID"`
 }
 
+type OrderHistoryResponse struct {
+	ID uint 		 `json:"id"`
+	Log string		 `json:"log"`
+	Actor string	 `json:"actor"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 
 // file request: order_picture
 type CustomerCreateOrderRequest struct {
