@@ -29,12 +29,13 @@ func CreateToken(id int, name string, role string) (string, error) {
 	return token.SignedString([]byte(secret_jwt))
 }
 
-func ReadTokenId(c echo.Context) (int, error) {
-	tokenId := c.Get("user").(*jwt.Token)
+func ReadToken(token interface{}) (int, string, error) {
+	tokenId := token.(*jwt.Token)
 	if tokenId.Valid {
 		claims := tokenId.Claims.(jwt.MapClaims)
 		id := int(claims["id"].(float64))
-		return id, nil
+		role := claims["role"].(string)
+		return id, role, nil
 	}
-	return 0, fmt.Errorf("Bad Request")
+	return 0, "", fmt.Errorf("bad Request")
 }
