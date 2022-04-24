@@ -50,9 +50,10 @@ type OrderServiceInterface interface {
 	 * -------------------------------
 	 * Membuat order baru berdasarkan user yang sedang login
 	 * @var orderRequest		request create order oleh customer
+	 * @var files				list file request untuk diteruskan ke validation dan upload
 	 * @return OrderResponse	order response 
 	 */
-	Create(orderRequest entities.CustomerCreateOrderRequest) (entities.OrderResponse, error)
+	Create(orderRequest entities.CustomerCreateOrderRequest, files []*multipart.FileHeader) (entities.OrderResponse, error)
 
 	/*
 	 * Admin Set fixed price order
@@ -68,18 +69,20 @@ type OrderServiceInterface interface {
 	 * -------------------------------
 	 * Confirm order yang sudah dibuat
 	 * @var orderID				ID Order yang akan di cancel
+	 * @var userID 				authenticated user id (role: customer, admin)
 	 * @return OrderResponse	order response 
 	 */
-	ConfirmOrder(orderID int) error 
+	ConfirmOrder(orderID int, userID int) error 
 
 	/*
 	 * Cancel Order
 	 * -------------------------------
 	 * Cancel order yang sudah dibuat
 	 * @var orderID				ID Order yang akan di cancel
+	 * @var userID				Authenticated user id (role: customer, admin)
 	 * @return OrderResponse	order response 
 	 */
-	CancelOrder(orderID int) error 
+	CancelOrder(orderID int, userID int) error 
 
 	/*
 	 * Create Payment
