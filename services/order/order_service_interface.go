@@ -17,8 +17,8 @@ type OrderServiceInterface interface {
 	 * @var offset 	offset hasil query
 	 * @var filters	query untuk penyaringan data, { field, operator, value }
 	 * @var sorts	pengurutan data, { field, value[bool] }
-	 * @return order	list order dalam bentuk entity domain
-	 * @return error	error
+	 * @return order			list order dalam bentuk entity response
+	 * @return error			error
 	 */
 	FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.OrderResponse, error)
 
@@ -51,7 +51,7 @@ type OrderServiceInterface interface {
 	 * -------------------------------
 	 * Mengambil data order tunggal berdasarkan ID
 	 *
-	 * @var id 		id order
+	 * @var id 			id order
 	 * @return order	order tunggal dalam bentuk response
 	 * @return error	error
 	 */
@@ -125,7 +125,7 @@ type OrderServiceInterface interface {
 	 * @var offset 	offset hasil query
 	 * @var filters	query untuk penyaringan data, { field, operator, value }
 	 * @var sorts	pengurutan data, { field, value[bool] }
-	 * @return order	list order dalam bentuk entity domain
+	 * @return order	list order dalam bentuk entity response
 	 * @return error	error
 	 */
 	FindAllHistory(sorts []map[string]interface{}) ([]entities.OrderHistoryResponse, error)
@@ -140,7 +140,7 @@ type OrderServiceInterface interface {
 	 * @var offset 	offset hasil query
 	 * @var filters	query untuk penyaringan data, { field, operator, value }
 	 * @var sorts	pengurutan data, { field, value[bool] }
-	 * @return order	list order dalam bentuk entity domain
+	 * @return order	list order dalam bentuk entity response
 	 * @return error	error
 	 */
 	PaymentWebhook(orderID int) error
