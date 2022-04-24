@@ -3,6 +3,7 @@ package order
 import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	"mime/multipart"
 )
 
 type OrderService struct {
@@ -59,9 +60,10 @@ func (service OrderService) Find(id int) (entities.Order, error) {
  * -------------------------------
  * Membuat order baru berdasarkan user yang sedang login
  * @var orderRequest		request create order oleh customer
+ * @var files				list file request untuk diteruskan ke validation dan upload
  * @return OrderResponse	order response 
  */
-func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest) (entities.OrderResponse, error) {
+func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files []*multipart.FileHeader) (entities.OrderResponse, error) {
 	panic("implement me")
 }
 /*
@@ -135,7 +137,8 @@ func (service OrderService) FindAllHistory(sorts []map[string]interface{}) ([]en
 /*
  * Webhook
  * -------------------------------
- * Mengambil data order berdasarkan filters dan sorts
+ * Payment Webhook notification, dikirimkan oleh layanan pihak ketiga
+ * referensi: https://docs.midtrans.com/en/after-payment/http-notification
  *
  * @var limit 	batas limit hasil query
  * @var offset 	offset hasil query
@@ -145,5 +148,31 @@ func (service OrderService) FindAllHistory(sorts []map[string]interface{}) ([]en
  * @return error	error
  */
 func (service OrderService) PaymentWebhook(orderID int) error {
+
+	// if status settlement, set order to MANIFESTED
+	// if status is deny, cancel, expire, set to CANCELLED
+	
+	panic("implement me")
+}
+
+/*
+ * Take order for shipping
+ * -------------------------------
+ * Pengambilan order oleh driver untuk di set statusnya menjadi ON_PROCESS
+ * @var orderID 	order id terkait
+ * @var userID		authenticated user (role: driver)
+ */
+func (service OrderService) TakeOrder(orderID int, userID int) error {
+	panic("implement me")
+}
+
+/*
+ * Finish Order
+ * -------------------------------
+ * penyelesaian order oleh driver untuk di set statusnya menjadi DELIVERED
+ * @var orderID 	order id terkait
+ * @var userID		authenticated user (role: driver)
+ */
+func (service OrderService) FinishOrder(orderID int, userID int, files []*multipart.FileHeader) error {
 	panic("implement me")
 }
