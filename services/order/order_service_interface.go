@@ -23,6 +23,17 @@ type OrderServiceInterface interface {
 	FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.OrderResponse, error)
 
 	/*
+	 * Find First
+	 * -------------------------------
+	 * Mengambil order pertama berdasarkan filter yang telah di tentukan pada parameter
+	 * dan mengambil data pertama sebagai data order tunggal
+	 * @var filter 
+	 * @return OrderResponse	order response dalam bentuk tunggal
+	 * @return error			error
+	 */
+	FindFirst(filters []map[string]string) (entities.OrderResponse, error)
+
+	/*
 	 * Get Pagination
 	 * -------------------------------
 	 * Mengambil data pagination berdasarkan filters dan sorts
