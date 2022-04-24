@@ -3,6 +3,7 @@ package order
 import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	"mime/multipart"
 )
 
 type OrderServiceInterface interface {
@@ -121,7 +122,8 @@ type OrderServiceInterface interface {
 	/*
 	 * Webhook
 	 * -------------------------------
-	 * Mengambil data order berdasarkan filters dan sorts
+	 * Payment Webhook notification, dikirimkan oleh layanan pihak ketiga
+	 * referensi: https://docs.midtrans.com/en/after-payment/http-notification
 	 *
 	 * @var limit 	batas limit hasil query
 	 * @var offset 	offset hasil query
@@ -131,4 +133,23 @@ type OrderServiceInterface interface {
 	 * @return error	error
 	 */
 	PaymentWebhook(orderID int) error
+
+	/*
+	 * Take order for shipping
+	 * -------------------------------
+	 * Pengambilan order oleh driver untuk di set statusnya menjadi ON_PROCESS
+	 * @var orderID 	order id terkait
+	 * @var userID		authenticated user (role: driver)
+	 */
+	TakeOrder(orderID int, userID int) error
+
+	/*
+	 * Finish Order
+	 * -------------------------------
+	 * penyelesaian order oleh driver untuk di set statusnya menjadi DELIVERED
+	 * @var orderID 	order id terkait
+	 * @var userID		authenticated user (role: driver)
+	 * @var files		list file request untuk diteruskan ke validation dan upload
+	 */
+	FinishOrder(orderID int, userID int, files []*multipart.FileHeader) error
 }
