@@ -776,8 +776,8 @@ paths:
     # Registrasi Driver
     /api/drivers:
         post:
-            description: Register a customer
-            summary: Register a customer
+            description: Register a driver
+            summary: Register a driver
             tags:
                 - 'Auth & Registration'
             requestBody:
