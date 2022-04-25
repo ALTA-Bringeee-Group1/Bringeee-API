@@ -65,7 +65,7 @@ type OrderServiceInterface interface {
 	 * @var files				list file request untuk diteruskan ke validation dan upload
 	 * @return OrderResponse	order response 
 	 */
-	Create(orderRequest entities.CustomerCreateOrderRequest, files []*multipart.FileHeader) (entities.OrderResponse, error)
+	Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader) (entities.OrderResponse, error)
 
 	/*
 	 * Admin Set fixed price order
@@ -84,7 +84,7 @@ type OrderServiceInterface interface {
 	 * @var userID 				authenticated user id (role: customer, admin)
 	 * @return OrderResponse	order response 
 	 */
-	ConfirmOrder(orderID int, userID int) error 
+	ConfirmOrder(orderID int, userID int, isAdmin bool) error 
 
 	/*
 	 * Cancel Order
@@ -94,7 +94,7 @@ type OrderServiceInterface interface {
 	 * @var userID				Authenticated user id (role: customer, admin)
 	 * @return OrderResponse	order response 
 	 */
-	CancelOrder(orderID int, userID int) error 
+	CancelOrder(orderID int, userID int, isAdmin bool) error 
 
 	/*
 	 * Create Payment
@@ -114,7 +114,7 @@ type OrderServiceInterface interface {
 	 * @var createPaymentRequest	request payment
 	 * @return PaymentResponse		response payment 
 	 */
-	GetPayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error)
+	GetPayment(orderID int) (entities.PaymentResponse, error)
 	
 	/*
 	 * Find All History
@@ -136,11 +136,7 @@ type OrderServiceInterface interface {
 	 * Payment Webhook notification, dikirimkan oleh layanan pihak ketiga
 	 * referensi: https://docs.midtrans.com/en/after-payment/http-notification
 	 *
-	 * @var limit 	batas limit hasil query
-	 * @var offset 	offset hasil query
-	 * @var filters	query untuk penyaringan data, { field, operator, value }
-	 * @var sorts	pengurutan data, { field, value[bool] }
-	 * @return order	list order dalam bentuk entity response
+	 * @var orer 		order id
 	 * @return error	error
 	 */
 	PaymentWebhook(orderID int) error
@@ -162,5 +158,5 @@ type OrderServiceInterface interface {
 	 * @var userID		authenticated user (role: driver)
 	 * @var files		list file request untuk diteruskan ke validation dan upload
 	 */
-	FinishOrder(orderID int, userID int, files []*multipart.FileHeader) error
+	FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader) error
 }

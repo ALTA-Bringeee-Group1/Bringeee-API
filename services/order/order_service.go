@@ -63,7 +63,7 @@ func (service OrderService) Find(id int) (entities.Order, error) {
  * @var files				list file request untuk diteruskan ke validation dan upload
  * @return OrderResponse	order response 
  */
-func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files []*multipart.FileHeader) (entities.OrderResponse, error) {
+func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader) (entities.OrderResponse, error) {
 	panic("implement me")
 }
 /*
@@ -83,7 +83,7 @@ func (service OrderService) SetFixOrder(setPriceRequest entities.AdminSetPriceOr
  * @var orderID				ID Order yang akan di cancel
  * @return OrderResponse	order response 
  */
-func (service OrderService) ConfirmOrder(orderID int) error  {
+func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) error  {
 	panic("implement me")
 }
 /*
@@ -93,7 +93,7 @@ func (service OrderService) ConfirmOrder(orderID int) error  {
  * @var orderID				ID Order yang akan di cancel
  * @return OrderResponse	order response 
  */
-func (service OrderService) CancelOrder(orderID int) error  {
+func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) error  {
 	panic("implement me")
 }
 /*
@@ -173,6 +173,6 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
  * @var orderID 	order id terkait
  * @var userID		authenticated user (role: driver)
  */
-func (service OrderService) FinishOrder(orderID int, userID int, files []*multipart.FileHeader) error {
+func (service OrderService) FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader) error {
 	panic("implement me")
 }
