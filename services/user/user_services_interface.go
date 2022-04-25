@@ -8,7 +8,7 @@ import (
 
 type UserServiceInterface interface {
 	FindAllCustomer(limit, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.CustomerResponse, error)
-	CreateCustomer(customerRequest entities.CreateCustomerRequest, avatar *multipart.FileHeader) (entities.CustomerAuthResponse, error)
+	CreateCustomer(customerRequest entities.CreateCustomerRequest, files []*multipart.FileHeader) (entities.CustomerAuthResponse, error)
 	UpdateCustomer(customerRequest entities.UpdateCustomerRequest, avatar *multipart.FileHeader) (entities.CustomerResponse, error)
 	GetPaginationCustomer(limit, page int, filters []map[string]string) (web.Pagination, error)
 	FindCustomer(id int) (entities.CustomerResponse, error)

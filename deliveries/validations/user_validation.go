@@ -55,7 +55,7 @@ var userFileExtRules = map[string]string{
  * Validasi user saat registrasi berdasarkan validate tag
  * yang ada pada user request dan file rules diatas
  */
-func ValidateCreateCustomerRequest(validate *validator.Validate, userReq entities.CreateCustomerRequest, userFiles []*multipart.FileHeader) error {
+func ValidateCreateCustomerRequest(validate *validator.Validate, userReq entities.CreateCustomerRequest, userFiles map[string]*multipart.FileHeader) error {
 
 	errors := []web.ValidationErrorItem{}
 
@@ -78,7 +78,7 @@ func ValidateCreateCustomerRequest(validate *validator.Validate, userReq entitie
  * Validasi user saat edit profile berdasarkan
  * file rules diatas
  */
-func ValidateUpdateCustomerRequest(userFiles []*multipart.FileHeader) error {
+func ValidateUpdateCustomerRequest(userFiles map[string]*multipart.FileHeader) error {
 
 	errors := []web.ValidationErrorItem{}
 
@@ -106,15 +106,9 @@ func validateCustomerStruct(validate *validator.Validate, userReq entities.Creat
 	}
 }
 
-func validateCustomerFiles(userFiles []*multipart.FileHeader, errors *[]web.ValidationErrorItem) {
+func validateCustomerFiles(userFiles map[string]*multipart.FileHeader, errors *[]web.ValidationErrorItem) {
 	// File validation
-	for _, file := range userFiles {
-
-		// Parse file header Content-Disposition to get field name
-		field := strings.TrimPrefix(strings.Split(file.Header.Get("Content-Disposition"), ";")[1], " ")
-		field = strings.Split(field, "=")[1]
-		field = strings.Replace(field, "\"", "", -1)
-		field = strings.Replace(field, "\\", "", -1)
+	for field, file := range userFiles {
 
 		// Size validations
 		if file.Size > int64(userFileSizeRules[field]) {

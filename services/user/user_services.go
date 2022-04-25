@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
 
@@ -27,14 +26,10 @@ func NewUserService(repository userRepository.UserRepositoryInterface) *UserServ
 	}
 }
 
-func (service UserService) CreateCustomer(userRequest entities.CreateCustomerRequest, avatar *multipart.FileHeader) (entities.CustomerAuthResponse, error) {
+func (service UserService) CreateCustomer(userRequest entities.CreateCustomerRequest, files map[string]*multipart.FileHeader) (entities.CustomerAuthResponse, error) {
 
 	// Validation
-	userFiles := []*multipart.FileHeader{}
-	if avatar != nil {
-		userFiles = append(userFiles, avatar)
-	}
-	err := validations.ValidateCreateCustomerRequest(service.validate, userRequest, userFiles)
+	err := validations.ValidateCreateCustomerRequest(service.validate, userRequest, files)
 	if err != nil {
 		return entities.CustomerAuthResponse{}, err
 	}
@@ -55,21 +50,21 @@ func (service UserService) CreateCustomer(userRequest entities.CreateCustomerReq
 	user.Password = hashedPassword
 
 	// Upload avatar if exists
-	if avatar != nil {
-		avatarFile, err := avatar.Open()
-		if err != nil {
-			return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process avatar image"}
-		}
-		defer avatarFile.Close()
+	// if avatar != nil {
+	// 	avatarFile, err := avatar.Open()
+	// 	if err != nil {
+	// 		return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process avatar image"}
+	// 	}
+	// 	defer avatarFile.Close()
 
-		// Upload avatar to S3
-		filename := uuid.New().String() + avatar.Filename
-		avatarURL, err := helpers.UploadFileToS3("avatar/"+filename, avatarFile)
-		if err != nil {
-			return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
-		}
-		user.Avatar = avatarURL
-	}
+	// 	// Upload avatar to S3
+	// 	filename := uuid.New().String() + avatar.Filename
+	// 	avatarURL, err := helpers.UploadFileToS3("users/avatar/"+filename, avatarFile)
+	// 	if err != nil {
+	// 		return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
+	// 	}
+	// 	user.Avatar = avatarURL
+	// }
 	user.Role = "customer"
 
 	// Insert ke sistem melewati repository

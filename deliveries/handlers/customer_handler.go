@@ -5,6 +5,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	userService "bringeee-capstone/services/user"
+	"mime/multipart"
 	"net/http"
 	"reflect"
 
@@ -36,13 +37,16 @@ func (handler UserHandler) CreateCustomer(c echo.Context) error {
 	// Define links (hateoas)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
 
-	// Read file avatar
+	// Read files
+	files := map[string]*multipart.FileHeader{}
 	avatar, _ := c.FormFile("avatar")
+	if avatar != nil {
+		files["avatar"] = avatar
+	}
 
 	// registrasi user via call user service
-	userRes, err := handler.userService.CreateCustomer(userReq, avatar)
+	userRes, err := handler.userService.CreateCustomer(userReq, files)
 	if err != nil {
-
 		// return error response khusus jika err termasuk webError / ValidationError
 		if reflect.TypeOf(err).String() == "web.WebError" {
 			webErr := err.(web.WebError)
