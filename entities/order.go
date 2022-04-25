@@ -53,6 +53,14 @@ type OrderHistory struct {
 	Order Order `gorm:"foreignKey:OrderID;references:ID"`
 }
 
+type OrderHistoryResponse struct {
+	ID uint 		 `json:"id"`
+	Log string		 `json:"log"`
+	Actor string	 `json:"actor"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 
 // file request: order_picture
 type CustomerCreateOrderRequest struct {
@@ -74,6 +82,20 @@ type CustomerCreateOrderRequest struct {
 	TotalVolume string `form:"total_volume" validate:"required"`
 	TotalWeight string `form:"total_weight" validate:"required"`
 	Description string `form:"description"`
+}
+
+type CreatePaymentRequest struct {
+	PaymentMethod string `form:"payment_method"`
+}
+
+type PaymentResponse struct {
+	OrderID string 				`json:"order_id"`
+	PaymentMethod string 		`json:"payment_method"`
+	BillNumber string 			`json:"bill_number"`
+	Bank string 				`json:"bank"`
+	GrossAmount int64 			`json:"gross_amount"`
+	TransactionTime time.Time	`json:"transaction_time"`
+	TransactionExpire time.Time `json:"transaction_expire"`
 }
 
 

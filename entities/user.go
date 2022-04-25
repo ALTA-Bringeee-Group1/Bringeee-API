@@ -60,7 +60,7 @@ type CustomerResponse struct {
 	ID          uint      `json:"id"`
 	Email       string    `json:"email"`
 	Name        string    `json:"name"`
-	DOB         string    `json:"dob"`
+	DOB         time.Time `json:"dob"`
 	Gender      string    `json:"gender"`
 	Address     string    `json:"address"`
 	PhoneNumber string    `json:"phone_number"`
@@ -117,7 +117,7 @@ type DriverResponse struct {
 	ID                uint              `json:"id"`
 	Email             string            `json:"email"`
 	Name              string            `json:"name"`
-	DOB               string            `json:"dob"`
+	DOB               time.Time         `json:"dob"`
 	Gender            string            `json:"gender"`
 	Address           string            `json:"address"`
 	PhoneNumber       string            `json:"phone_number"`
