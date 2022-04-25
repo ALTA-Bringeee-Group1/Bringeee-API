@@ -29,6 +29,7 @@ type Driver struct {
 	Age               int
 	VehicleIdentifier string
 	NIK               string
+	AccountStatus     string
 	Status            string
 	VehiclePicture    string
 	User              User      `gorm:"foreignKey:UserID;references:ID"`
@@ -131,6 +132,8 @@ type DriverResponse struct {
 	VehicleIdentifier string            `json:"vehicle_identifier"`
 	NIK               string            `json:"nik"`
 	VehiclePicture    string            `json:"vehicle_picture"`
+	Status            string            `json:"status"`
+	AccountStatus     string            `json:"account_status"`
 	CreatedAt         time.Time         `json:"created_at"`
 	UpdatedAt         time.Time         `json:"updated_at"`
 }
