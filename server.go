@@ -4,6 +4,7 @@ import (
 	"bringeee-capstone/configs"
 	"bringeee-capstone/deliveries/handlers"
 	"bringeee-capstone/deliveries/routes"
+	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	userService "bringeee-capstone/services/user"
 	"bringeee-capstone/utils"
@@ -29,5 +30,6 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService)
 	routes.RegisterCustomerRoute(e, userHandler)
 
+	_ = truckTypeRepository.NewTruckTypeRepository(db)
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
