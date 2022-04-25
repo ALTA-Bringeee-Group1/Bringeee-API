@@ -784,7 +784,7 @@ paths:
                 content:
                     multipart/form-data:
                         schema:
-                            $ref: '#/components/schemas/customer_request'
+                            $ref: '#/components/schemas/driver_request'
             responses:
                 '200':
                     description: success registrating user
