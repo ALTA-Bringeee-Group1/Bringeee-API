@@ -10,3 +10,7 @@ func RegisterCustomerRoute(e *echo.Echo, userHandler *handlers.UserHandler) {
 	group := e.Group("/api/customers")
 	group.POST("", userHandler.CreateCustomer) // Registration
 }
+
+func RegisterTruckTypeRoute(e *echo.Echo, truckTypeHandler *handlers.TruckTypeHandler) {
+	e.GET("/api/truck_types", truckTypeHandler.Index)
+}

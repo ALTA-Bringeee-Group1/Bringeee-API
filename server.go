@@ -32,7 +32,9 @@ func main() {
 	routes.RegisterCustomerRoute(e, userHandler)
 
 	truckTypeRepository := truckTypeRepository.NewTruckTypeRepository(db)
-	_ = truckTypeService.NewTruckTypeService(*truckTypeRepository)
+	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
+	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
+	routes.RegisterTruckTypeRoute(e, truckTypeHandler)
 
-	// e.Logger.Fatal(e.Start(":" + config.App.Port))
+	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
