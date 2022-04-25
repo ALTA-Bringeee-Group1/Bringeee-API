@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
 
@@ -50,21 +51,24 @@ func (service UserService) CreateCustomer(userRequest entities.CreateCustomerReq
 	user.Password = hashedPassword
 
 	// Upload avatar if exists
-	// if avatar != nil {
-	// 	avatarFile, err := avatar.Open()
-	// 	if err != nil {
-	// 		return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process avatar image"}
-	// 	}
-	// 	defer avatarFile.Close()
+	for field, file := range files {
+		switch field {
+		case "avatar":
+			fileFile, err := file.Open()
+			if err != nil {
+				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+			}
+			defer fileFile.Close()
 
-	// 	// Upload avatar to S3
-	// 	filename := uuid.New().String() + avatar.Filename
-	// 	avatarURL, err := helpers.UploadFileToS3("users/avatar/"+filename, avatarFile)
-	// 	if err != nil {
-	// 		return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
-	// 	}
-	// 	user.Avatar = avatarURL
-	// }
+			// Upload file to S3
+			filename := uuid.New().String() + file.Filename
+			fileURL, err := helpers.UploadFileToS3("users/file/"+filename, fileFile)
+			if err != nil {
+				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
+			}
+			user.Avatar = fileURL
+		}
+	}
 	user.Role = "customer"
 
 	// Insert ke sistem melewati repository
