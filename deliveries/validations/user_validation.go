@@ -64,9 +64,10 @@ func ValidateCreateCustomerRequest(validate *validator.Validate, userReq entitie
 
 	if len(errors) > 0 {
 		return web.ValidationError{
-			Code:    400,
-			Message: "Validation error",
-			Errors:  errors,
+			Code:               400,
+			ProductionMessage:  "Bad Request",
+			DevelopmentMessage: "Validation error",
+			Errors:             errors,
 		}
 	}
 	return nil
@@ -85,9 +86,10 @@ func ValidateUpdateCustomerRequest(userFiles map[string]*multipart.FileHeader) e
 	validateCustomerFiles(userFiles, &errors)
 	if len(errors) > 0 {
 		return web.ValidationError{
-			Code:    400,
-			Message: "Validation error",
-			Errors:  errors,
+			Code:               400,
+			ProductionMessage:  "Bad Request",
+			DevelopmentMessage: "Validation error",
+			Errors:             errors,
 		}
 	}
 	return nil
