@@ -82,7 +82,7 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 		}, nil
 	}
 
-	// Konversi menjadi user response
+	// Konversi menjadi customer response
 	userRes := entities.CustomerResponse{}
 	copier.Copy(&userRes, &user)
 
