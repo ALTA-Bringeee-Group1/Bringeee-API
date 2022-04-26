@@ -42,7 +42,6 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	routes.RegisterAuthRoute(e, authHandler)
 
-	e.Logger.Fatal(e.Start(":" + config.App.Port))
 	regionRepository := regionRepository.NewRegionRepository(db)
 	regionService := regionService.NewRegionService(*regionRepository)
 	regionHandler := handlers.NewRegionHandler(*regionService)
