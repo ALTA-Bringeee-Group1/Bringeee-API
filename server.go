@@ -5,6 +5,7 @@ import (
 	"bringeee-capstone/deliveries/handlers"
 	"bringeee-capstone/deliveries/routes"
 	userRepository "bringeee-capstone/repositories/user"
+	authService "bringeee-capstone/services/auth"
 	userService "bringeee-capstone/services/user"
 	"bringeee-capstone/utils"
 
@@ -28,6 +29,10 @@ func main() {
 	userService := userService.NewUserService(userRepository)
 	userHandler := handlers.NewUserHandler(userService)
 	routes.RegisterCustomerRoute(e, userHandler)
+
+	authService := authService.NewAuthService(userRepository)
+	authHandler := handlers.NewAuthHandler(authService)
+	routes.RegisterAuthRoute(e, authHandler)
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
