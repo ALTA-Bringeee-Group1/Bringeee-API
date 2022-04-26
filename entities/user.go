@@ -74,7 +74,7 @@ type AdminResponse struct {
 	ID          uint      `json:"id"`
 	Email       string    `json:"email"`
 	Name        string    `json:"name"`
-	DOB         string    `json:"dob"`
+	DOB         time.Time `json:"dob"`
 	Gender      string    `json:"gender"`
 	Address     string    `json:"address"`
 	PhoneNumber string    `json:"phone_number"`
@@ -128,7 +128,7 @@ type DriverResponse struct {
 	KtpFile           string            `json:"ktp_file"`
 	StnkFile          string            `json:"stnk_file"`
 	DriverLicenseFile string            `json:"driver_license_file"`
-	Age               string            `json:"age"`
+	Age               int            	`json:"age"`
 	VehicleIdentifier string            `json:"vehicle_identifier"`
 	NIK               string            `json:"nik"`
 	VehiclePicture    string            `json:"vehicle_picture"`

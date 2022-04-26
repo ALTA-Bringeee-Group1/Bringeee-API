@@ -4,6 +4,8 @@ import (
 	"bringeee-capstone/deliveries/helpers"
 	middleware "bringeee-capstone/deliveries/middlewares"
 	userRepository "bringeee-capstone/repositories/user"
+	"bringeee-capstone/utils"
+	"fmt"
 
 	"bringeee-capstone/entities"
 	web "bringeee-capstone/entities/web"
@@ -36,7 +38,6 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 	}
 
 	// Verify password
-
 	if helpers.CheckPasswordHash(authReq.Password, user.Password) {
 		return entities.CustomerAuthResponse{}, web.WebError{Code: 401, Message: "Invalid password"}
 	}
@@ -49,7 +50,11 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 			return entities.DriverAuthResponse{}, web.WebError{Code: 403, Message: "Waiting for admin confirmation"}
 		}
 		userRes := entities.DriverResponse{}
+		copier.Copy(&userRes, &driver.User)
 		copier.Copy(&userRes, &driver)
+		copier.Copy(&userRes.TruckType, &driver.TruckType)
+
+		fmt.Println(utils.JsonEncode(driver))
 
 		// Create token
 		token, err := middleware.CreateToken(int(user.ID), userRes.Name, userRes.Role)
