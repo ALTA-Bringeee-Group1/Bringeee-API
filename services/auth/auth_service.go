@@ -38,7 +38,7 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 	}
 
 	// Verify password
-	if helpers.CheckPasswordHash(authReq.Password, user.Password) {
+	if !helpers.CheckPasswordHash(authReq.Password, user.Password) {
 		return entities.CustomerAuthResponse{}, web.WebError{Code: 401, Message: "Invalid password"}
 	}
 
