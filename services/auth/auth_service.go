@@ -37,14 +37,14 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 
 	// Verify password
 
-	if helpers.CheckPasswordHash(authReq.Password, user.Password) != true {
+	if helpers.CheckPasswordHash(authReq.Password, user.Password) {
 		return entities.CustomerAuthResponse{}, web.WebError{Code: 401, Message: "Invalid password"}
 	}
 
 	// if role == driver
 	if user.Role == "driver" {
 		// Konversi menjadi driver response
-		driver, _ := service.userRepo.FindByDriver("user_id", user.ID)
+		driver, _ := service.userRepo.FindByDriver("user_id", int(user.ID))
 		if driver.AccountStatus != "VERIFIED" {
 			return entities.DriverAuthResponse{}, web.WebError{Code: 403, Message: "Waiting for admin confirmation"}
 		}
@@ -52,7 +52,7 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 		copier.Copy(&userRes, &driver)
 
 		// Create token
-		token, err := middleware.CreateToken(user.ID, userRes.Name, userRes.Role)
+		token, err := middleware.CreateToken(int(user.ID), userRes.Name, userRes.Role)
 		if err != nil {
 			return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Error create token"}
 		}
