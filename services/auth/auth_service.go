@@ -49,7 +49,6 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 			return entities.DriverAuthResponse{}, web.WebError{Code: 403, Message: "Waiting for admin confirmation"}
 		}
 		userRes := entities.DriverResponse{}
-		copier.Copy(&userRes, &user)
 		copier.Copy(&userRes, &driver)
 
 		// Create token
@@ -67,9 +66,8 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 	// if role == admin
 	if user.Role == "admin" {
 		// Konversi menjadi admin response
-		admin, _ := service.userRepo.FindCustomer(int(user.ID))
 		userRes := entities.AdminResponse{}
-		copier.Copy(&userRes, &admin)
+		copier.Copy(&userRes, &user)
 
 		// Create token
 		token, err := middleware.CreateToken(int(userRes.ID), userRes.Name, userRes.Role)
