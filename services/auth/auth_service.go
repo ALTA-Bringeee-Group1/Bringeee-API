@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"bringeee-capstone/deliveries/helpers"
 	middleware "bringeee-capstone/deliveries/middlewares"
 	userRepository "bringeee-capstone/repositories/user"
 
@@ -9,7 +10,6 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/jinzhu/copier"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
@@ -36,23 +36,24 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 	}
 
 	// Verify password
-	match := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(authReq.Password))
-	if match != nil {
+
+	if helpers.CheckPasswordHash(authReq.Password, user.Password) != true {
 		return entities.CustomerAuthResponse{}, web.WebError{Code: 401, Message: "Invalid password"}
 	}
 
 	// if role == driver
 	if user.Role == "driver" {
 		// Konversi menjadi driver response
-		driver, _ := service.userRepo.FindDriver(int(user.ID))
+		driver, _ := service.userRepo.FindByDriver("user_id", user.ID)
 		if driver.AccountStatus != "VERIFIED" {
 			return entities.DriverAuthResponse{}, web.WebError{Code: 403, Message: "Waiting for admin confirmation"}
 		}
 		userRes := entities.DriverResponse{}
+		copier.Copy(&userRes, &user)
 		copier.Copy(&userRes, &driver)
 
 		// Create token
-		token, err := middleware.CreateToken(int(userRes.ID), userRes.Name, userRes.Role)
+		token, err := middleware.CreateToken(user.ID, userRes.Name, userRes.Role)
 		if err != nil {
 			return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Error create token"}
 		}
@@ -66,7 +67,7 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 	// if role == admin
 	if user.Role == "admin" {
 		// Konversi menjadi admin response
-		admin, _ := service.userRepo.FindDriver(int(user.ID))
+		admin, _ := service.userRepo.FindCustomer(int(user.ID))
 		userRes := entities.AdminResponse{}
 		copier.Copy(&userRes, &admin)
 
@@ -111,8 +112,10 @@ func (service AuthService) Me(Id int, token interface{}) (interface{}, error) {
 
 	// Konversi user ke user response
 	if user.Role == "driver" {
+		driver, _ := service.userRepo.FindByDriver("user_id", Id)
 		userRes := entities.DriverResponse{}
 		copier.Copy(&userRes, &user)
+		copier.Copy(&userRes, &driver)
 		authRes := entities.DriverAuthResponse{
 			Token: userJWT.Raw,
 			User:  userRes,

@@ -6,7 +6,7 @@ import (
 	middleware "bringeee-capstone/deliveries/middlewares"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
-	_authService "bringeee-capstone/services/auth"
+	authService "bringeee-capstone/services/auth"
 	"net/http"
 	"reflect"
 
@@ -14,12 +14,12 @@ import (
 )
 
 type AuthHandler struct {
-	authService _authService.AuthServiceInterface
+	authService *authService.AuthService
 }
 
-func NewAuthHandler(auth _authService.AuthServiceInterface) *AuthHandler {
+func NewAuthHandler(service *authService.AuthService) *AuthHandler {
 	return &AuthHandler{
-		authService: auth,
+		authService: service,
 	}
 }
 
@@ -67,7 +67,7 @@ func (handler AuthHandler) Login(c echo.Context) error {
 	})
 }
 
-func (handler AuthHandler) CustomerMe(c echo.Context) error {
+func (handler AuthHandler) Me(c echo.Context) error {
 
 	// Token and Read Token
 	token := c.Get("user")
