@@ -66,7 +66,7 @@ func (repo UserRepository) FindCustomer(id int) (entities.User, error) {
 	return user, nil
 }
 
-func (repo UserRepository) FindByDriver(field string, value string) (entities.Driver, error) {
+func (repo UserRepository) FindByDriver(field string, value int) (entities.Driver, error) {
 	driver := entities.Driver{}
 	tx := repo.db.Preload("User").Preload("TruckType").Where(field+" = ?", value).Find(&driver)
 	if tx.Error != nil {
