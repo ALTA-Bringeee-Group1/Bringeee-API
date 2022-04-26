@@ -8,10 +8,10 @@ import (
 	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	authService "bringeee-capstone/services/auth"
+	regionService "bringeee-capstone/services/region"
 	truckTypeService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"bringeee-capstone/utils"
-	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -44,11 +44,7 @@ func main() {
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 	regionRepository := regionRepository.NewRegionRepository(db)
-	// data, _ := regionRepository.FindAllProvince([]map[string]interface{}{
-	// 	{ "field": "prov_name", "desc": false },
-	// })
-	data, _ := regionRepository.FindAllDistrict(232, []map[string]interface{}{})
+	_ = regionService.NewRegionService(*regionRepository)
 
-	fmt.Println(utils.JsonEncode(data))
-	// e.Logger.Fatal(e.Start(":" + config.App.Port))
+	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
