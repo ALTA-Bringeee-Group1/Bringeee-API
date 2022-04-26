@@ -34,3 +34,20 @@ func (repo UserRepository) StoreCustomer(user entities.User) (entities.User, err
 	}
 	return user, nil
 }
+
+/*
+ * Store
+ * -------------------------------
+ * Menambahkan driver tunggal kedalam database
+ */
+func (repo UserRepository) StoreDriver(driver entities.Driver) (entities.Driver, error) {
+
+	// insert driver ke database
+	tx := repo.db.Create(&driver)
+	if tx.Error != nil {
+
+		// return kode 500 jika error
+		return entities.Driver{}, web.WebError{Code: 500, Message: tx.Error.Error()}
+	}
+	return driver, nil
+}
