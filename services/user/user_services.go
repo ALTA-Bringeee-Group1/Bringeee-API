@@ -218,13 +218,10 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 	if err != nil {
 		return entities.DriverAuthResponse{}, err
 	}
-	truck, _ := service.truckRepo.Find(driver.TruckTypeID)
+	driverRes, _ := service.userRepo.FindDriver(driver.ID)
 	// Konversi hasil repository menjadi driver response
 	userRes := entities.DriverResponse{}
-	copier.Copy(&userRes, &user)
-	copier.Copy(&userRes, &driver)
-	copier.Copy(&userRes, &truck)
-
+	copier.Copy(&userRes, &driverRes)
 	// generate token
 	token, err := _middleware.CreateToken(int(user.ID), user.Name, user.Role)
 	if err != nil {
