@@ -4,12 +4,14 @@ import (
 	"bringeee-capstone/configs"
 	"bringeee-capstone/deliveries/handlers"
 	"bringeee-capstone/deliveries/routes"
+	regionRepository "bringeee-capstone/repositories/region"
 	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	authService "bringeee-capstone/services/auth"
 	truckTypeService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"bringeee-capstone/utils"
+	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -41,4 +43,12 @@ func main() {
 	routes.RegisterAuthRoute(e, authHandler)
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
+	regionRepository := regionRepository.NewRegionRepository(db)
+	// data, _ := regionRepository.FindAllProvince([]map[string]interface{}{
+	// 	{ "field": "prov_name", "desc": false },
+	// })
+	data, _ := regionRepository.FindAllDistrict(232, []map[string]interface{}{})
+
+	fmt.Println(utils.JsonEncode(data))
+	// e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
