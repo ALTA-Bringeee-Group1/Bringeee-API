@@ -9,7 +9,7 @@ type Province struct {
 
 type City struct {
 	CityID uint `gorm:"primarykey"`
-	CityName string
+	CityName string `gorm:"column:city_name"`
 	ProvID uint
 }
 

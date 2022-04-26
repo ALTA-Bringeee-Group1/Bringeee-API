@@ -4,9 +4,11 @@ import (
 	"bringeee-capstone/configs"
 	"bringeee-capstone/deliveries/handlers"
 	"bringeee-capstone/deliveries/routes"
+	regionRepository "bringeee-capstone/repositories/region"
 	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	authService "bringeee-capstone/services/auth"
+	regionService "bringeee-capstone/services/region"
 	truckTypeService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"bringeee-capstone/utils"
@@ -39,6 +41,11 @@ func main() {
 	authService := authService.NewAuthService(userRepository)
 	authHandler := handlers.NewAuthHandler(authService)
 	routes.RegisterAuthRoute(e, authHandler)
+
+	regionRepository := regionRepository.NewRegionRepository(db)
+	regionService := regionService.NewRegionService(*regionRepository)
+	regionHandler := handlers.NewRegionHandler(*regionService)
+	routes.RegisterRegionHandler(e, regionHandler)
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
