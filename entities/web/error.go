@@ -10,6 +10,9 @@ type WebError struct {
 }
 
 func (err WebError) Error() string {
+	if err.ProductionMessage == "" && err.DevelopmentMessage == "" {
+		return err.Message
+	} 
 	return map[bool]string{ true: err.ProductionMessage, false: err.DevelopmentMessage }[configs.Get().App.ENV == "production"]
 }
 

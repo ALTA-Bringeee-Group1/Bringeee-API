@@ -218,7 +218,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 	if err != nil {
 		return entities.DriverAuthResponse{}, err
 	}
-	driverRes, _ := service.userRepo.FindDriver(driver.ID)
+	driverRes, _ := service.userRepo.FindDriver(int(driver.ID))
 	// Konversi hasil repository menjadi driver response
 	userRes := entities.DriverResponse{}
 	copier.Copy(&userRes, &driverRes)
