@@ -44,7 +44,9 @@ func main() {
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 	regionRepository := regionRepository.NewRegionRepository(db)
-	_ = regionService.NewRegionService(*regionRepository)
+	regionService := regionService.NewRegionService(*regionRepository)
+	regionHandler := handlers.NewRegionHandler(*regionService)
+	routes.RegisterRegionHandler(e, regionHandler)
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
