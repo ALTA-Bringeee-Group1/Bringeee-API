@@ -30,6 +30,7 @@ type Driver struct {
 	VehicleIdentifier string
 	NIK               string
 	Status            string
+	AccountStatus     string
 	VehiclePicture    string
 	User              User      `gorm:"foreignKey:UserID;references:ID"`
 	TruckType         TruckType `gorm:"foreignKey:TruckTypeID;references:ID"`
@@ -128,6 +129,8 @@ type DriverResponse struct {
 	StnkFile          string            `json:"stnk_file"`
 	DriverLicenseFile string            `json:"driver_license_file"`
 	Age               string            `json:"age"`
+	Status            string            `json:"status"`
+	AccountStatus     string            `json:"account_status"`
 	VehicleIdentifier string            `json:"vehicle_identifier"`
 	NIK               string            `json:"nik"`
 	VehiclePicture    string            `json:"vehicle_picture"`
