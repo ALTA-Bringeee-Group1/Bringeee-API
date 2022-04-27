@@ -4,7 +4,7 @@ type SuccessListResponse struct {
 	Status     string      `json:"status"`
 	Code       int         `json:"code"`
 	Error      interface{} `json:"error"`
-	Links      interface{} `json:"link"`
+	Links      interface{} `json:"links"`
 	Data       interface{} `json:"data"`
 	Pagination Pagination  `json:"pagination"`
 }
@@ -13,7 +13,7 @@ type SuccessResponse struct {
 	Status string      `json:"status"`
 	Code   int         `json:"code"`
 	Error  interface{} `json:"error"`
-	Links  interface{} `json:"link"`
+	Links  interface{} `json:"links"`
 	Data   interface{} `json:"data"`
 }
 
@@ -21,7 +21,7 @@ type ErrorResponse struct {
 	Status string      `json:"status"`
 	Code   int         `json:"code"`
 	Error  string      `json:"error"`
-	Links  interface{} `json:"link"`
+	Links  interface{} `json:"links"`
 }
 
 type ValidationErrorResponse struct {
@@ -29,7 +29,7 @@ type ValidationErrorResponse struct {
 	Code   int                   `json:"code"`
 	Error  string                `json:"error"`
 	Errors []ValidationErrorItem `json:"errors"`
-	Links  interface{}           `json:"link"`
+	Links  interface{}           `json:"links"`
 }
 
 type ValidationErrorItem struct {
