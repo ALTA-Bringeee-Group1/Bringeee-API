@@ -47,6 +47,7 @@ func (repository TruckTypeRepository) FindAll(limit int, offset int, filters []m
 	}
 	return truckType, nil
 }
+
 /*
  * Find
  * -------------------------------
@@ -64,6 +65,7 @@ func (repository TruckTypeRepository) Find(id int) (entities.TruckType, error) {
 	}
 	return truckType, nil
 }
+
 /*
  * Find User
  * -------------------------------
@@ -72,7 +74,7 @@ func (repository TruckTypeRepository) Find(id int) (entities.TruckType, error) {
  * @var field 			kolom data
  * @var value			nilai data
  * @return truckType	single truckType dalam bentuk entity domain
- * @return error		error	
+ * @return error		error
  */
 func (repository TruckTypeRepository) FindBy(field string, value string) (entities.TruckType, error) {
 	truckType := entities.TruckType{}
@@ -84,13 +86,14 @@ func (repository TruckTypeRepository) FindBy(field string, value string) (entiti
 	}
 	return truckType, nil
 }
+
 /*
  * CountAll
  * -------------------------------
  * Menghitung semua truckTypes (ini digunakan untuk pagination di service)
  *
  * @return truckType	single truckType dalam bentuk entity domain
- * @return error		error	
+ * @return error		error
  */
 func (repository TruckTypeRepository) CountAll(filters []map[string]string) (int64, error) {
 	var count int64
@@ -105,6 +108,7 @@ func (repository TruckTypeRepository) CountAll(filters []map[string]string) (int
 	}
 	return count, nil
 }
+
 /*
  * Store
  * -------------------------------
@@ -120,6 +124,7 @@ func (repository TruckTypeRepository) Store(truckType entities.TruckType) (entit
 	}
 	return truckType, nil
 }
+
 /*
  * Update
  * -------------------------------
@@ -136,12 +141,13 @@ func (repository TruckTypeRepository) Update(truckType entities.TruckType, id in
 	}
 	return truckType, nil
 }
+
 /*
  * Delete
  * -------------------------------
  * Delete truckType berdasarkan ID
  *
- * @return error		error	
+ * @return error		error
  */
 func (repository TruckTypeRepository) Delete(id int) error {
 	tx := repository.db.Delete(&entities.TruckType{}, id)
@@ -150,6 +156,7 @@ func (repository TruckTypeRepository) Delete(id int) error {
 	}
 	return nil
 }
+
 /*
  * Delete Batch
  * -------------------------------
@@ -157,7 +164,7 @@ func (repository TruckTypeRepository) Delete(id int) error {
  *
  * @var filters	query untuk penyaringan data, { field, operator, value }
  *
- * @return error		error	
+ * @return error		error
  */
 func (repository TruckTypeRepository) DeleteBatch(filters []map[string]string) error {
 	builder := repository.db

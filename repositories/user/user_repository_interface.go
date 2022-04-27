@@ -14,7 +14,7 @@ type UserRepositoryInterface interface {
 	FindDriver(id int) (entities.Driver, error)
 	FindByDriver(field string, value int) (entities.Driver, error)
 	// CountAllDriver(filters []map[string]string) (int64, error)
-	// StoreDriver(driver entities.Driver) (entities.Driver, error)
+	StoreDriver(driver entities.Driver) (entities.Driver, error)
 	// UpdateDriver(driver entities.Driver, id int) (entities.Driver, error)
 	// DeleteDriver(id int) error
 }

@@ -35,6 +35,23 @@ func (repo UserRepository) StoreCustomer(user entities.User) (entities.User, err
 	return user, nil
 }
 
+/*
+ * Store
+ * -------------------------------
+ * Menambahkan driver tunggal kedalam database
+ */
+func (repo UserRepository) StoreDriver(driver entities.Driver) (entities.Driver, error) {
+
+	// insert driver ke database
+	tx := repo.db.Create(&driver)
+	if tx.Error != nil {
+
+		// return kode 500 jika error
+		return entities.Driver{}, web.WebError{Code: 500, Message: tx.Error.Error()}
+	}
+	return driver, nil
+}
+
 func (repo UserRepository) FindByCustomer(field string, value string) (entities.User, error) {
 	user := entities.User{}
 	tx := repo.db.Where(field+" = ?", value).Find(&user)
@@ -93,6 +110,7 @@ func (repo UserRepository) FindDriver(id int) (entities.Driver, error) {
 
 		// Return error dengan code 400 jika tidak ditemukan
 		return entities.Driver{}, web.WebError{Code: 400, Message: "bad request"}
+
 	}
 	return driver, nil
 }
