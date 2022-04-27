@@ -5,6 +5,7 @@ import (
 	"bringeee-capstone/entities/web"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepository struct {
@@ -143,6 +144,70 @@ func (repo UserRepository) DeleteCustomer(id int) error {
 		return web.WebError{Code: 500, Message: "server error"}
 	}
 	return nil
+}
+
+func (repo UserRepository) FindAllCustomer(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.User, error) {
+	users := []entities.User{}
+	builder := repo.db.Limit(limit).Offset(offset)
+	// Where filters
+	for _, filter := range filters {
+		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+	}
+	// OrderBy Filters
+	for _, sort := range sorts {
+		builder.Order(clause.OrderByColumn{Column: clause.Column{Name: sort["field"].(string)}, Desc: sort["desc"].(bool)})
+	}
+	tx := builder.Find(&users)
+	if tx.Error != nil {
+		return []entities.User{}, web.WebError{Code: 500, Message: tx.Error.Error()}
+	}
+	return users, nil
+}
+
+func (repo UserRepository) FindAllDriver(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.Driver, error) {
+	drivers := []entities.Driver{}
+	builder := repo.db.Preload("User").Preload("TruckType").Limit(limit).Offset(offset)
+	// Where filters
+	for _, filter := range filters {
+		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+	}
+	// OrderBy Filters
+	for _, sort := range sorts {
+		builder.Order(clause.OrderByColumn{Column: clause.Column{Name: sort["field"].(string)}, Desc: sort["desc"].(bool)})
+	}
+	tx := builder.Find(&drivers)
+	if tx.Error != nil {
+		return []entities.Driver{}, web.WebError{Code: 500, Message: tx.Error.Error()}
+	}
+	return drivers, nil
+}
+
+func (repo UserRepository) CountAllCustomer(filters []map[string]string) (int64, error) {
+	var count int64
+	builder := repo.db.Model(&entities.User{})
+	// Where filters
+	for _, filter := range filters {
+		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+	}
+	tx := builder.Count(&count)
+	if tx.Error != nil {
+		return -1, web.WebError{Code: 400, Message: tx.Error.Error()}
+	}
+	return count, nil
+}
+
+func (repo UserRepository) CountAllDriver(filters []map[string]string) (int64, error) {
+	var count int64
+	builder := repo.db.Model(&entities.Driver{})
+	// Where filters
+	for _, filter := range filters {
+		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+	}
+	tx := builder.Count(&count)
+	if tx.Error != nil {
+		return -1, web.WebError{Code: 400, Message: tx.Error.Error()}
+	}
+	return count, nil
 }
 
 func (repo UserRepository) DeleteDriver(id int) error {
