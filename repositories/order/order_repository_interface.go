@@ -39,6 +39,18 @@ type OrderRepositoryInterface interface {
 	FindBy(field string, value string) (entities.Order, error)
 
 	/*
+	 * Find First
+	 * -------------------------------
+	 * Mencari order tunggal berdasarkan filter
+	 *
+	 * @var field 	kolom data
+	 * @var value	nilai data
+	 * @return order	single order dalam bentuk entity domain
+	 * @return error	error	
+	 */
+	FindFirst(filters []map[string]string) (entities.Order, error)
+
+	/*
 	 * CountAll
 	 * -------------------------------
 	 * Menghitung semua orders (ini digunakan untuk pagination di service)
