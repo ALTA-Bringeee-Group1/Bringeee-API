@@ -55,7 +55,7 @@ type OrderServiceInterface interface {
 	 * @return order	order tunggal dalam bentuk response
 	 * @return error	error
 	 */
-	Find(id int) (entities.Order, error)
+	Find(id int) (entities.OrderResponse, error)
 
 	/*
 	 * Customer Create order
@@ -114,7 +114,7 @@ type OrderServiceInterface interface {
 	 * @var createPaymentRequest	request payment
 	 * @return PaymentResponse		response payment 
 	 */
-	GetPayment(orderID int) (entities.PaymentResponse, error)
+	GetPayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error)
 	
 	/*
 	 * Find All History
