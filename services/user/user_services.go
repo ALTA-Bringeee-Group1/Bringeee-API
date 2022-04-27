@@ -10,6 +10,7 @@ import (
 	userRepository "bringeee-capstone/repositories/user"
 	"mime/multipart"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -295,6 +296,188 @@ func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustome
 	return userRes, err
 }
 
+func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverRequest, id int, files map[string]*multipart.FileHeader) (entities.DriverResponse, error) {
+
+	// validation
+	err := validations.ValidateUpdateDriverRequest(files)
+	if err != nil {
+		return entities.DriverResponse{}, err
+	}
+
+	// Get user by ID via repository
+	user, err := service.userRepo.FindCustomer(id)
+	if err != nil {
+		return entities.DriverResponse{}, web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+	}
+	// Avatar
+	for field, file := range files {
+		switch field {
+		case "avatar":
+			// Delete avatar lama jika ada yang baru
+			if user.Avatar != "" {
+				u, _ := url.Parse(user.Avatar)
+				objectPathS3 := strings.TrimPrefix(u.Path, "/")
+				helpers.DeleteFromS3(objectPathS3)
+			}
+			fileFile, err := file.Open()
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+			}
+			defer fileFile.Close()
+
+			// Upload file to S3
+			filename := uuid.New().String() + file.Filename
+			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+			}
+			user.Avatar = fileURL
+		}
+	}
+
+	// Konversi dari request ke domain entities user - mengabaikan nilai kosong pada request
+	copier.CopyWithOption(&user, &driverRequest, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+
+	// Hanya hash password jika password juga diganti (tidak kosong)
+	if driverRequest.Password != "" {
+		hashedPassword, _ := helpers.HashPassword(user.Password)
+		user.Password = hashedPassword
+	}
+
+	// Update via repository
+	user, err = service.userRepo.UpdateCustomer(user, id)
+	if err != nil {
+		return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+	}
+	// find driver
+	driver, err := service.userRepo.FindByDriver("user_id", strconv.Itoa(int(user.ID)))
+	if err != nil {
+		return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+	}
+	copier.CopyWithOption(&driver, &driverRequest, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+
+	driver, err = service.userRepo.UpdateDriver(driver, int(driver.ID))
+	// Konversi user domain menjadi user response
+	userRes := entities.DriverResponse{}
+	copier.Copy(&userRes, &driver.User)
+	copier.Copy(&userRes, &driver)
+	copier.Copy(&userRes.TruckType, &driver.TruckType)
+
+	return userRes, err
+}
+func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriverByAdminRequest, id int, files map[string]*multipart.FileHeader) (entities.DriverResponse, error) {
+
+	// validation
+	err := validations.ValidateUpdateDriverRequest(files)
+	if err != nil {
+		return entities.DriverResponse{}, err
+	}
+	// find driver
+	driver, err := service.userRepo.FindDriver(id)
+	if err != nil {
+		return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+	}
+	// Avatar
+	for field, file := range files {
+		switch field {
+		case "ktp_file":
+			// Delete avatar lama jika ada yang baru
+			if driver.KtpFile != "" {
+				u, _ := url.Parse(driver.KtpFile)
+				objectPathS3 := strings.TrimPrefix(u.Path, "/")
+				helpers.DeleteFromS3(objectPathS3)
+			}
+			fileFile, err := file.Open()
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+			}
+			defer fileFile.Close()
+
+			// Upload file to S3
+			filename := uuid.New().String() + file.Filename
+			fileURL, err := helpers.UploadFileToS3("drivers/ktp/"+filename, fileFile)
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+			}
+			driver.KtpFile = fileURL
+
+		case "stnk_file":
+			// Delete avatar lama jika ada yang baru
+			if driver.StnkFile != "" {
+				u, _ := url.Parse(driver.StnkFile)
+				objectPathS3 := strings.TrimPrefix(u.Path, "/")
+				helpers.DeleteFromS3(objectPathS3)
+			}
+			fileFile, err := file.Open()
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+			}
+			defer fileFile.Close()
+
+			// Upload file to S3
+			filename := uuid.New().String() + file.Filename
+			fileURL, err := helpers.UploadFileToS3("drivers/stnk/"+filename, fileFile)
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+			}
+			driver.StnkFile = fileURL
+
+		case "driver_license_file":
+			// Delete avatar lama jika ada yang baru
+			if driver.DriverLicenseFile != "" {
+				u, _ := url.Parse(driver.DriverLicenseFile)
+				objectPathS3 := strings.TrimPrefix(u.Path, "/")
+				helpers.DeleteFromS3(objectPathS3)
+			}
+			fileFile, err := file.Open()
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+			}
+			defer fileFile.Close()
+
+			// Upload file to S3
+			filename := uuid.New().String() + file.Filename
+			fileURL, err := helpers.UploadFileToS3("drivers/driver_license/"+filename, fileFile)
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+			}
+			driver.DriverLicenseFile = fileURL
+
+		case "vehicle_picture":
+			// Delete avatar lama jika ada yang baru
+			if driver.VehiclePicture != "" {
+				u, _ := url.Parse(driver.VehiclePicture)
+				objectPathS3 := strings.TrimPrefix(u.Path, "/")
+				helpers.DeleteFromS3(objectPathS3)
+			}
+			fileFile, err := file.Open()
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+			}
+			defer fileFile.Close()
+
+			// Upload file to S3
+			filename := uuid.New().String() + file.Filename
+			fileURL, err := helpers.UploadFileToS3("drivers/vehicle_picture/"+filename, fileFile)
+			if err != nil {
+				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+			}
+			driver.VehiclePicture = fileURL
+		}
+	}
+
+	copier.CopyWithOption(&driver, &driverRequest, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+
+	driver, err = service.userRepo.UpdateDriver(driver, int(driver.ID))
+	// Konversi user domain menjadi user response
+	userRes := entities.DriverResponse{}
+	copier.Copy(&userRes, &driver.User)
+	copier.Copy(&userRes, &driver)
+	copier.Copy(&userRes.TruckType, &driver.TruckType)
+
+	return userRes, err
+}
+
 func (service UserService) DeleteCustomer(id int) error {
 
 	// Cari user berdasarkan ID via repo
@@ -311,6 +494,51 @@ func (service UserService) DeleteCustomer(id int) error {
 	}
 
 	// Delete via repository
+	err = service.userRepo.DeleteCustomer(id)
+	return err
+}
+
+func (service UserService) DeleteDriver(id int) error {
+
+	// Cari user berdasarkan ID via repo
+	driver, err := service.userRepo.FindDriver(id)
+	if err != nil {
+		return web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+	}
+
+	user, err := service.userRepo.FindByCustomer("user_id", strconv.Itoa(id))
+	if err != nil {
+		return web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+	}
+	// Delete file di s3
+	if user.Avatar != "" {
+		u, _ := url.Parse(user.Avatar)
+		objectPathS3 := strings.TrimPrefix(u.Path, "/")
+		helpers.DeleteFromS3(objectPathS3)
+	}
+	if driver.KtpFile != "" {
+		u, _ := url.Parse(driver.KtpFile)
+		objectPathS3 := strings.TrimPrefix(u.Path, "/")
+		helpers.DeleteFromS3(objectPathS3)
+	}
+	if driver.StnkFile != "" {
+		u, _ := url.Parse(driver.StnkFile)
+		objectPathS3 := strings.TrimPrefix(u.Path, "/")
+		helpers.DeleteFromS3(objectPathS3)
+	}
+	if driver.DriverLicenseFile != "" {
+		u, _ := url.Parse(driver.DriverLicenseFile)
+		objectPathS3 := strings.TrimPrefix(u.Path, "/")
+		helpers.DeleteFromS3(objectPathS3)
+	}
+	if driver.VehiclePicture != "" {
+		u, _ := url.Parse(driver.VehiclePicture)
+		objectPathS3 := strings.TrimPrefix(u.Path, "/")
+		helpers.DeleteFromS3(objectPathS3)
+	}
+
+	// Delete via repository
+	service.userRepo.DeleteDriver(int(driver.ID))
 	err = service.userRepo.DeleteCustomer(id)
 	return err
 }
