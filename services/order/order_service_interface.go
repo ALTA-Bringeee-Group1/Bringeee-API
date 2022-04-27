@@ -20,7 +20,7 @@ type OrderServiceInterface interface {
 	 * @return order			list order dalam bentuk entity response
 	 * @return error			error
 	 */
-	FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.OrderResponse, error)
+	FindAll(limit int, offset int, filters []map[string]interface{}, sorts []map[string]interface{}) ([]entities.OrderResponse, error)
 
 	/*
 	 * Find First
@@ -31,7 +31,7 @@ type OrderServiceInterface interface {
 	 * @return OrderResponse	order response dalam bentuk tunggal
 	 * @return error			error
 	 */
-	FindFirst(filters []map[string]string) (entities.OrderResponse, error)
+	FindFirst(filters []map[string]interface{}) (entities.OrderResponse, error)
 
 	/*
 	 * Get Pagination
@@ -44,7 +44,7 @@ type OrderServiceInterface interface {
 	 * @return order	response pagination
 	 * @return error	error
 	 */
-	GetPagination(limit int, page int, filters []map[string]string) (web.Pagination, error)
+	GetPagination(limit int, page int, filters []map[string]interface{}) (web.Pagination, error)
 
 	/*
 	 * Find
@@ -123,7 +123,6 @@ type OrderServiceInterface interface {
 	 *
 	 * @var limit 	batas limit hasil query
 	 * @var offset 	offset hasil query
-	 * @var filters	query untuk penyaringan data, { field, operator, value }
 	 * @var sorts	pengurutan data, { field, value[bool] }
 	 * @return order	list order dalam bentuk entity response
 	 * @return error	error

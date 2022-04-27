@@ -15,7 +15,7 @@ type OrderRepositoryInterface interface {
 	 * @return order	list order dalam bentuk entity domain
 	 * @return error	error
 	 */
-	FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.Order, error)
+	FindAll(limit int, offset int, filters []map[string]interface{}, sorts []map[string]interface{}) ([]entities.Order, error)
 
 	/*
 	 * Find
@@ -48,7 +48,7 @@ type OrderRepositoryInterface interface {
 	 * @return order	single order dalam bentuk entity domain
 	 * @return error	error	
 	 */
-	FindFirst(filters []map[string]string) (entities.Order, error)
+	FindFirst(filters []map[string]interface{}) (entities.Order, error)
 
 	/*
 	 * CountAll
@@ -58,7 +58,7 @@ type OrderRepositoryInterface interface {
 	 * @return order	single order dalam bentuk entity domain
 	 * @return error	error	
 	 */
-	CountAll(filters []map[string]string) (int64, error)
+	CountAll(filters []map[string]interface{}) (int64, error)
 
 	/*
 	 * Store
@@ -99,5 +99,5 @@ type OrderRepositoryInterface interface {
 	 * @var filters	query untuk penyaringan data, { field, operator, value }
 	 * @return error	error	
 	 */
-	DeleteBatch(filters []map[string]string) error
+	DeleteBatch(filters []map[string]interface{}) error
 }

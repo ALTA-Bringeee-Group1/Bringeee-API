@@ -31,7 +31,7 @@ func NewOrderService(repository orderRepository.OrderRepositoryInterface) *Order
  * @return order	list order dalam bentuk entity domain
  * @return error	error
  */
-func (service OrderService) FindAll(limit int, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.OrderResponse, error) {
+func (service OrderService) FindAll(limit int, page int, filters []map[string]interface{}, sorts []map[string]interface{}) ([]entities.OrderResponse, error) {
 	
 	offset := (page - 1) * limit
 
@@ -60,7 +60,7 @@ func (service OrderService) FindAll(limit int, page int, filters []map[string]st
  * @return order	response pagination
  * @return error	error
  */
-func (service OrderService) GetPagination(limit int, page int, filters []map[string]string) (web.Pagination, error) {
+func (service OrderService) GetPagination(limit int, page int, filters []map[string]interface{}) (web.Pagination, error) {
 	totalRows, err := service.orderRepository.CountAll(filters)
 	if err != nil {
 		return web.Pagination{}, err
@@ -111,7 +111,7 @@ func (service OrderService) Find(id int) (entities.OrderResponse, error) {
  * @return OrderResponse	order response dalam bentuk tunggal
  * @return error			error
  */
-func (service OrderService) FindFirst(filters []map[string]string) (entities.OrderResponse, error) {
+func (service OrderService) FindFirst(filters []map[string]interface{}) (entities.OrderResponse, error) {
 	// Repository call
 	order, err := service.orderRepository.FindFirst(filters)
 	if err != nil {
