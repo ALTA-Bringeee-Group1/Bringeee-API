@@ -89,7 +89,7 @@ type OrderRepositoryInterface interface {
 	 *
 	 * @return error	error	
 	 */
-	Delete(id int) error
+	Delete(id int, destinationID int) error
 
 	/*
 	 * Delete Batch
