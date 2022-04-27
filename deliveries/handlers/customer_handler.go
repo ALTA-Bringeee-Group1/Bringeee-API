@@ -105,7 +105,7 @@ func (handler UserHandler) UpdateCustomer(c echo.Context) error {
 			Links:  links,
 		})
 	}
-	if role != "customer" {
+	if role != "customer" || role != "admin" {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Code:   http.StatusBadRequest,
 			Status: "ERROR",
@@ -160,7 +160,7 @@ func (handler UserHandler) DeleteCustomer(c echo.Context) error {
 	token := c.Get("user")
 	tokenId, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
-	if role != "customer" {
+	if role != "customer" || role != "admin" {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Code:   http.StatusBadRequest,
 			Status: "ERROR",
