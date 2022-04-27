@@ -47,7 +47,7 @@ func (handler UserHandler) CreateDriver(c echo.Context) error {
 	files["avatar"] = avatar
 	files["stnk_file"] = stnk_file
 	files["ktp_file"] = ktp_file
-	files["driver_lisence_file"] = driver_lisence_file
+	files["driver_license_file"] = driver_lisence_file
 	files["vehicle_picture"] = vehicle_picture
 
 	// registrasi user via call user service
