@@ -39,7 +39,6 @@ func main() {
 	adminHandler := handlers.NewAdminHandler(userService)
 	routes.RegisterDriverRoute(e, driverHandler)
 	routes.RegisterAdminRoute(e, adminHandler)
-	routes.RegisterCustomerRoute(e, userHandler)
 
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
 	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
@@ -54,7 +53,13 @@ func main() {
 	routes.RegisterRegionHandler(e, regionHandler)
 
 	orderRepository := orderRepository.NewOrderRepository(db)
-	_ = orderService.NewOrderService(orderRepository)
+	orderService := orderService.NewOrderService(orderRepository)
+	orderHandler := handlers.NewOrderHandler(orderService, userService)
+	
+	routes.RegisterCustomerRoute(e, userHandler, orderHandler)
+
+	routes.RegisterCustomerRoute(e, userHandler, orderHandler)
+
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
