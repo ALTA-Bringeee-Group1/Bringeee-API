@@ -83,7 +83,7 @@ func (repo UserRepository) FindCustomer(id int) (entities.User, error) {
 	return user, nil
 }
 
-func (repo UserRepository) FindByDriver(field string, value int) (entities.Driver, error) {
+func (repo UserRepository) FindByDriver(field string, value string) (entities.Driver, error) {
 	driver := entities.Driver{}
 	tx := repo.db.Preload("User").Preload("TruckType").Where(field+" = ?", value).Find(&driver)
 	if tx.Error != nil {
@@ -113,4 +113,25 @@ func (repo UserRepository) FindDriver(id int) (entities.Driver, error) {
 
 	}
 	return driver, nil
+}
+
+func (repo UserRepository) UpdateCustomer(user entities.User, id int) (entities.User, error) {
+	tx := repo.db.Save(&user)
+	if tx.Error != nil {
+		// return Kode 500 jika error
+		return entities.User{}, web.WebError{Code: 500, Message: "server error"}
+	}
+	return user, nil
+}
+
+func (repo UserRepository) DeleteCustomer(id int) error {
+
+	// Delete from database
+	tx := repo.db.Delete(&entities.User{}, id)
+	if tx.Error != nil {
+
+		// return kode 500 jika error
+		return web.WebError{Code: 500, Message: "server error"}
+	}
+	return nil
 }
