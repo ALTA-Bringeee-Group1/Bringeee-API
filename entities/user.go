@@ -117,7 +117,7 @@ type UpdateDriverRequest struct {
 
 type DriverResponse struct {
 	ID                uint              `json:"id"`
-	UserID            string            `json:"user_id"`
+	UserID            int               `json:"user_id"`
 	User              CustomerResponse  `json:"user"`
 	TruckTypeID       uint              `json:"truck_type_id"`
 	TruckType         TruckTypeResponse `json:"truck_type"`
