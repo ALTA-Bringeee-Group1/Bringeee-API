@@ -506,7 +506,7 @@ func (service UserService) DeleteDriver(id int) error {
 		return web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
 	}
 
-	user, err := service.userRepo.FindByCustomer("user_id", strconv.Itoa(int(driver.UserID)))
+	user, err := service.userRepo.FindByCustomer("id", strconv.Itoa(int(driver.UserID)))
 	if err != nil {
 		return web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
 	}

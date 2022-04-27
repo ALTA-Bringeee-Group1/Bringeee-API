@@ -148,7 +148,7 @@ func (repo UserRepository) DeleteCustomer(id int) error {
 func (repo UserRepository) DeleteDriver(id int) error {
 
 	// Delete from database
-	tx := repo.db.Delete(&entities.User{}, id)
+	tx := repo.db.Delete(&entities.Driver{}, id)
 	if tx.Error != nil {
 
 		// return kode 500 jika error
