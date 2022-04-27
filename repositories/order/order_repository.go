@@ -72,7 +72,7 @@ func (repository OrderRepository) Find(id int) (entities.Order, error) {
 	if tx.Error != nil {
 		return entities.Order{}, web.WebError{Code: 500, DevelopmentMessage: "server error", ProductionMessage: "server error"}
 	} else if tx.RowsAffected <= 0 {
-		return entities.Order{}, web.WebError{Code: 400, DevelopmentMessage: "cannot get truck type data with specified id", ProductionMessage: "data error"}
+		return entities.Order{}, web.WebError{Code: 400, DevelopmentMessage: "cannot get order data with specified id", ProductionMessage: "data error"}
 	}
 	return order, nil
 }
