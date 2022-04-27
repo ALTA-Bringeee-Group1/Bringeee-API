@@ -29,7 +29,7 @@ func (handler AdminHandler) DeleteDriver(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
-	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers" + c.Param("id")}
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id")}
 	if role != "admin" {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Code:   http.StatusBadRequest,
