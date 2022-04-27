@@ -54,9 +54,10 @@ type OrderRepositoryInterface interface {
 	 * Menambahkan data order kedalam database
 	 *
 	 * @var order		single order entity
+	 * @var destination	single destination entity
 	 * @return order	single order dalam bentuk entity domain
 	 */
-	Store(order entities.Order) (entities.Order, error)
+	Store(order entities.Order, destination entities.Destination) (entities.Order, error)
 
 	/*
 	 * Update
