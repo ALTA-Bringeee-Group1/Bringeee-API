@@ -41,10 +41,11 @@ func (repository RegionRepository) FindAllProvince(sorts []map[string]interface{
 	// Operation
 	tx := builder.Find(&provinces)
 	if tx.Error != nil {
-		return []entities.Province{}, web.WebError{Code: 500, DevelopmentMessage: "Server data error" ,ProductionMessage: tx.Error.Error()} 
+		return []entities.Province{}, web.WebError{Code: 500, DevelopmentMessage: "Server data error", ProductionMessage: tx.Error.Error()}
 	}
 	return provinces, nil
 }
+
 /*
  * Find All City
  * -------------------------------
@@ -57,8 +58,7 @@ func (repository RegionRepository) FindAllCity(provinceID int, sorts []map[strin
 	city := []entities.City{}
 	builder := repository.db.Model(&entities.City{})
 
-	builder.Where("prov_id = ?", 15)
-	fmt.Println("prov_id = ?", provinceID)
+	builder.Where("prov_id = ?", provinceID)
 
 	// OrderBy Filters
 	for _, sort := range sorts {
@@ -68,17 +68,18 @@ func (repository RegionRepository) FindAllCity(provinceID int, sorts []map[strin
 	// Operation
 	tx := builder.Find(&city)
 	if tx.Error != nil {
-		return []entities.City{}, web.WebError{Code: 500, DevelopmentMessage: "Server data error" ,ProductionMessage: tx.Error.Error()} 
+		return []entities.City{}, web.WebError{Code: 500, DevelopmentMessage: "Server data error", ProductionMessage: tx.Error.Error()}
 	}
 	return city, nil
 }
+
 /*
  * Find All District
  * -------------------------------
  * Mengambil semua data kecamatan berdasarkan kota
  *
  * @var sort		sort data, { field, sort[bool] }
- * @return District	list kecamatan dalam entity domain 
+ * @return District	list kecamatan dalam entity domain
  */
 func (repository RegionRepository) FindAllDistrict(cityID int, sorts []map[string]interface{}) ([]entities.District, error) {
 	districts := []entities.District{}
@@ -94,7 +95,7 @@ func (repository RegionRepository) FindAllDistrict(cityID int, sorts []map[strin
 	// Operation
 	tx := builder.Find(&districts)
 	if tx.Error != nil {
-		return []entities.District{}, web.WebError{Code: 500, DevelopmentMessage: "Server data error", ProductionMessage: tx.Error.Error()} 
+		return []entities.District{}, web.WebError{Code: 500, DevelopmentMessage: "Server data error", ProductionMessage: tx.Error.Error()}
 	}
 	return districts, nil
 }
