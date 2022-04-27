@@ -3,15 +3,20 @@ package order
 import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	orderRepository "bringeee-capstone/repositories/order"
 	"mime/multipart"
+
+	"github.com/jinzhu/copier"
 )
 
 type OrderService struct {
-	
+	orderRepository orderRepository.OrderRepositoryInterface
 }
 
-func NewOrderService() *OrderService {
-	return &OrderService{}
+func NewOrderService(repository orderRepository.OrderRepositoryInterface) *OrderService {
+	return &OrderService{
+		orderRepository: repository,
+	}
 }
 
 /*
@@ -26,8 +31,23 @@ func NewOrderService() *OrderService {
  * @return order	list order dalam bentuk entity domain
  * @return error	error
  */
-func (service OrderService) FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.OrderResponse, error) {
-	panic("implement me")
+func (service OrderService) FindAll(limit int, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.OrderResponse, error) {
+	
+	offset := (page - 1) * limit
+
+	// Repository action find all order
+	orders, err := service.orderRepository.FindAll(limit, offset, filters, sorts)
+	if err != nil {
+		return []entities.OrderResponse{}, err
+	}
+
+	// Konversi ke order response
+	ordersRes := []entities.OrderResponse{}
+	copier.Copy(&ordersRes, &orders)
+	for i, order := range orders {
+		copier.Copy(&ordersRes[i], &order.Destination)
+	}
+	return ordersRes, nil
 }
 /*
  * Get Pagination
@@ -41,7 +61,23 @@ func (service OrderService) FindAll(limit int, offset int, filters []map[string]
  * @return error	error
  */
 func (service OrderService) GetPagination(limit int, page int, filters []map[string]string) (web.Pagination, error) {
-	panic("implement me")
+	totalRows, err := service.orderRepository.CountAll(filters)
+	if err != nil {
+		return web.Pagination{}, err
+	}
+	var totalPages int64 = 1
+	if limit > 0 {
+		totalPages = totalRows / int64(limit)
+	}
+	if totalPages <= 0 {
+		totalPages = 1
+	}
+	return web.Pagination{
+		Page: page,
+		Limit: limit,
+		TotalPages: int(totalPages),
+		TotalRecords: int(totalRows),
+	}, nil
 }
 /*
  * Find
@@ -52,9 +88,44 @@ func (service OrderService) GetPagination(limit int, page int, filters []map[str
  * @return order	order tunggal dalam bentuk response
  * @return error	error
  */
-func (service OrderService) Find(id int) (entities.Order, error) {
-	panic("implement me")
+func (service OrderService) Find(id int) (entities.OrderResponse, error) {
+	order, err := service.orderRepository.Find(id)
+	if err != nil {
+		return entities.OrderResponse{}, err
+	}
+
+	// convert to response
+	orderRes := entities.OrderResponse{}
+	copier.Copy(&orderRes, &order)
+	copier.Copy(&orderRes, &order.Destination)
+
+	return orderRes, nil
 }
+
+/*
+ * Find First
+ * -------------------------------
+ * Mengambil order pertama berdasarkan filter yang telah di tentukan pada parameter
+ * dan mengambil data pertama sebagai data order tunggal
+ * @var filter 
+ * @return OrderResponse	order response dalam bentuk tunggal
+ * @return error			error
+ */
+func (service OrderService) FindFirst(filters []map[string]string) (entities.OrderResponse, error) {
+	// Repository call
+	order, err := service.orderRepository.FindFirst(filters)
+	if err != nil {
+		return entities.OrderResponse{}, nil
+	}
+
+	// Convert to response
+	orderRes := entities.OrderResponse{}
+	copier.Copy(&orderRes, &order)
+	copier.Copy(&orderRes, &order.Destination)
+
+	return orderRes, nil
+}
+
 /*
  * Customer Create order
  * -------------------------------

@@ -34,6 +34,8 @@ type Driver struct {
 	VehiclePicture    string
 	User              User      `gorm:"foreignKey:UserID;references:ID"`
 	TruckType         TruckType `gorm:"foreignKey:TruckTypeID;references:ID"`
+	Orders 		 	  []Order 	`gorm:"foreignKey:DriverID;references:ID;constraint:OnUpdate:SET NULL,OnDelete:SET NULL"`
+
 }
 
 // File request: avatar
@@ -115,9 +117,8 @@ type UpdateDriverRequest struct {
 
 type DriverResponse struct {
 	ID                uint              `json:"id"`
-	UserID            string            `json:"user_id"`
+	UserID            int               `json:"user_id"`
 	User              CustomerResponse  `json:"user"`
-	Role              string            `json:"role"`
 	TruckTypeID       uint              `json:"truck_type_id"`
 	TruckType         TruckTypeResponse `json:"truck_type"`
 	KtpFile           string            `json:"ktp_file"`

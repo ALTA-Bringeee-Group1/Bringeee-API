@@ -57,7 +57,7 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 		fmt.Println(utils.JsonEncode(driver))
 
 		// Create token
-		token, err := middleware.CreateToken(int(user.ID), userRes.User.Name, userRes.Role)
+		token, err := middleware.CreateToken(int(user.ID), userRes.User.Name, userRes.User.Role)
 		if err != nil {
 			return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Error create token"}
 		}
