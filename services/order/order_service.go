@@ -61,7 +61,23 @@ func (service OrderService) FindAll(limit int, page int, filters []map[string]st
  * @return error	error
  */
 func (service OrderService) GetPagination(limit int, page int, filters []map[string]string) (web.Pagination, error) {
-	panic("implement me")
+	totalRows, err := service.orderRepository.CountAll(filters)
+	if err != nil {
+		return web.Pagination{}, err
+	}
+	var totalPages int64 = 1
+	if limit > 0 {
+		totalPages = totalRows / int64(limit)
+	}
+	if totalPages <= 0 {
+		totalPages = 1
+	}
+	return web.Pagination{
+		Page: page,
+		Limit: limit,
+		TotalPages: int(totalPages),
+		TotalRecords: int(totalRows),
+	}, nil
 }
 /*
  * Find
