@@ -124,7 +124,7 @@ type DriverResponse struct {
 	KtpFile           string            `json:"ktp_file"`
 	StnkFile          string            `json:"stnk_file"`
 	DriverLicenseFile string            `json:"driver_license_file"`
-	Age               int            	`json:"age"`
+	Age               int               `json:"age"`
 	VehicleIdentifier string            `json:"vehicle_identifier"`
 	NIK               string            `json:"nik"`
 	VehiclePicture    string            `json:"vehicle_picture"`

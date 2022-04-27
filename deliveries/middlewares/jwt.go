@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -13,7 +12,7 @@ const secret_jwt = "SECRET"
 
 func JWTMiddleware() echo.MiddlewareFunc {
 	return middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey:    []byte("jeweteuwu"),
+		SigningKey:    []byte(secret_jwt),
 		SigningMethod: jwt.SigningMethodHS256.Name,
 	})
 }
@@ -31,11 +30,8 @@ func CreateToken(id int, name string, role string) (string, error) {
 
 func ReadToken(token interface{}) (int, string, error) {
 	tokenId := token.(*jwt.Token)
-	if tokenId.Valid {
-		claims := tokenId.Claims.(jwt.MapClaims)
-		id := int(claims["id"].(float64))
-		role := claims["role"].(string)
-		return id, role, nil
-	}
-	return 0, "", fmt.Errorf("bad Request")
+	claims := tokenId.Claims.(jwt.MapClaims)
+	id := int(claims["id"].(float64))
+	role := claims["role"].(string)
+	return id, role, nil
 }

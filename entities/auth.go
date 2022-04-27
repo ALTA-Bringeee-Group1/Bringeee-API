@@ -6,15 +6,15 @@ type AuthRequest struct {
 }
 
 type CustomerAuthResponse struct {
-	Token string `json:"token"`
-	User  CustomerResponse
+	Token string           `json:"token"`
+	User  CustomerResponse `json:"user"`
 }
 
 type DriverAuthResponse struct {
-	Token string `json:"token"`
-	User  DriverResponse
+	Token string         `json:"token"`
+	User  DriverResponse `json:"user"`
 }
 type AdminAuthResponse struct {
-	Token string `json:"token"`
-	User  AdminResponse
+	Token string        `json:"token"`
+	User  AdminResponse `json:"user"`
 }

@@ -4,8 +4,7 @@ import (
 	"bringeee-capstone/deliveries/helpers"
 	middleware "bringeee-capstone/deliveries/middlewares"
 	userRepository "bringeee-capstone/repositories/user"
-	"bringeee-capstone/utils"
-	"fmt"
+	"strconv"
 
 	"bringeee-capstone/entities"
 	web "bringeee-capstone/entities/web"
@@ -45,7 +44,7 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 	// if role == driver
 	if user.Role == "driver" {
 		// Konversi menjadi driver response
-		driver, _ := service.userRepo.FindByDriver("user_id", int(user.ID))
+		driver, _ := service.userRepo.FindByDriver("user_id", strconv.Itoa(int(user.ID)))
 		if driver.AccountStatus != "VERIFIED" {
 			return entities.DriverAuthResponse{}, web.WebError{Code: 403, Message: "Waiting for admin confirmation"}
 		}
@@ -53,8 +52,6 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 		copier.Copy(&userRes, &driver.User)
 		copier.Copy(&userRes, &driver)
 		copier.Copy(&userRes.TruckType, &driver.TruckType)
-
-		fmt.Println(utils.JsonEncode(driver))
 
 		// Create token
 		token, err := middleware.CreateToken(int(user.ID), userRes.User.Name, userRes.User.Role)
@@ -115,7 +112,7 @@ func (service AuthService) Me(Id int, token interface{}) (interface{}, error) {
 
 	// Konversi user ke user response
 	if user.Role == "driver" {
-		driver, _ := service.userRepo.FindByDriver("user_id", Id)
+		driver, _ := service.userRepo.FindByDriver("user_id", strconv.Itoa(Id))
 		userRes := entities.DriverResponse{}
 		copier.Copy(&userRes, &user)
 		copier.Copy(&userRes, &driver)
