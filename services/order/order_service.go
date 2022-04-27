@@ -3,15 +3,20 @@ package order
 import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	orderRepository "bringeee-capstone/repositories/order"
 	"mime/multipart"
+
+	"github.com/jinzhu/copier"
 )
 
 type OrderService struct {
-	
+	orderRepository orderRepository.OrderRepositoryInterface
 }
 
-func NewOrderService() *OrderService {
-	return &OrderService{}
+func NewOrderService(repository orderRepository.OrderRepositoryInterface) *OrderService {
+	return &OrderService{
+		orderRepository: repository,
+	}
 }
 
 /*
@@ -26,8 +31,23 @@ func NewOrderService() *OrderService {
  * @return order	list order dalam bentuk entity domain
  * @return error	error
  */
-func (service OrderService) FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.OrderResponse, error) {
-	panic("implement me")
+func (service OrderService) FindAll(limit int, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.OrderResponse, error) {
+	
+	offset := (page - 1) * limit
+
+	// Repository action find all order
+	orders, err := service.orderRepository.FindAll(limit, offset, filters, sorts)
+	if err != nil {
+		return []entities.OrderResponse{}, err
+	}
+
+	// Konversi ke order response
+	orderRes := []entities.OrderResponse{}
+	copier.Copy(&orderRes, &orders)
+	for _, order := range orders {
+		copier.Copy(&orderRes, &order.Destination)
+	}
+	return orderRes, nil
 }
 /*
  * Get Pagination
