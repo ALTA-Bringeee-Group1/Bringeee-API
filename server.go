@@ -4,6 +4,7 @@ import (
 	"bringeee-capstone/configs"
 	"bringeee-capstone/deliveries/handlers"
 	"bringeee-capstone/deliveries/routes"
+	orderRepository "bringeee-capstone/repositories/order"
 	regionRepository "bringeee-capstone/repositories/region"
 	truckRepository "bringeee-capstone/repositories/truck_type"
 	truckTypeRepository "bringeee-capstone/repositories/truck_type"
@@ -49,6 +50,8 @@ func main() {
 	regionService := regionService.NewRegionService(*regionRepository)
 	regionHandler := handlers.NewRegionHandler(*regionService)
 	routes.RegisterRegionHandler(e, regionHandler)
+
+	_ = orderRepository.NewOrderRepository(db)
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
