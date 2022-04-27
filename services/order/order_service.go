@@ -88,8 +88,18 @@ func (service OrderService) GetPagination(limit int, page int, filters []map[str
  * @return order	order tunggal dalam bentuk response
  * @return error	error
  */
-func (service OrderService) Find(id int) (entities.Order, error) {
-	panic("implement me")
+func (service OrderService) Find(id int) (entities.OrderResponse, error) {
+	order, err := service.orderRepository.Find(id)
+	if err != nil {
+		return entities.OrderResponse{}, err
+	}
+
+	// convert to response
+	orderRes := entities.OrderResponse{}
+	copier.Copy(&orderRes, &order)
+	copier.Copy(&orderRes, &order.Destination)
+
+	return orderRes, nil
 }
 /*
  * Customer Create order
