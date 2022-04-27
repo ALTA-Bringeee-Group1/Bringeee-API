@@ -88,6 +88,29 @@ func (repository OrderRepository) FindBy(field string, value string) (entities.O
 }
 
 /*
+ * Find First
+ * -------------------------------
+ * Mengambil data order tunggal berdasarkan filter
+ *
+ * @var filters	query untuk penyaringan data, { field, operator, value }
+ * @return order	order dalam bentuk entity domain
+ * @return error	error
+ */
+func (repository OrderRepository) FindFirst(filters []map[string]string) (entities.Order, error) {
+	order := entities.Order{}
+	builder := repository.db.Preload("Destination").Preload("Customer").Preload("TruckType")
+	// Where filters
+	for _, filter := range filters {
+		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+	}
+	tx := builder.First(&order)
+	if tx.Error != nil {
+		return entities.Order{}, web.WebError{Code: 500, Message: tx.Error.Error()}
+	}
+	return order, nil
+}
+
+/*
  * CountAll
  * -------------------------------
  * Menghitung semua orders (ini digunakan untuk pagination di service)
