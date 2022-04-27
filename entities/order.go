@@ -8,23 +8,24 @@ import (
 
 type Order struct {
 	gorm.Model
-	DriverID uint
+	DriverID uint `gorm:"default:null"`
 	CustomerID uint
 	DestinationID uint
 	TruckTypeID int
 	OrderPicture string
 	TotalVolume int
 	TotalWeight int
-	Distance int
+	Distance int `gorm:"default:null"`
 	EstimatedPrice int64
-	FixPrice int64
-	TransactionID int64
+	FixPrice int64 `gorm:"default:null"`
+	TransactionID string `gorm:"default:null"`
 	Status string
-	Description string
-	ArrivedPicture string
+	Description string `gorm:"default:null"`
+	ArrivedPicture string `gorm:"default:null"`
 	Destination Destination `gorm:"foreignkey:DestinationID;references:ID"`
 	TruckType TruckType `gorm:"foreignkey:TruckTypeID;references:ID"`
 	Customer User `gorm:"foreignKey:CustomerID;references:ID"`
+	Driver Driver `gorm:"foreignKey:DriverID;references:ID;constraint:OnUpdate:SET NULL,OnDelete:SET NULL"`
 }
 
 type Destination struct {
