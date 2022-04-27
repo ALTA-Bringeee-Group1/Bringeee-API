@@ -115,13 +115,8 @@ type UpdateDriverRequest struct {
 
 type DriverResponse struct {
 	ID                uint              `json:"id"`
-	Email             string            `json:"email"`
-	Name              string            `json:"name"`
-	DOB               time.Time         `json:"dob"`
-	Gender            string            `json:"gender"`
-	Address           string            `json:"address"`
-	PhoneNumber       string            `json:"phone_number"`
-	Avatar            string            `json:"avatar"`
+	UserID            string            `json:"user_id"`
+	User              CustomerResponse  `json:"user"`
 	Role              string            `json:"role"`
 	TruckTypeID       uint              `json:"truck_type_id"`
 	TruckType         TruckTypeResponse `json:"truck_type"`
