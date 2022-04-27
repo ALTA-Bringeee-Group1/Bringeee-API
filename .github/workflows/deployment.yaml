@@ -21,6 +21,7 @@ jobs:
                   port: ${{ secrets.PORT }}
                   script: |
                       cd /home/ubuntu/Bringeee-API
-                      git pull origin main -f
+                      git pull origin main
                       docker-compose down
+                      docker image rm bringeee-api_app
                       docker-compose up --build -d

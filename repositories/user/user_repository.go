@@ -125,6 +125,15 @@ func (repo UserRepository) UpdateCustomer(user entities.User, id int) (entities.
 	return user, nil
 }
 
+func (repo UserRepository) UpdateDriver(driver entities.Driver, id int) (entities.Driver, error) {
+	tx := repo.db.Save(&driver)
+	if tx.Error != nil {
+		// return Kode 500 jika error
+		return entities.Driver{}, web.WebError{Code: 500, Message: "server error"}
+	}
+	return driver, nil
+}
+
 func (repo UserRepository) DeleteCustomer(id int) error {
 
 	// Delete from database
@@ -199,4 +208,16 @@ func (repo UserRepository) CountAllDriver(filters []map[string]string) (int64, e
 		return -1, web.WebError{Code: 400, Message: tx.Error.Error()}
 	}
 	return count, nil
+}
+
+func (repo UserRepository) DeleteDriver(id int) error {
+
+	// Delete from database
+	tx := repo.db.Delete(&entities.Driver{}, id)
+	if tx.Error != nil {
+
+		// return kode 500 jika error
+		return web.WebError{Code: 500, Message: "server error"}
+	}
+	return nil
 }

@@ -16,6 +16,7 @@ type UserServiceInterface interface {
 	FindAllDriver(limit, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.DriverAuthResponse, error)
 	CreateDriver(driverRequest entities.CreateDriverRequest, files []*multipart.FileHeader) (entities.DriverResponse, error)
 	UpdateDriver(driverRequest entities.UpdateDriverRequest, id int, files []*multipart.FileHeader) (entities.DriverResponse, error)
+	UpdateDriverByAdmin(driverRequest entities.UpdateDriverByAdminRequest, id int, files []*multipart.FileHeader) (entities.DriverResponse, error)
 	GetPaginationDriver(limit, page int, filters []map[string]string) (web.Pagination, error)
 	FindDriver(id int) (entities.DriverResponse, error)
 	DeleteDriver(id int) error
