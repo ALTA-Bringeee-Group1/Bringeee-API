@@ -9,6 +9,8 @@ import (
 	truckRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	"mime/multipart"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -234,4 +236,81 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 		User:  userRes,
 	}
 	return authRes, nil
+}
+
+func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustomerRequest, id int, files map[string]*multipart.FileHeader) (entities.CustomerResponse, error) {
+
+	// validation
+	err := validations.ValidateUpdateCustomerRequest(files)
+	if err != nil {
+		return entities.CustomerResponse{}, err
+	}
+
+	// Get user by ID via repository
+	user, err := service.userRepo.FindCustomer(id)
+	if err != nil {
+		return entities.CustomerResponse{}, web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+	}
+	// Avatar
+	for field, file := range files {
+		switch field {
+		case "avatar":
+			// Delete avatar lama jika ada yang baru
+			if user.Avatar != "" {
+				u, _ := url.Parse(user.Avatar)
+				objectPathS3 := strings.TrimPrefix(u.Path, "/")
+				helpers.DeleteFromS3(objectPathS3)
+			}
+			fileFile, err := file.Open()
+			if err != nil {
+				return entities.CustomerResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+			}
+			defer fileFile.Close()
+
+			// Upload file to S3
+			filename := uuid.New().String() + file.Filename
+			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
+			if err != nil {
+				return entities.CustomerResponse{}, web.WebError{Code: 500, Message: err.Error()}
+			}
+			user.Avatar = fileURL
+		}
+	}
+
+	// Konversi dari request ke domain entities user - mengabaikan nilai kosong pada request
+	copier.CopyWithOption(&user, &customerRequest, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+
+	// Hanya hash password jika password juga diganti (tidak kosong)
+	if customerRequest.Password != "" {
+		hashedPassword, _ := helpers.HashPassword(user.Password)
+		user.Password = hashedPassword
+	}
+
+	// Update via repository
+	user, err = service.userRepo.UpdateCustomer(user, id)
+	// Konversi user domain menjadi user response
+	userRes := entities.CustomerResponse{}
+	copier.Copy(&userRes, &user)
+
+	return userRes, err
+}
+
+func (service UserService) DeleteCustomer(id int) error {
+
+	// Cari user berdasarkan ID via repo
+	user, err := service.userRepo.FindCustomer(id)
+	if err != nil {
+		return web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+	}
+
+	// Delete avatar lama jika ada yang baru
+	if user.Avatar != "" {
+		u, _ := url.Parse(user.Avatar)
+		objectPathS3 := strings.TrimPrefix(u.Path, "/")
+		helpers.DeleteFromS3(objectPathS3)
+	}
+
+	// Delete via repository
+	err = service.userRepo.DeleteCustomer(id)
+	return err
 }
