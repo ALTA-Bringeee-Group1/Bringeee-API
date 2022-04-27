@@ -521,6 +521,9 @@ func (service UserService) FindCustomer(id int) (entities.CustomerResponse, erro
 
 	return userRes, err
 }
+func (service UserService) FindAllDriver(limit, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.DriverAuthResponse, error) {
+	return []entities.DriverAuthResponse{}, nil
+}
 
 func (service UserService) GetPaginationCustomer(limit, page int, filters []map[string]string) (web.Pagination, error) {
 	totalRows, err := service.userRepo.CountAllCustomer(filters)
