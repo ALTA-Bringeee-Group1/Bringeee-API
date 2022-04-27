@@ -43,7 +43,7 @@ var driverFileSizeRules = map[string]int{
 	"avatar":              1024 * 1024, // 1MB
 	"ktp_file":            1024 * 1024, // 1MB
 	"stnk_file":           1024 * 1024, // 1MB
-	"driver_lisence_file": 1024 * 1024, // 1MB
+	"driver_license_file": 1024 * 1024, // 1MB
 	"vehicle_picture":     1024 * 1024, // 1MB
 }
 
@@ -57,7 +57,7 @@ var driverFileExtRules = map[string]string{
 	"avatar":              "jpg|jpeg|png|webp|bmp",
 	"ktp_file":            "jpg|jpeg|png|webp|bmp",
 	"stnk_file":           "jpg|jpeg|png|webp|bmp",
-	"driver_lisence_file": "jpg|jpeg|png|webp|bmp",
+	"driver_license_file": "jpg|jpeg|png|webp|bmp",
 	"vehicle_picture":     "jpg|jpeg|png|webp|bmp",
 }
 
