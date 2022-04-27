@@ -1,13 +1,17 @@
 package region
 
-import "bringeee-capstone/entities"
+import (
+	"bringeee-capstone/entities"
+	regionRepository "bringeee-capstone/repositories/region"
+)
 
 type RegionService struct {
+	regionRepository regionRepository.RegionRepositoryInterface
 }
 
-func NewRegionService() *RegionService {
+func NewRegionService(repository regionRepository.RegionRepositoryInterface) *RegionService {
 	return &RegionService{
-
+		regionRepository: repository,
 	}
 }
 
@@ -20,7 +24,11 @@ func NewRegionService() *RegionService {
  * @return Province	list provinsi dalam entity domain
  */
 func (service RegionService) FindAllProvince(sort []map[string]interface{}) ([]entities.Province, error) {
-	panic("implement me")
+	provinces, err := service.regionRepository.FindAllProvince(sort)
+	if err != nil {
+		return []entities.Province{}, err
+	} 
+	return provinces, nil
 }
 /*
  * Find All City
@@ -31,7 +39,11 @@ func (service RegionService) FindAllProvince(sort []map[string]interface{}) ([]e
  * @return City		list kota dalam entity domain
  */
 func (service RegionService) FindAllCity(provinceID int, sort []map[string]interface{}) ([]entities.City, error) {
-	panic("implement me")
+	cities, err := service.regionRepository.FindAllCity(provinceID, sort)
+	if err != nil {
+		return []entities.City{}, err
+	} 
+	return cities, nil
 }
 /*
  * Find All District
@@ -42,5 +54,9 @@ func (service RegionService) FindAllCity(provinceID int, sort []map[string]inter
  * @return District	list kecamatan dalam entity domain 
  */
 func (service RegionService) FindAllDistrict(cityID int, sort []map[string]interface{}) ([]entities.District, error) {
-	panic("implement me")
+	districts, err := service.regionRepository.FindAllDistrict(cityID, sort)
+	if err != nil {
+		return []entities.District{}, err
+	} 
+	return districts, nil
 }

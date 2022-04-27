@@ -24,3 +24,9 @@ func RegisterAuthRoute(e *echo.Echo, authHandler *handlers.AuthHandler) {
 	e.POST("/api/auth", authHandler.Login)
 	e.GET("/api/auth/me", authHandler.Me, middleware.JWTMiddleware())
 }
+
+func RegisterRegionHandler(e *echo.Echo, regionHandler *handlers.RegionHandler) {
+	e.GET("/api/provinces", regionHandler.IndexProvince)
+	e.GET("/api/provinces/:provinceID/cities", regionHandler.IndexCity)
+	e.GET("/api/provinces/:provinceID/cities/:cityID/districts", regionHandler.IndexDistrict)
+}
