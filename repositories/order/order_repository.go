@@ -3,6 +3,7 @@ package order
 import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	"fmt"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -30,12 +31,22 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
  * @return order	list order dalam bentuk entity domain
  * @return error	error
  */
-func (repository OrderRepository) FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.Order, error) {
+func (repository OrderRepository) FindAll(limit int, offset int, filters []map[string]interface{}, sorts []map[string]interface{}) ([]entities.Order, error) {
 	order := []entities.Order{}
 	builder := repository.db.Limit(limit).Offset(offset).Preload("Destination").Preload("Customer").Preload("Driver").Preload("Driver.TruckType").Preload("Driver.User").Preload("TruckType")
 	// Where filters
 	for _, filter := range filters {
-		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+		orGroup, orGroupExist := filter["or"]
+		if orGroupExist {
+			orGroupMap := orGroup.([]map[string]string)
+			orBuilder := repository.db
+			for _, orQuery := range orGroupMap {
+				orBuilder = orBuilder.Or(fmt.Sprintf("%s %s ?", orQuery["field"], orQuery["operator"]), orQuery["value"])
+			}
+			builder.Where(orBuilder)
+		} else {
+			builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+		}
 	}
 	// OrderBy Filters
 	for _, sort := range sorts {
@@ -96,12 +107,22 @@ func (repository OrderRepository) FindBy(field string, value string) (entities.O
  * @return order	order dalam bentuk entity domain
  * @return error	error
  */
-func (repository OrderRepository) FindFirst(filters []map[string]string) (entities.Order, error) {
+func (repository OrderRepository) FindFirst(filters []map[string]interface{}) (entities.Order, error) {
 	order := entities.Order{}
 	builder := repository.db.Preload("Destination").Preload("Customer").Preload("Driver").Preload("Driver.TruckType").Preload("Driver.User").Preload("TruckType")
 	// Where filters
 	for _, filter := range filters {
-		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+		orGroup, orGroupExist := filter["or"]
+		if orGroupExist {
+			orGroupMap := orGroup.([]map[string]string)
+			orBuilder := repository.db
+			for _, orQuery := range orGroupMap {
+				orBuilder = orBuilder.Or(fmt.Sprintf("%s %s ?", orQuery["field"], orQuery["operator"]), orQuery["value"])
+			}
+			builder.Where(orBuilder)
+		} else {
+			builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+		}
 	}
 	tx := builder.First(&order)
 	if tx.Error != nil {
@@ -118,12 +139,22 @@ func (repository OrderRepository) FindFirst(filters []map[string]string) (entiti
  * @return order	single order dalam bentuk entity domain
  * @return error	error	
  */
-func (repository OrderRepository) CountAll(filters []map[string]string) (int64, error) {
+func (repository OrderRepository) CountAll(filters []map[string]interface{}) (int64, error) {
 	var count int64
 	builder := repository.db.Model(&entities.Order{})
 	// Where filters
 	for _, filter := range filters {
-		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+		orGroup, orGroupExist := filter["or"]
+		if orGroupExist {
+			orGroupMap := orGroup.([]map[string]string)
+			orBuilder := repository.db
+			for _, orQuery := range orGroupMap {
+				orBuilder = orBuilder.Or(fmt.Sprintf("%s %s ?", orQuery["field"], orQuery["operator"]), orQuery["value"])
+			}
+			builder.Where(orBuilder)
+		} else {
+			builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+		}
 	}
 	tx := builder.Count(&count)
 	if tx.Error != nil {
@@ -210,12 +241,22 @@ func (repository OrderRepository) Delete(id int, destinationID int) error {
  * @var filters	query untuk penyaringan data, { field, operator, value }
  * @return error	error	
  */
-func (repository OrderRepository) DeleteBatch(filters []map[string]string) error {
+func (repository OrderRepository) DeleteBatch(filters []map[string]interface{}) error {
 	orders := []entities.Order{}
 	builder := repository.db
 	// Where filters
 	for _, filter := range filters {
-		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
+		orGroup, orGroupExist := filter["or"]
+		if orGroupExist {
+			orGroupMap := orGroup.([]map[string]string)
+			orBuilder := repository.db
+			for _, orQuery := range orGroupMap {
+				orBuilder = orBuilder.Or(fmt.Sprintf("%s %s ?", orQuery["field"], orQuery["operator"]), orQuery["value"])
+			}
+			builder.Where(orBuilder)
+		} else {
+			builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+		}
 	}
 	builder.Find(&orders)
 
