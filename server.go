@@ -35,7 +35,10 @@ func main() {
 	truckTypeRepository := truckRepository.NewTruckTypeRepository(db)
 	userService := userService.NewUserService(userRepository, truckTypeRepository)
 	userHandler := handlers.NewUserHandler(userService)
-	routes.RegisterDriverRoute(e, userHandler)
+	driverHandler := handlers.NewDriverHandler(userService)
+	adminHandler := handlers.NewAdminHandler(userService)
+	routes.RegisterDriverRoute(e, driverHandler)
+	routes.RegisterAdminRoute(e, adminHandler)
 	routes.RegisterCustomerRoute(e, userHandler)
 
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)

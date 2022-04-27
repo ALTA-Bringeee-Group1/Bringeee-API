@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bringeee-capstone/configs"
+	middleware "bringeee-capstone/deliveries/middlewares"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	userService "bringeee-capstone/services/user"
@@ -16,8 +17,8 @@ type DriverHandler struct {
 	userService *userService.UserService
 }
 
-func NewDriverHandler(service *userService.UserService) *UserHandler {
-	return &UserHandler{
+func NewDriverHandler(service *userService.UserService) *DriverHandler {
+	return &DriverHandler{
 		userService: service,
 	}
 }
@@ -28,7 +29,7 @@ func NewDriverHandler(service *userService.UserService) *UserHandler {
  * Registrasi User kedalam sistem dan
  * mengembalikan token
  */
-func (handler UserHandler) CreateDriver(c echo.Context) error {
+func (handler DriverHandler) CreateDriver(c echo.Context) error {
 
 	// Bind request ke user request
 	driverReq := entities.CreateDriverRequest{}
@@ -86,6 +87,74 @@ func (handler UserHandler) CreateDriver(c echo.Context) error {
 	return c.JSON(http.StatusCreated, web.SuccessResponse{
 		Status: "OK",
 		Code:   http.StatusCreated,
+		Error:  nil,
+		Links:  links,
+		Data:   userRes,
+	})
+}
+
+func (handler DriverHandler) UpdateDriver(c echo.Context) error {
+
+	// Bind request to user request
+	userReq := entities.UpdateDriverRequest{}
+	c.Bind(&userReq)
+
+	// Get token
+	token := c.Get("user")
+	tokenId, role, err := middleware.ReadToken(token)
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
+	}
+	if role != "driver" {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
+	}
+
+	// avatar
+	files := map[string]*multipart.FileHeader{}
+	avatar, _ := c.FormFile("avatar")
+	if avatar != nil {
+		files["avatar"] = avatar
+	}
+
+	// Update via user service call
+	userRes, err := handler.userService.UpdateDriver(userReq, tokenId, files)
+	if err != nil {
+		if reflect.TypeOf(err).String() == "web.WebError" {
+			webErr := err.(web.WebError)
+			return c.JSON(webErr.Code, web.ErrorResponse{
+				Code:   webErr.Code,
+				Status: "ERROR",
+				Error:  webErr.Error(),
+				Links:  links,
+			})
+		} else if reflect.TypeOf(err).String() == "web.ValidationError" {
+			valErr := err.(web.ValidationError)
+			return c.JSON(valErr.Code, web.ValidationErrorResponse{
+				Status: "ERROR",
+				Code:   valErr.Code,
+				Error:  valErr.Error(),
+				Errors: valErr.Errors,
+				Links:  links,
+			})
+		}
+
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
 		Error:  nil,
 		Links:  links,
 		Data:   userRes,
