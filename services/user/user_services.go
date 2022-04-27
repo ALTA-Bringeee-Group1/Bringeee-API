@@ -171,7 +171,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 			}
 			driver.StnkFile = fileURL
 
-		case "driver_lisence_file":
+		case "driver_license_file":
 			fileFile, err := file.Open()
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
@@ -180,7 +180,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/driver_lisence/"+filename, fileFile)
+			fileURL, err := helpers.UploadFileToS3("drivers/driver_license/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
 			}
