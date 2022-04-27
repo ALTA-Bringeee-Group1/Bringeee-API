@@ -255,15 +255,9 @@ components:
                 updated_at:
                     type: string
                     example: 2012-07-28T07:02:13:000+07:00
-        driver_request:
+        driver_request_create:
             type: object
             properties:
-                id:
-                    type: number
-                    example: 12
-                driver_id:
-                    type: number
-                    example: 12
                 email:
                     type: string
                     example: ahmad@mail.com
@@ -303,6 +297,66 @@ components:
                 age:
                     type: number
                     example: 22
+                vehicle_identifier:
+                    type: string
+                    example: N 494 EY
+                nik:
+                    type: string
+                    example: 33030012300004
+                vehicle_picture:
+                    type: string
+                    format: binary
+        driver_request_update:
+            type: object
+            properties:
+                email:
+                    type: string
+                    example: ahmad@mail.com
+                password:
+                    type: string
+                    example: ahmadsecretpass
+                name:
+                    type: string
+                    example: Ahmad
+                dob:
+                    type: string
+                    example: 2001-08-09
+                gender:
+                    type: string
+                    example: male
+                address:
+                    type: string
+                    example: Dallas Westbrook ave.
+                phone_number:
+                    type: string
+                    example: 082123123123
+                avatar:
+                    type: string
+                    format: binary
+                age:
+                    type: number
+                    example: 22
+                vehicle_identifier:
+                    type: string
+                    example: N 494 EY
+                nik:
+                    type: string
+                    example: 33030012300004
+        driver_request_update_by_admin:
+            type: object
+            properties:
+                truck_type_id:
+                    type: string
+                    example: 33
+                ktp_file:
+                    type: string
+                    format: binary
+                stnk_file:
+                    type: string
+                    format: binary
+                driver_license_file:
+                    type: string
+                    format: binary
                 vehicle_identifier:
                     type: string
                     example: N 494 EY
@@ -343,7 +397,7 @@ components:
                     type: string
                     example: driver
                 truck_type_id:
-                    type: string
+                    type: integer
                     example: 33
                 truck_tupe:
                     $ref: '#/components/schemas/truck_type_response'
@@ -368,6 +422,80 @@ components:
                 vehicle_picture:
                     type: string
                     example: https://source.unsplash.com/600x600/?random
+                status:
+                    type: string
+                    example: IDLE
+                account_status:
+                    type: string
+                    example: PENDING
+                created_at:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+                updated_at:
+                    type: string
+                    example: 2012-07-28T07:02:13:000+07:00
+        confirm_driver_response:
+            type: object
+            properties:
+                email:
+                    type: string
+                    example: ahmad@mail.com
+                password:
+                    type: string
+                    example: ahmadsecretpass
+                name:
+                    type: string
+                    example: Ahmad
+                dob:
+                    type: string
+                    example: 2001-08-09
+                gender:
+                    type: string
+                    example: male
+                address:
+                    type: string
+                    example: Dallas Westbrook ave.
+                phone_number:
+                    type: string
+                    example: 082123123123
+                avatar:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                role:
+                    type: string
+                    example: driver
+                truck_type_id:
+                    type: integer
+                    example: 33
+                truck_tupe:
+                    $ref: '#/components/schemas/truck_type_response'
+                ktp_file:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                stnk_file:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                driver_license_file:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                age:
+                    type: number
+                    example: 22
+                vehicle_identifier:
+                    type: string
+                    example: N 494 EY
+                nik:
+                    type: string
+                    example: 33030012300004
+                vehicle_picture:
+                    type: string
+                    example: https://source.unsplash.com/600x600/?random
+                status:
+                    type: string
+                    example: IDLE
+                account_status:
+                    type: string
+                    example: VERIFIED
                 created_at:
                     type: string
                     example: 2012-07-28T07:02:13:000+07:00
@@ -784,7 +912,7 @@ paths:
                 content:
                     multipart/form-data:
                         schema:
-                            $ref: '#/components/schemas/driver_request'
+                            $ref: '#/components/schemas/driver_request_create'
             responses:
                 '200':
                     description: success registrating user
@@ -834,7 +962,7 @@ paths:
                 content:
                     multipart/form-data:
                         schema:
-                            $ref: '#/components/schemas/driver_request'
+                            $ref: '#/components/schemas/driver_request_update'
             responses:
                 '200':
                     description: success registrating user
@@ -869,32 +997,6 @@ paths:
                                 $ref: '#/components/schemas/error_validation_response'
                 '500':
                     description: server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/error_server_response'
-        delete:
-            tags:
-                - 'Driver'
-            description: Close/delete authenticated driver
-            summary: Close/delete authenticated driver
-            security:
-                - JWTAuthDriver: []
-            responses:
-                '200':
-                    description: Success creating order's payment
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/success_response'
-                '401':
-                    description: Unauthorized user
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/error_unauthorized'
-                '500':
-                    description: Server Error
                     content:
                         application/json:
                             schema:
@@ -1915,6 +2017,55 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
+    /api/drivers/{driverID}/confirm:
+        post:
+            tags:
+                - 'Admin'
+            description: Activated driver account
+            summary: Activated driver account
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: driverID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success getting detail of a single driver
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        $ref: '#/components/schemas/confirm_driver_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
     /api/drivers/{driverID}:
         get:
             tags:
@@ -1975,7 +2126,7 @@ paths:
                 content:
                     multipart/form-data:
                         schema:
-                            $ref: '#/components/schemas/driver_request'
+                            $ref: '#/components/schemas/driver_request_update_by_admin'
             parameters:
                 - in: path
                   required: true
@@ -2084,77 +2235,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
-        put:
-            description: Update customer data
-            summary: Update customer data
-            tags:
-                - 'Admin'
-            security:
-                - JWTAuthDriver: []
-            requestBody:
-                content:
-                    multipart/form-data:
-                        schema:
-                            $ref: '#/components/schemas/customer_request'
-            parameters:
-                - in: path
-                  required: true
-                  name: customerID
-                  schema:
-                      type: string
-                      example: 27
-            responses:
-                '200':
-                    description: success updating driver
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/success_response'
-                '422':
-                    description: validation failure
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/error_validation_response'
-                '500':
-                    description: server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/error_server_response'
-        delete:
-            tags:
-                - 'Admin'
-            description: Close/delete driver
-            summary: Close/delete driver
-            security:
-                - JWTAuthDriver: []
-            parameters:
-                - in: path
-                  required: true
-                  name: customerID
-                  schema:
-                      type: string
-                      example: 27
-            responses:
-                '200':
-                    description: Success creating order's payment
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/success_response'
-                '401':
-                    description: Unauthorized user
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/error_unauthorized'
-                '500':
-                    description: Server Error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/error_server_response'
+      
     /api/stats/aggregates/order_count:
         get:
             tags:
