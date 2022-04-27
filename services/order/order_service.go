@@ -42,12 +42,12 @@ func (service OrderService) FindAll(limit int, page int, filters []map[string]st
 	}
 
 	// Konversi ke order response
-	orderRes := []entities.OrderResponse{}
-	copier.Copy(&orderRes, &orders)
-	for _, order := range orders {
-		copier.Copy(&orderRes, &order.Destination)
+	ordersRes := []entities.OrderResponse{}
+	copier.Copy(&ordersRes, &orders)
+	for i, order := range orders {
+		copier.Copy(&ordersRes[i], &order.Destination)
 	}
-	return orderRes, nil
+	return ordersRes, nil
 }
 /*
  * Get Pagination
