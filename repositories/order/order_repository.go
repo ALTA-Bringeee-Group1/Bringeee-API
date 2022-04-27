@@ -32,7 +32,7 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
  */
 func (repository OrderRepository) FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.Order, error) {
 	order := []entities.Order{}
-	builder := repository.db.Limit(limit).Offset(offset).Preload("Destination").Preload("Customer").Preload("TruckType")
+	builder := repository.db.Limit(limit).Offset(offset).Preload("Destination").Preload("Customer").Preload("Driver").Preload("Driver.TruckType").Preload("TruckType")
 	// Where filters
 	for _, filter := range filters {
 		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
@@ -57,7 +57,7 @@ func (repository OrderRepository) FindAll(limit int, offset int, filters []map[s
  */
 func (repository OrderRepository) Find(id int) (entities.Order, error) {
 	order := entities.Order{}
-	tx := repository.db.Preload("Destination").Preload("Customer").Preload("TruckType").Find(&order, id)
+	tx := repository.db.Preload("Destination").Preload("Customer").Preload("Driver").Preload("Driver.TruckType").Preload("TruckType").Find(&order, id)
 	if tx.Error != nil {
 		return entities.Order{}, web.WebError{Code: 500, DevelopmentMessage: "server error", ProductionMessage: "server error"}
 	} else if tx.RowsAffected <= 0 {
@@ -78,7 +78,7 @@ func (repository OrderRepository) Find(id int) (entities.Order, error) {
  */
 func (repository OrderRepository) FindBy(field string, value string) (entities.Order, error) {
 	order := entities.Order{}
-	tx := repository.db.Preload("Destination").Preload("Customer").Preload("TruckType").Where(field+" = ?", value).First(&order)
+	tx := repository.db.Preload("Destination").Preload("Customer").Preload("Driver").Preload("Driver.TruckType").Preload("TruckType").Where(field+" = ?", value).First(&order)
 	if tx.Error != nil {
 		return entities.Order{}, web.WebError{Code: 500, Message: tx.Error.Error()}
 	} else if tx.RowsAffected <= 0 {
@@ -98,7 +98,7 @@ func (repository OrderRepository) FindBy(field string, value string) (entities.O
  */
 func (repository OrderRepository) FindFirst(filters []map[string]string) (entities.Order, error) {
 	order := entities.Order{}
-	builder := repository.db.Preload("Destination").Preload("Customer").Preload("TruckType")
+	builder := repository.db.Preload("Destination").Preload("Customer").Preload("Driver").Preload("Driver.TruckType").Preload("TruckType")
 	// Where filters
 	for _, filter := range filters {
 		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
