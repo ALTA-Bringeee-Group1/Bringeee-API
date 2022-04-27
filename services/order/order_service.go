@@ -101,6 +101,31 @@ func (service OrderService) Find(id int) (entities.OrderResponse, error) {
 
 	return orderRes, nil
 }
+
+/*
+ * Find First
+ * -------------------------------
+ * Mengambil order pertama berdasarkan filter yang telah di tentukan pada parameter
+ * dan mengambil data pertama sebagai data order tunggal
+ * @var filter 
+ * @return OrderResponse	order response dalam bentuk tunggal
+ * @return error			error
+ */
+func (service OrderService) FindFirst(filters []map[string]string) (entities.OrderResponse, error) {
+	// Repository call
+	order, err := service.orderRepository.FindFirst(filters)
+	if err != nil {
+		return entities.OrderResponse{}, nil
+	}
+
+	// Convert to response
+	orderRes := entities.OrderResponse{}
+	copier.Copy(&orderRes, &order)
+	copier.Copy(&orderRes, &order.Destination)
+
+	return orderRes, nil
+}
+
 /*
  * Customer Create order
  * -------------------------------
