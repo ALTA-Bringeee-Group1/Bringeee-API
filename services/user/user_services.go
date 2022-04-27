@@ -314,3 +314,91 @@ func (service UserService) DeleteCustomer(id int) error {
 	err = service.userRepo.DeleteCustomer(id)
 	return err
 }
+
+func (service UserService) FindDriver(id int) (entities.DriverResponse, error) {
+
+	driver, err := service.userRepo.FindDriver(id)
+	if err != nil {
+		return entities.DriverResponse{}, err
+	}
+	driverRes := entities.DriverResponse{}
+	copier.Copy(&driverRes, &driver)
+
+	return driverRes, err
+}
+
+func (service UserService) FindCustomer(id int) (entities.CustomerResponse, error) {
+
+	user, err := service.userRepo.FindCustomer(id)
+	if err != nil {
+		return entities.CustomerResponse{}, err
+	}
+	userRes := entities.CustomerResponse{}
+	copier.Copy(&userRes, &user)
+
+	return userRes, err
+}
+
+func (service UserService) GetPaginationCustomer(limit, page int, filters []map[string]string) (web.Pagination, error) {
+	totalRows, err := service.userRepo.CountAllCustomer(filters)
+	if err != nil {
+		return web.Pagination{}, err
+	}
+	if limit <= 0 {
+		limit = 1
+	}
+	totalPages := totalRows / int64(limit)
+	if totalRows%int64(limit) > 0 {
+		totalPages++
+	}
+
+	return web.Pagination{
+		Page:       page,
+		Limit:      limit,
+		TotalPages: int(totalPages),
+	}, nil
+}
+
+func (service UserService) GetPaginationDriver(limit, page int, filters []map[string]string) (web.Pagination, error) {
+	totalRows, err := service.userRepo.CountAllDriver(filters)
+	if err != nil {
+		return web.Pagination{}, err
+	}
+	if limit <= 0 {
+		limit = 1
+	}
+	totalPages := totalRows / int64(limit)
+	if totalRows%int64(limit) > 0 {
+		totalPages++
+	}
+
+	return web.Pagination{
+		Page:       page,
+		Limit:      limit,
+		TotalPages: int(totalPages),
+	}, nil
+}
+
+func (service UserService) FindAllCustomer(limit, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.CustomerResponse, error) {
+
+	offset := (page - 1) * limit
+
+	usersRes := []entities.CustomerResponse{}
+	users, err := service.userRepo.FindAllDriver(limit, offset, filters, sorts)
+
+	copier.Copy(&usersRes, &users)
+
+	return usersRes, err
+}
+
+func (service UserService) FindAllDriver(limit, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.DriverResponse, error) {
+
+	offset := (page - 1) * limit
+
+	driversRes := []entities.DriverResponse{}
+	drivers, err := service.userRepo.FindAllDriver(limit, offset, filters, sorts)
+
+	copier.Copy(&driversRes, &drivers)
+
+	return driversRes, err
+}
