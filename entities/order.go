@@ -132,9 +132,9 @@ type OrderResponse struct {
 	TruckTypeID uint	`json:"truck_type_id"`
 	TruckType TruckTypeResponse	`json:"truck_type"`
 	OrderPicture string	`json:"order_picture"`
-	TotalVolume string	`json:"total_volume"`
-	TotalWeight string	`json:"total_weight"`
-	Distance string	`json:"distance"`
+	TotalVolume int	`json:"total_volume"`
+	TotalWeight int	`json:"total_weight"`
+	Distance int	`json:"distance"`
 	EstimatedPrice int64	`json:"estimated_price"`
 	FixedPrice int64	`json:"fixed_price"`
 	TransactionID interface{}	`json:"transaction_id"`
