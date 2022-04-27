@@ -9,7 +9,9 @@ import (
 
 func RegisterCustomerRoute(e *echo.Echo, userHandler *handlers.UserHandler) {
 	group := e.Group("/api/customers")
-	group.POST("", userHandler.CreateCustomer) // Registration customer
+	group.POST("", userHandler.CreateCustomer)                               // Registration customer
+	group.PUT("", userHandler.UpdateCustomer, middleware.JWTMiddleware())    // Edit customer profile
+	group.DELETE("", userHandler.DeleteCustomer, middleware.JWTMiddleware()) // delete customer
 }
 
 func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.UserHandler) {
