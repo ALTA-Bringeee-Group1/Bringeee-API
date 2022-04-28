@@ -52,7 +52,7 @@ func main() {
 	regionHandler := handlers.NewRegionHandler(regionService)
 	orderHandler := handlers.NewOrderHandler(orderService, userService)
 
-	routes.RegisterDriverRoute(e, driverHandler)
+	routes.RegisterDriverRoute(e, driverHandler, orderHandler)
 	routes.RegisterAdminRoute(e, adminHandler)
 	routes.RegisterTruckTypeRoute(e, truckTypeHandler)
 	routes.RegisterAuthRoute(e, authHandler)

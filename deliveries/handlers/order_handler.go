@@ -71,9 +71,7 @@ func (handler OrderHandler) Index(c echo.Context) error {
 		})
 	}
 
-	switch role {
-	case "customer":
-		
+	if role == "customer" {
 		// set self links and filters
 		links["self"] = configs.Get().App.BaseURL + "/api/customers/orders?page=" + strconv.Itoa(page)
 		filters = append(filters, map[string]interface{}{
@@ -95,7 +93,8 @@ func (handler OrderHandler) Index(c echo.Context) error {
 		if err != nil {
 			return helpers.WebErrorResponse(c, err, links)
 		}
-	case "driver":
+		
+	} else if role == "driver" {
 		// find userdata driver
 		driver, err := handler.userService.FindByDriver("user_id", strconv.Itoa(userID))
 		if err != nil {
@@ -106,18 +105,12 @@ func (handler OrderHandler) Index(c echo.Context) error {
 				Links: links,
 			})
 		}
-
 		// set self links and filters
 		links["self"] = configs.Get().App.BaseURL + "/api/drivers/orders?page=" + strconv.Itoa(page)
 		filters = append(filters, map[string]interface{}{
 			"field": "truck_type_id", 
 			"operator": "=", 
-			"value": driver.ID,
-		})
-		filters = append(filters, map[string]interface{}{
-			"field": "status", 
-			"operator": "=", 
-			"value": "MANIFESTED",
+			"value": strconv.Itoa(int(driver.TruckTypeID)),
 		})
 
 		// sorts
@@ -126,16 +119,15 @@ func (handler OrderHandler) Index(c echo.Context) error {
 		}
 		sorts = append(sorts, map[string]interface{}{"field": "total_volume", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortVolume")]})
 		sorts = append(sorts, map[string]interface{}{"field": "total_weight", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortWeight")]})
-		sorts = append(sorts, map[string]interface{}{"field": "total_distance", "desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]})
+		sorts = append(sorts, map[string]interface{}{"field": "distance", 		"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]})
 
 		// call order service
 		ordersRes, err = handler.orderService.FindAll(0, 0, filters, sorts)
 		if err != nil {
 			return helpers.WebErrorResponse(c, err, links)
 		}
-
-	case "admin":
-		// Admin order list
+	} else if role == "admin" {
+		return c.JSON(200, "Unimplemented admin feature")
 	}
 
 	// make pagination data & formatting pagination links

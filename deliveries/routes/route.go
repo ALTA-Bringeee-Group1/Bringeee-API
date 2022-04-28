@@ -20,10 +20,13 @@ func RegisterCustomerRoute(e *echo.Echo, customerHandler *handlers.CustomerHandl
 	order.GET("/:orderID/histories", customerHandler.DetailOrderHistory)
 }
 
-func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler) {
+func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler, orderHandler *handlers.OrderHandler) {
 	group := e.Group("/api/drivers")
 	group.POST("", driverHandler.CreateDriver)                            // Registration driver
 	group.PUT("", driverHandler.UpdateDriver, middleware.JWTMiddleware()) // Edit driver profile
+
+	order := e.Group("/api/drivers/orders", middleware.JWTMiddleware())
+	order.GET("", orderHandler.Index)
 }
 
 func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
