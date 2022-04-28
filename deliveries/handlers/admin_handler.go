@@ -329,6 +329,13 @@ func (handler AdminHandler) GetSingleCustomer(c echo.Context) error {
 	user, err := handler.userService.FindCustomer(id)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
+	} else if user.ID == 0 {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	// response
 	return c.JSON(200, web.SuccessResponse{

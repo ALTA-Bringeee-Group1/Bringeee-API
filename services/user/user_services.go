@@ -517,6 +517,8 @@ func (service UserService) FindCustomer(id int) (entities.CustomerResponse, erro
 	user, err := service.userRepo.FindCustomer(id)
 	if err != nil {
 		return entities.CustomerResponse{}, err
+	} else if user.Role == "driver" {
+		return entities.CustomerResponse{}, err
 	}
 	userRes := entities.CustomerResponse{}
 	copier.Copy(&userRes, &user)
