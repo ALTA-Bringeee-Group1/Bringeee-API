@@ -32,31 +32,32 @@ func main() {
 		AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.PATCH, echo.OPTIONS},
 	}))
 
+	regionRepository := regionRepository.NewRegionRepository(db)
 	userRepository := userRepository.NewUserRepository(db)
 	truckTypeRepository := truckRepository.NewTruckTypeRepository(db)
-	authService := authService.NewAuthService(userRepository)
-	regionRepository := regionRepository.NewRegionRepository(db)
 	orderRepository := orderRepository.NewOrderRepository(db)
 	orderHistoryRepository := orderHistoryRepository.NewOrderHistoryRepository(db)
 
-	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository)
+	authService := authService.NewAuthService(userRepository)
 	userService := userService.NewUserService(userRepository, truckTypeRepository)
+	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository)
 	regionService := regionService.NewRegionService(regionRepository)
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
-	
-	userHandler := handlers.NewUserHandler(userService)
-	orderHandler := handlers.NewOrderHandler(orderService, userService)
-	regionHandler := handlers.NewRegionHandler(regionService)
-	authHandler := handlers.NewAuthHandler(authService)
-	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
-	adminHandler := handlers.NewAdminHandler(userService, orderService)
-	driverHandler := handlers.NewDriverHandler(userService)
 
-	routes.RegisterTruckTypeRoute(e, truckTypeHandler)
-	routes.RegisterAuthRoute(e, authHandler)
+	authHandler := handlers.NewAuthHandler(authService)
+	userHandler := handlers.NewUserHandler(userService, orderService)
+	driverHandler := handlers.NewDriverHandler(userService)
+	adminHandler := handlers.NewAdminHandler(userService, orderService)
+	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
+	regionHandler := handlers.NewRegionHandler(regionService)
+	orderHandler := handlers.NewOrderHandler(orderService, userService)
+
 	routes.RegisterDriverRoute(e, driverHandler)
 	routes.RegisterAdminRoute(e, adminHandler)
+	routes.RegisterTruckTypeRoute(e, truckTypeHandler)
+	routes.RegisterAuthRoute(e, authHandler)
 	routes.RegisterRegionHandler(e, regionHandler)
+
 	routes.RegisterCustomerRoute(e, userHandler, orderHandler)
 	
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
