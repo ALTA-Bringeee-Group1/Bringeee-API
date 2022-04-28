@@ -16,7 +16,7 @@ type Order struct {
 	TotalVolume int
 	TotalWeight int
 	Distance int `gorm:"default:null"`
-	EstimatedPrice int64
+	EstimatedPrice int64 `gorm:"default:null"`
 	FixPrice int64 `gorm:"default:null"`
 	TransactionID string `gorm:"default:null"`
 	Status string
