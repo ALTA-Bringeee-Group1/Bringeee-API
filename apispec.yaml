@@ -283,7 +283,7 @@ components:
                     type: string
                     format: binary
                 truck_type_id:
-                    type: string
+                    type: integer
                     example: 33
                 ktp_file:
                     type: string
@@ -346,7 +346,7 @@ components:
             type: object
             properties:
                 truck_type_id:
-                    type: string
+                    type: integer
                     example: 33
                 ktp_file:
                     type: string
