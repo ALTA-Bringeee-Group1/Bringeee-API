@@ -65,7 +65,7 @@ type OrderServiceInterface interface {
 	 * @var files				list file request untuk diteruskan ke validation dan upload
 	 * @return OrderResponse	order response 
 	 */
-	Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader) (entities.OrderResponse, error)
+	Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int) (entities.OrderResponse, error)
 
 	/*
 	 * Admin Set fixed price order
