@@ -630,3 +630,32 @@ func (service UserService) DeleteDriver(id int) error {
 	err = service.userRepo.DeleteCustomer(id)
 	return err
 }
+
+func (service UserService) FindByDriver(field string, value string) (entities.DriverResponse, error) {
+
+	driver, err := service.userRepo.FindByDriver(field, value)
+	if err != nil {
+		return entities.DriverResponse{}, err
+	}
+	user, err := service.FindByCustomer("id", strconv.Itoa(int(driver.UserID)))
+	if err != nil {
+		return entities.DriverResponse{}, err
+	}
+	driverRes := entities.DriverResponse{}
+	copier.Copy(&driverRes, &user)
+	copier.Copy(&driverRes, &driver)
+
+	return driverRes, err
+}
+
+func (service UserService) FindByCustomer(field string, value string) (entities.CustomerResponse, error) {
+
+	user, err := service.userRepo.FindByCustomer(field, value)
+	if err != nil {
+		return entities.CustomerResponse{}, err
+	}
+	userRes := entities.CustomerResponse{}
+	copier.Copy(&userRes, &user)
+
+	return userRes, err
+}

@@ -11,6 +11,7 @@ type UserServiceInterface interface {
 	CreateCustomer(customerRequest entities.CreateCustomerRequest, files map[string]*multipart.FileHeader) (entities.CustomerAuthResponse, error)
 	UpdateCustomer(customerRequest entities.UpdateCustomerRequest, id int, files map[string]*multipart.FileHeader) (entities.CustomerResponse, error)
 	GetPaginationCustomer(limit, page int, filters []map[string]string) (web.Pagination, error)
+	FindByCustomer(field string, value string) (entities.CustomerResponse, error)
 	FindCustomer(id int) (entities.CustomerResponse, error)
 	DeleteCustomer(id int) error
 	FindAllDriver(limit, page int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.DriverResponse, error)
@@ -18,6 +19,7 @@ type UserServiceInterface interface {
 	UpdateDriver(driverRequest entities.UpdateDriverRequest, id int, files map[string]*multipart.FileHeader) (entities.DriverResponse, error)
 	UpdateDriverByAdmin(driverRequest entities.UpdateDriverByAdminRequest, id int, files map[string]*multipart.FileHeader) (entities.DriverResponse, error)
 	GetPaginationDriver(limit, page int, filters []map[string]string) (web.Pagination, error)
+	FindByDriver(field string, value string) (entities.DriverResponse, error)
 	FindDriver(id int) (entities.DriverResponse, error)
 	DeleteDriver(id int) error
 }
