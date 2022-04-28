@@ -501,7 +501,9 @@ func (service UserService) FindDriver(id int) (entities.DriverResponse, error) {
 	if err != nil {
 		return entities.DriverResponse{}, err
 	}
+	user, err := service.userRepo.FindByCustomer("id", strconv.Itoa(int(driver.UserID)))
 	driverRes := entities.DriverResponse{}
+	copier.Copy(&driverRes, &user)
 	copier.Copy(&driverRes, &driver)
 
 	return driverRes, err
@@ -511,6 +513,8 @@ func (service UserService) FindCustomer(id int) (entities.CustomerResponse, erro
 
 	user, err := service.userRepo.FindCustomer(id)
 	if err != nil {
+		return entities.CustomerResponse{}, err
+	} else if user.Role == "driver" {
 		return entities.CustomerResponse{}, err
 	}
 	userRes := entities.CustomerResponse{}
@@ -577,8 +581,18 @@ func (service UserService) FindAllDriver(limit, page int, filters []map[string]s
 
 	driversRes := []entities.DriverResponse{}
 	drivers, err := service.userRepo.FindAllDriver(limit, offset, filters, sorts)
-
 	copier.Copy(&driversRes, &drivers)
+	for key, value := range drivers {
+		user, _ := service.userRepo.FindByCustomer("id", strconv.Itoa(int(value.UserID)))
+		driversRes[key].Name = user.Name
+		driversRes[key].Email = user.Email
+		driversRes[key].DOB = user.DOB
+		driversRes[key].Gender = user.Gender
+		driversRes[key].Address = user.Address
+		driversRes[key].PhoneNumber = user.PhoneNumber
+		driversRes[key].Avatar = user.Avatar
+		driversRes[key].Role = user.Role
+	}
 
 	return driversRes, err
 }
