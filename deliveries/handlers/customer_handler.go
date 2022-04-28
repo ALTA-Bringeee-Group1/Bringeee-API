@@ -273,7 +273,7 @@ func (handler UserHandler) CreateOrder(c echo.Context) error {
 	links["self"] = fmt.Sprintf("%s/api/customers/orders", configs.Get().App.BaseURL)
 
 	filesReq := map[string]*multipart.FileHeader{}
-	_, role, err := middleware.ReadToken(c.Get("user"))
+	userID, role, err := middleware.ReadToken(c.Get("user"))
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
@@ -298,7 +298,7 @@ func (handler UserHandler) CreateOrder(c echo.Context) error {
 	c.Bind(&orderReq)
 	filesReq["order_picture"], _ = c.FormFile("order_picture")
 
-	orderRes, err := handler.orderService.Create(orderReq, filesReq)
+	orderRes, err := handler.orderService.Create(orderReq, filesReq, userID)
 	if err != nil {
 		helpers.WebErrorResponse(c, err, links)
 	}
