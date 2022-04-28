@@ -1,24 +1,30 @@
 package order
 
 import (
+	"bringeee-capstone/deliveries/helpers"
+	"bringeee-capstone/deliveries/validations"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
 	"mime/multipart"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
 
 type OrderService struct {
 	orderRepository orderRepository.OrderRepositoryInterface
 	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface
+	validate *validator.Validate
 }
 
 func NewOrderService(repository orderRepository.OrderRepositoryInterface, orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface) *OrderService {
 	return &OrderService{
 		orderRepository: repository,
 		orderHistoryRepository: orderHistoryRepository,
+		validate: validator.New(),
 	}
 }
 
@@ -141,8 +147,56 @@ func (service OrderService) FindFirst(filters []map[string]interface{}) (entitie
  * @var files				list file request untuk diteruskan ke validation dan upload
  * @return OrderResponse	order response 
  */
-func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader) (entities.OrderResponse, error) {
-	panic("implement me")
+func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int) (entities.OrderResponse, error) {
+	// validation
+	err := validations.ValidateCustomerCreateOrderRequest(service.validate, orderRequest, files)
+	if err != nil {
+		return entities.OrderResponse{}, err
+	}
+
+	// convert request to domain
+	order := entities.Order{}
+	destination := entities.Destination{}
+	copier.Copy(&order, &orderRequest)
+	copier.Copy(&destination, &orderRequest)
+	order.CustomerID = uint(userID)
+	order.Status = "REQUESTED"
+
+	// Upload file to cloud storage
+	for field, file := range files {
+		switch field {
+		case "order_picture":
+			fileFile, err := file.Open()
+			if err != nil {
+				return entities.OrderResponse{}, web.WebError{Code: 500, Message: "Cannot process the requested file"}	
+			}
+			defer fileFile.Close()
+			
+			fileName := uuid.New().String()
+			fileUrl, err := helpers.UploadFileToS3("orders/order_picture/" + fileName, fileFile)
+			if err != nil {
+				return entities.OrderResponse{}, web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file" ,DevelopmentMessage: err.Error()}
+			}
+			order.OrderPicture = fileUrl
+		}
+	}
+
+	// repository call
+	order, err = service.orderRepository.Store(order, destination)
+	if err != nil {
+		return entities.OrderResponse{}, err
+	}
+
+	// get newly order data
+	orderRes, err := service.Find(int(order.ID))
+	if err != nil {
+		return entities.OrderResponse{}, web.WebError{
+			Code: 500, 
+			DevelopmentMessage: "Cannot get newly inserted data: " + err.Error(), 
+			ProductionMessage: "Cannot get newly data",
+		}
+	}
+	return orderRes, nil
 }
 /*
  * Admin Set fixed price order
