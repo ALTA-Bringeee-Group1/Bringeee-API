@@ -287,3 +287,59 @@ func (handler AdminHandler) ListOrders(c echo.Context) error {
 		Pagination: paginationRes,
 	})
 }
+
+/*
+ * Driver - Detail order
+ * ------------------------------------
+ * Mendapatkan detail order
+ * GET /api/order/{orderID}
+ */
+func (handler AdminHandler) DetailOrder(c echo.Context) error {
+	links := map[string]string{}
+	_, role, err  := middleware.ReadToken(c.Get("user"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "OK",
+			Code: http.StatusBadRequest,
+			Error: "Order ID parameter is invalid",
+			Links: links,
+		})
+	}
+
+	// orderID param
+	orderID, err := strconv.Atoi(c.Param("orderID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "OK",
+			Code: http.StatusBadRequest,
+			Error: "Order ID parameter is invalid",
+			Links: links,
+		})
+	}
+
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// set self links and filters
+	links["self"] = fmt.Sprintf("%s/api/orders/%s", configs.Get().App.BaseURL,strconv.Itoa(orderID))
+	
+	// call service order
+	orderRes, err := handler.orderService.Find(orderID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code: http.StatusOK,
+		Error: nil,
+		Links: links,
+		Data: orderRes,
+	})
+}
