@@ -167,6 +167,11 @@ func (handler AdminHandler) DetailOrderHistory(c echo.Context) error {
 		})
 	}
 
+	_, err = handler.orderService.Find(orderID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
 	// Get order tracking histories
 	histories, err := handler.orderService.FindAllHistory(orderID, []map[string]interface{}{
 		{ "field": "created_at", "desc": true },
