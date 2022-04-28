@@ -186,9 +186,9 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 	truck_type := c.QueryParam("truck_type")
 	if truck_type != "" {
 		filters = append(filters, map[string]string{
-			"field":    "truck_type",
+			"field":    "truck_type_id",
 			"operator": "=",
-			"value":    "%" + truck_type + "%",
+			"value":   truck_type,
 		})
 	}
 
