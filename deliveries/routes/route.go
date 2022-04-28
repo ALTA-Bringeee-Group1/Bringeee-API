@@ -14,8 +14,8 @@ func RegisterCustomerRoute(e *echo.Echo, customerHandler *handlers.CustomerHandl
 	group.DELETE("", customerHandler.DeleteCustomer, middleware.JWTMiddleware()) // delete customer
 
 	order := e.Group("/api/customers/orders", middleware.JWTMiddleware())
-	order.GET("", orderHandler.Index)
-	order.POST("", customerHandler.CreateOrder)
+	order.POST("", userHandler.CreateOrder)
+	order.GET("", userHandler.ListOrders)
 	order.GET("/:orderID", orderHandler.Show)
 	order.GET("/:orderID/histories", customerHandler.DetailOrderHistory)
 }
