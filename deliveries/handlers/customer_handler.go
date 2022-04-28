@@ -284,7 +284,7 @@ func (handler UserHandler) CreateOrder(c echo.Context) error {
 	}
 
 	// check authenticated user
-	if role != "admin" {
+	if role != "customer" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
 			Code: http.StatusUnauthorized,
