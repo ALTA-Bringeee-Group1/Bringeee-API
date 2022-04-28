@@ -6,6 +6,7 @@ import (
 	middleware "bringeee-capstone/deliveries/middlewares"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	userRepository "bringeee-capstone/repositories/user"
 	orderService "bringeee-capstone/services/order"
 	userService "bringeee-capstone/services/user"
 	"fmt"
@@ -19,15 +20,18 @@ import (
 type OrderHandler struct {
 	orderService orderService.OrderServiceInterface
 	userService userService.UserServiceInterface
+	userRepository userRepository.UserRepositoryInterface
 }
 
 func NewOrderHandler(
 	service orderService.OrderServiceInterface,
 	userService userService.UserServiceInterface,
+	userRepository userRepository.UserRepositoryInterface,
 ) *OrderHandler {
 	return &OrderHandler{
 		orderService: service,
 		userService: userService,
+		userRepository: userRepository,
 	}
 }
 
@@ -96,7 +100,44 @@ func (handler OrderHandler) Index(c echo.Context) error {
 			return helpers.WebErrorResponse(c, err, links)
 		}
 	case "driver":
-		// Driver order list
+		// find userdata driver
+		driver, err := handler.userRepository.FindByDriver("user_id", strconv.Itoa(userID))
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, web.ErrorResponse{ 
+				Status: "ERROR", 
+				Code: http.StatusUnauthorized,
+				Error: "Unauthorized user",  
+				Links: links,
+			})
+		}
+
+		// set self links and filters
+		links["self"] = configs.Get().App.BaseURL + "/api/drivers/orders?page=" + strconv.Itoa(page)
+		filters = append(filters, map[string]interface{}{
+			"field": "truck_type_id", 
+			"operator": "=", 
+			"value": driver.ID,
+		})
+		filters = append(filters, map[string]interface{}{
+			"field": "status", 
+			"operator": "=", 
+			"value": "MANIFESTED",
+		})
+
+		// sorts
+		sorts := []map[string]interface{}{
+			{ "field": "updated_at", "desc": true },
+		}
+		sorts = append(sorts, map[string]interface{}{"field": "total_volume", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortVolume")]})
+		sorts = append(sorts, map[string]interface{}{"field": "total_weight", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortWeight")]})
+		sorts = append(sorts, map[string]interface{}{"field": "total_distance", "desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]})
+
+		// call order service
+		ordersRes, err = handler.orderService.FindAll(0, 0, filters, sorts)
+		if err != nil {
+			return helpers.WebErrorResponse(c, err, links)
+		}
+
 	case "admin":
 		// Admin order list
 	}
