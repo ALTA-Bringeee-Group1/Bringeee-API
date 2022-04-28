@@ -125,7 +125,7 @@ func validateCustomerFiles(userFiles map[string]*multipart.FileHeader, errors *[
 		allowedExt := strings.Split(userFileExtRules[field], "|")
 		fileExtAllowed := false
 		for _, ext := range allowedExt {
-			if fileExt == ext {
+			if strings.ToLower(fileExt) == ext {
 				fileExtAllowed = true
 				break
 			}

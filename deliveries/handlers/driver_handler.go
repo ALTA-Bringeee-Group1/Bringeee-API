@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"bringeee-capstone/configs"
+	"bringeee-capstone/deliveries/helpers"
 	middleware "bringeee-capstone/deliveries/middlewares"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	userService "bringeee-capstone/services/user"
 	"mime/multipart"
 	"net/http"
-	"reflect"
 
 	"github.com/labstack/echo/v4"
 )
@@ -54,33 +54,7 @@ func (handler DriverHandler) CreateDriver(c echo.Context) error {
 	// registrasi user via call user service
 	userRes, err := handler.userService.CreateDriver(driverReq, files)
 	if err != nil {
-		// return error response khusus jika err termasuk webError / ValidationError
-		if reflect.TypeOf(err).String() == "web.WebError" {
-			webErr := err.(web.WebError)
-			return c.JSON(webErr.Code, web.ErrorResponse{
-				Status: "ERROR",
-				Code:   webErr.Code,
-				Error:  webErr.Error(),
-				Links:  links,
-			})
-		} else if reflect.TypeOf(err).String() == "web.ValidationError" {
-			valErr := err.(web.ValidationError)
-			return c.JSON(valErr.Code, web.ValidationErrorResponse{
-				Status: "ERROR",
-				Code:   valErr.Code,
-				Error:  valErr.Error(),
-				Errors: valErr.Errors,
-				Links:  links,
-			})
-		}
-
-		// return error 500 jika bukan webError
-		return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
-			Status: "ERROR",
-			Code:   http.StatusInternalServerError,
-			Error:  err.Error(),
-			Links:  links,
-		})
+		return helpers.WebErrorResponse(c, err, links)
 	}
 
 	// response
@@ -104,18 +78,18 @@ func (handler DriverHandler) UpdateDriver(c echo.Context) error {
 	tokenId, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
 	if role != "driver" {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -130,25 +104,7 @@ func (handler DriverHandler) UpdateDriver(c echo.Context) error {
 	// Update via user service call
 	userRes, err := handler.userService.UpdateDriver(userReq, tokenId, files)
 	if err != nil {
-		if reflect.TypeOf(err).String() == "web.WebError" {
-			webErr := err.(web.WebError)
-			return c.JSON(webErr.Code, web.ErrorResponse{
-				Code:   webErr.Code,
-				Status: "ERROR",
-				Error:  webErr.Error(),
-				Links:  links,
-			})
-		} else if reflect.TypeOf(err).String() == "web.ValidationError" {
-			valErr := err.(web.ValidationError)
-			return c.JSON(valErr.Code, web.ValidationErrorResponse{
-				Status: "ERROR",
-				Code:   valErr.Code,
-				Error:  valErr.Error(),
-				Errors: valErr.Errors,
-				Links:  links,
-			})
-		}
-
+		return helpers.WebErrorResponse(c, err, links)
 	}
 
 	// response
