@@ -16,6 +16,7 @@ func RegisterCustomerRoute(e *echo.Echo, userHandler *handlers.UserHandler, orde
 	order := e.Group("/api/customers/orders", middleware.JWTMiddleware())
 	order.GET("", orderHandler.Index)
 	order.GET("/:orderID", orderHandler.Show)
+	order.GET("/:orderID/histories", userHandler.DetailOrderHistory)
 }
 
 func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler) {

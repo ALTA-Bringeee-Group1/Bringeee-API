@@ -2,24 +2,30 @@ package handlers
 
 import (
 	"bringeee-capstone/configs"
+	"bringeee-capstone/deliveries/helpers"
 	middleware "bringeee-capstone/deliveries/middlewares"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	orderService "bringeee-capstone/services/order"
 	userService "bringeee-capstone/services/user"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"reflect"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
 type UserHandler struct {
 	userService *userService.UserService
+	orderService orderService.OrderServiceInterface
 }
 
-func NewUserHandler(service *userService.UserService) *UserHandler {
+func NewUserHandler(service *userService.UserService,orderService orderService.OrderServiceInterface) *UserHandler {
 	return &UserHandler{
 		userService: service,
+		orderService: orderService,
 	}
 }
 
@@ -200,5 +206,58 @@ func (handler UserHandler) DeleteCustomer(c echo.Context) error {
 		Data: map[string]interface{}{
 			"id": tokenId,
 		},
+	})
+}
+
+
+/* 
+ * Customer - Detail Order - Get Histories
+ * ---------------------------------
+ * List history tracking dari satu detail order tunggal
+ * GET /api/customers/orders/{orderID}/histories
+ */
+func (handler UserHandler) DetailOrderHistory(c echo.Context) error {
+	userID, _, _ := middleware.ReadToken(c.Get("user"))
+	links := map[string]string{}
+	orderID, err := strconv.Atoi(c.Param("orderID"))
+	links["self"] = fmt.Sprintf("%s/api/cusotmers/orders/%s/histories", configs.Get().App.BaseURL, c.Param("orderID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "ERROR",
+			Code: 400,
+			Error: "Order ID parameter is invalid",
+			Links: links,
+		})
+	}
+
+	// get single order
+	order, err := handler.orderService.Find(orderID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// Reject if order doesn't belong to currently authenticated user
+	if order.CustomerID != uint(userID) {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "order doesn't belong to currently authenticated customer",
+		})
+	}
+
+	// Get order tracking histories
+	histories, err := handler.orderService.FindAllHistory(orderID, []map[string]interface{}{
+		{ "field": "created_at", "desc": true },
+	})
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code: http.StatusOK,
+		Error: nil,
+		Links: links,
+		Data: histories,
 	})
 }
