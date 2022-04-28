@@ -13,9 +13,18 @@ func WebErrorResponse(c echo.Context, err error, links map[string]string) error 
 		webErr := err.(web.WebError)
 		return c.JSON(webErr.Code, web.ErrorResponse{
 			Status: "ERROR",
-			Code: webErr.Code,
-			Error: webErr.Error(),
-			Links: links,
+			Code:   webErr.Code,
+			Error:  webErr.Error(),
+			Links:  links,
+		})
+	} else if reflect.TypeOf(err).String() == "web.ValidationError" {
+		valErr := err.(web.ValidationError)
+		return c.JSON(valErr.Code, web.ValidationErrorResponse{
+			Status: "ERROR",
+			Code:   valErr.Code,
+			Error:  valErr.Error(),
+			Errors: valErr.Errors,
+			Links:  links,
 		})
 	} else if reflect.TypeOf(err).String() == "web.ValidationError" {
 		valErr := err.(web.ValidationError)
@@ -29,9 +38,9 @@ func WebErrorResponse(c echo.Context, err error, links map[string]string) error 
 	}
 	return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
 		Status: "ERROR",
-		Code: http.StatusInternalServerError,
-		Error: "Server Error",
-		Links: links,
+		Code:   http.StatusInternalServerError,
+		Error:  "Server Error",
+		Links:  links,
 	})
 
 }

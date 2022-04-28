@@ -8,7 +8,6 @@ import (
 	"bringeee-capstone/entities/web"
 	authService "bringeee-capstone/services/auth"
 	"net/http"
-	"reflect"
 
 	"github.com/labstack/echo/v4"
 )
@@ -36,25 +35,7 @@ func (handler AuthHandler) Login(c echo.Context) error {
 	// call auth service login
 	authRes, err := handler.authService.Login(authReq)
 	if err != nil {
-
-		// return error response khusus jika err termasuk webError
-		if reflect.TypeOf(err).String() == "web.WebError" {
-			webErr := err.(web.WebError)
-			return c.JSON(webErr.Code, web.ErrorResponse{
-				Status: "ERROR",
-				Code:   webErr.Code,
-				Error:  webErr.Error(),
-				Links:  links,
-			})
-		}
-
-		// return error 500 jika bukan webError
-		return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
-			Status: "ERROR",
-			Code:   http.StatusInternalServerError,
-			Error:  err.Error(),
-			Links:  links,
-		})
+		return helpers.WebErrorResponse(c, err, links)
 	}
 
 	// send response
@@ -72,35 +53,22 @@ func (handler AuthHandler) Me(c echo.Context) error {
 	// Token and Read Token
 	token := c.Get("user")
 	Id, _, err := middleware.ReadToken(token)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helpers.ResponseFailed("Bad Request"))
-	}
 
 	// Define link
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/auth/me"}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
 
 	// Memanggil service auth me
 	authRes, err := handler.authService.Me(Id, token)
 	if err != nil {
-
-		// return error response khusus jika err termasuk webError
-		if reflect.TypeOf(err).String() == "web.WebError" {
-			webErr := err.(web.WebError)
-			return c.JSON(webErr.Code, web.ErrorResponse{
-				Status: "ERROR",
-				Code:   webErr.Code,
-				Error:  webErr.Error(),
-				Links:  links,
-			})
-		}
-
-		// return error 500 jika bukan webError
-		return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
-			Status: "ERROR",
-			Code:   http.StatusInternalServerError,
-			Error:  err.Error(),
-			Links:  links,
-		})
+		return helpers.WebErrorResponse(c, err, links)
 	}
 
 	// Response

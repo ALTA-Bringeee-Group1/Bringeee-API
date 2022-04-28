@@ -48,7 +48,7 @@ func (service UserService) CreateCustomer(userRequest entities.CreateCustomerReq
 	// Konversi datetime untuk field datetime (dob)
 	dob, err := time.Parse("2006-01-02", userRequest.DOB)
 	if err != nil {
-		return entities.CustomerAuthResponse{}, web.WebError{Code: 400, Message: "date of birth format is invalid"}
+		return entities.CustomerAuthResponse{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "date of birth format is invalid"}
 	}
 	user.DOB = dob
 
@@ -62,7 +62,7 @@ func (service UserService) CreateCustomer(userRequest entities.CreateCustomerReq
 		case "avatar":
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -70,7 +70,7 @@ func (service UserService) CreateCustomer(userRequest entities.CreateCustomerReq
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
 			if err != nil {
-				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot upload file image"}
 			}
 			user.Avatar = fileURL
 		}
@@ -118,7 +118,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 	// Konversi datetime untuk field datetime (dob)
 	dob, err := time.Parse("2006-01-02", driverRequest.DOB)
 	if err != nil {
-		return entities.DriverAuthResponse{}, web.WebError{Code: 400, Message: "date of birth format is invalid"}
+		return entities.DriverAuthResponse{}, web.WebError{Code: 400, ProductionMessage: "server error", DevelopmentMessage: "date of birth format is invalid"}
 	}
 	user.DOB = dob
 
@@ -132,7 +132,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 		case "avatar":
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -140,14 +140,14 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			user.Avatar = fileURL
 
 		case "ktp_file":
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -155,14 +155,14 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("drivers/ktp/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.KtpFile = fileURL
 
 		case "stnk_file":
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -170,14 +170,14 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("drivers/stnk/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.StnkFile = fileURL
 
 		case "driver_license_file":
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -185,14 +185,14 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("drivers/driver_license/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.DriverLicenseFile = fileURL
 
 		case "vehicle_picture":
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -200,7 +200,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("drivers/vehicle_picture/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.VehiclePicture = fileURL
 		}
@@ -224,16 +224,13 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 	driverRes, _ := service.userRepo.FindDriver(int(driver.ID))
 	// Konversi hasil repository menjadi driver response
 	userRes := entities.DriverResponse{}
+	copier.Copy(&userRes, &user)
 	copier.Copy(&userRes, &driverRes)
 	// generate token
-	token, err := _middleware.CreateToken(int(user.ID), user.Name, user.Role)
-	if err != nil {
-		return entities.DriverAuthResponse{}, err
-	}
 
 	// Buat auth response untuk dimasukkan token dan driver
 	authRes := entities.DriverAuthResponse{
-		Token: token,
+		Token: "",
 		User:  userRes,
 	}
 	return authRes, nil
@@ -250,7 +247,7 @@ func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustome
 	// Get user by ID via repository
 	user, err := service.userRepo.FindCustomer(id)
 	if err != nil {
-		return entities.CustomerResponse{}, web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+		return entities.CustomerResponse{}, web.WebError{Code: 400, ProductionMessage: "server error", DevelopmentMessage: "The requested ID doesn't match with any record"}
 	}
 	// Avatar
 	for field, file := range files {
@@ -264,7 +261,7 @@ func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustome
 			}
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.CustomerResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.CustomerResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -272,7 +269,7 @@ func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustome
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
 			if err != nil {
-				return entities.CustomerResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.CustomerResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			user.Avatar = fileURL
 		}
@@ -307,7 +304,7 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 	// Get user by ID via repository
 	user, err := service.userRepo.FindCustomer(id)
 	if err != nil {
-		return entities.DriverResponse{}, web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+		return entities.DriverResponse{}, web.WebError{Code: 400, ProductionMessage: "server error", DevelopmentMessage: "The requested ID doesn't match with any record"}
 	}
 	// Avatar
 	for field, file := range files {
@@ -321,7 +318,7 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 			}
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -329,7 +326,7 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			user.Avatar = fileURL
 		}
@@ -347,12 +344,12 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 	// Update via repository
 	user, err = service.userRepo.UpdateCustomer(user, id)
 	if err != nil {
-		return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+		return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 	}
 	// find driver
 	driver, err := service.userRepo.FindByDriver("user_id", strconv.Itoa(int(user.ID)))
 	if err != nil {
-		return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+		return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 	}
 	copier.CopyWithOption(&driver, &driverRequest, copier.Option{IgnoreEmpty: true, DeepCopy: true})
 
@@ -375,7 +372,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 	// find driver
 	driver, err := service.userRepo.FindDriver(id)
 	if err != nil {
-		return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+		return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 	}
 	// Avatar
 	for field, file := range files {
@@ -389,7 +386,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			}
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -397,7 +394,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("drivers/ktp/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.KtpFile = fileURL
 
@@ -410,7 +407,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			}
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -418,7 +415,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("drivers/stnk/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.StnkFile = fileURL
 
@@ -431,7 +428,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			}
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -439,7 +436,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("drivers/driver_license/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.DriverLicenseFile = fileURL
 
@@ -452,7 +449,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			}
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: "Cannot process file image"}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
 			}
 			defer fileFile.Close()
 
@@ -460,7 +457,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			filename := uuid.New().String() + file.Filename
 			fileURL, err := helpers.UploadFileToS3("drivers/vehicle_picture/"+filename, fileFile)
 			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, Message: err.Error()}
+				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.VehiclePicture = fileURL
 		}
@@ -483,7 +480,7 @@ func (service UserService) DeleteCustomer(id int) error {
 	// Cari user berdasarkan ID via repo
 	user, err := service.userRepo.FindCustomer(id)
 	if err != nil {
-		return web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+		return web.WebError{Code: 400, ProductionMessage: "server error", DevelopmentMessage: "The requested ID doesn't match with any record"}
 	}
 
 	// Delete avatar lama jika ada yang baru
@@ -591,12 +588,12 @@ func (service UserService) DeleteDriver(id int) error {
 	// Cari user berdasarkan ID via repo
 	driver, err := service.userRepo.FindDriver(id)
 	if err != nil {
-		return web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "The requested ID doesn't match with any record"}
 	}
 
 	user, err := service.userRepo.FindByCustomer("id", strconv.Itoa(int(driver.UserID)))
 	if err != nil {
-		return web.WebError{Code: 400, Message: "The requested ID doesn't match with any record"}
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "The requested ID user doesn't match with any record"}
 	}
 	// Delete file di s3
 	if user.Avatar != "" {
@@ -627,7 +624,7 @@ func (service UserService) DeleteDriver(id int) error {
 
 	// Delete via repository
 	service.userRepo.DeleteDriver(int(driver.ID))
-	err = service.userRepo.DeleteCustomer(id)
+	err = service.userRepo.DeleteCustomer(int(driver.UserID))
 	return err
 }
 

@@ -33,7 +33,7 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
 	// Get user by username via repository
 	user, err := service.userRepo.FindByCustomer("email", authReq.Email)
 	if err != nil {
-		return entities.CustomerAuthResponse{}, web.WebError{Code: 401, Message: "Invalid credential"}
+		return entities.CustomerAuthResponse{}, web.WebError{Code: 401, ProductionMessage: "Invalid Credential", DevelopmentMessage: "email salah"}
 	}
 
 	// Verify password
