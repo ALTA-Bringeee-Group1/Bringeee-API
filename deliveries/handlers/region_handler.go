@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"bringeee-capstone/configs"
+	"bringeee-capstone/deliveries/helpers"
 	"bringeee-capstone/entities/web"
-	regionService "bringeee-capstone/repositories/region"
+	regionService "bringeee-capstone/services/region"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -14,10 +15,10 @@ import (
 )
 
 type RegionHandler struct {
-	regionService regionService.RegionRepositoryInterface
+	regionService regionService.RegionServiceInterface
 }
 
-func NewRegionHandler(service regionService.RegionRepositoryInterface) *RegionHandler {
+func NewRegionHandler(service regionService.RegionServiceInterface) *RegionHandler {
 	return &RegionHandler{
 		regionService: service,
 	}
@@ -139,24 +140,19 @@ func (handler RegionHandler) IndexDistrict (c echo.Context) error {
 			Links: links,
 		})
 	}
-
-	cities, err := handler.regionService.FindAllDistrict(cityID, []map[string]interface{}{})
+	provinceID, err := strconv.Atoi(c.Param("provinceID"))
 	if err != nil {
-		if reflect.TypeOf(err).String() == "web.WebError" {
-			webErr := err.(web.WebError)
-			return c.JSON(webErr.Code, web.ErrorResponse{
-				Status: "ERROR",
-				Code: webErr.Code,
-				Error: webErr.Error(),
-				Links: links,
-			})
-		}
-		return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusInternalServerError,
-			Error: "server error",
+			Code: 400,
+			Error: "Invalid parameter",
 			Links: links,
 		})
+	}
+
+	cities, err := handler.regionService.FindAllDistrict(cityID, provinceID, []map[string]interface{}{})
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
 	}
 
 	return c.JSON(http.StatusOK, web.SuccessResponse{
