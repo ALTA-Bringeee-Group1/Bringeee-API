@@ -24,7 +24,7 @@ type OrderHistoryRepositoryInterface interface {
 	 * @return OrderHistory			response payment 
 	 * @return error 				error
 	 */
-	 Create(orderID int) (entities.OrderHistory, error)
+	 Create(orderID int, log string, actor string) (entities.OrderHistory, error)
 
 	/*
 	 * Delete history

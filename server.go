@@ -5,6 +5,7 @@ import (
 	"bringeee-capstone/deliveries/handlers"
 	"bringeee-capstone/deliveries/routes"
 	orderRepository "bringeee-capstone/repositories/order"
+	orderHistoryRepository "bringeee-capstone/repositories/order_history"
 	regionRepository "bringeee-capstone/repositories/region"
 	truckRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
@@ -61,5 +62,6 @@ func main() {
 	routes.RegisterCustomerRoute(e, userHandler, orderHandler)
 
 
+	_ = orderHistoryRepository.NewOrderHistoryRepository(db)
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
