@@ -220,7 +220,7 @@ func (handler UserHandler) DetailOrderHistory(c echo.Context) error {
 	userID, _, _ := middleware.ReadToken(c.Get("user"))
 	links := map[string]string{}
 	orderID, err := strconv.Atoi(c.Param("orderID"))
-	links["self"] = fmt.Sprintf("%s/api/cusotmers/orders/%s/histories", configs.Get().App.BaseURL, c.Param("orderID"))
+	links["self"] = fmt.Sprintf("%s/api/customer/orders/%s/histories", configs.Get().App.BaseURL, c.Param("orderID"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
