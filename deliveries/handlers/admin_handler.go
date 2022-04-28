@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bringeee-capstone/configs"
+	"bringeee-capstone/deliveries/helpers"
 	middleware "bringeee-capstone/deliveries/middlewares"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
@@ -139,5 +140,137 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 		Error:  nil,
 		Links:  links,
 		Data:   userRes,
+	})
+}
+
+func (handler AdminHandler) GetAllDriver(c echo.Context) error {
+
+	// Translate query param to map of filters
+	filters := []map[string]string{}
+	name := c.QueryParam("name")
+	if name != "" {
+		filters = append(filters, map[string]string{
+			"field":    "name",
+			"operator": "LIKE",
+			"value":    "%" + name + "%",
+		})
+	}
+	gender := c.QueryParam("gender")
+	if gender != "" {
+		filters = append(filters, map[string]string{
+			"field":    "gender",
+			"operator": "=",
+			"value":    gender,
+		})
+	}
+	status := c.QueryParam("status")
+	if status != "" {
+		filters = append(filters, map[string]string{
+			"field":    "status",
+			"operator": "=",
+			"value":    status,
+		})
+	}
+	account_status := c.QueryParam("account_status")
+	if account_status != "" {
+		filters = append(filters, map[string]string{
+			"field":    "account_status",
+			"operator": "=",
+			"value":    account_status,
+		})
+	}
+	truck_type := c.QueryParam("truck_type")
+	if truck_type != "" {
+		filters = append(filters, map[string]string{
+			"field":    "truck_type",
+			"operator": "=",
+			"value":    "%" + truck_type + "%",
+		})
+	}
+
+	// Sort parameter
+	sorts := []map[string]interface{}{}
+	sortName := c.QueryParam("sortName")
+	if sortName != "" {
+		switch sortName {
+		case "1":
+			sorts = append(sorts, map[string]interface{}{
+				"field": "name",
+				"desc":  true,
+			})
+		case "0":
+			sorts = append(sorts, map[string]interface{}{
+				"field": "name",
+				"desc":  false,
+			})
+		}
+	}
+
+	sortAge := c.QueryParam("sortAge")
+	if sortAge != "" {
+		switch sortAge {
+		case "1":
+			sorts = append(sorts, map[string]interface{}{
+				"field": "age",
+				"desc":  true,
+			})
+		case "0":
+			sorts = append(sorts, map[string]interface{}{
+				"field": "age",
+				"desc":  false,
+			})
+		}
+	}
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")}
+
+	// pagination param
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(400, helpers.MakeErrorResponse("ERROR", 400, "Limit Parameter format is invalid", links))
+	}
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		links := map[string]string{"self": configs.Get().App.BaseURL}
+		return c.JSON(400, helpers.MakeErrorResponse("ERROR", 400, "page Parameter format is invalid", links))
+	}
+	links["self"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")
+
+	// Get all events
+	driversRes, err := handler.userService.FindAllDriver(limit, page, filters, sorts)
+	if err != nil {
+		if reflect.TypeOf(err).String() == "web.WebError" {
+			webErr := err.(web.WebError)
+			return c.JSON(webErr.Code, helpers.MakeErrorResponse("ERROR", webErr.Code, webErr.Error(), links))
+		}
+		panic("not returning custom error")
+	}
+
+	// Get pagination data
+	pagination, err := handler.userService.GetPaginationDriver(limit, page, filters)
+	if err != nil {
+		if reflect.TypeOf(err).String() == "web.WebError" {
+			webErr := err.(web.WebError)
+			return c.JSON(webErr.Code, helpers.MakeErrorResponse("ERROR", webErr.Code, webErr.Error(), links))
+		}
+		panic("not returning custom error")
+	}
+
+	links["first"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=1"
+	links["last"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.TotalPages)
+	if pagination.Page > 1 {
+		links["prev"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.Page-1)
+	}
+	if pagination.Page < pagination.TotalPages {
+		links["next"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.Page+1)
+	}
+
+	// success response
+	return c.JSON(200, web.SuccessListResponse{
+		Status:     "OK",
+		Code:       200,
+		Error:      nil,
+		Links:      links,
+		Data:       driversRes,
+		Pagination: pagination,
 	})
 }
