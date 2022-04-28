@@ -172,7 +172,7 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 			}
 			defer fileFile.Close()
 			
-			fileName := uuid.New().String()
+			fileName := uuid.New().String() + file.Filename
 			fileUrl, err := helpers.UploadFileToS3("orders/order_picture/" + fileName, fileFile)
 			if err != nil {
 				return entities.OrderResponse{}, web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file" ,DevelopmentMessage: err.Error()}

@@ -261,3 +261,55 @@ func (handler UserHandler) DetailOrderHistory(c echo.Context) error {
 		Data: histories,
 	})
 }
+
+/* 
+ * Customer - Create Order
+ * ---------------------------------
+ * Create order
+ * GET /api/customers/orders
+ */
+func (handler UserHandler) CreateOrder(c echo.Context) error {
+	links := map[string]string{}
+	links["self"] = fmt.Sprintf("%s/api/customers/orders", configs.Get().App.BaseURL)
+
+	filesReq := map[string]*multipart.FileHeader{}
+	userID, role, err := middleware.ReadToken(c.Get("user"))
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// check authenticated user
+	if role != "customer" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// populate request
+	orderReq := entities.CustomerCreateOrderRequest{}
+	c.Bind(&orderReq)
+	filesReq["order_picture"], _ = c.FormFile("order_picture")
+
+	orderRes, err := handler.orderService.Create(orderReq, filesReq, userID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Error: nil,
+		Code: http.StatusOK,
+		Links: links,
+		Data: map[string]interface{} {
+			"id": orderRes.ID,
+		},
+	})
+}

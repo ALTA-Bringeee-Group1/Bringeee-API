@@ -76,7 +76,7 @@ func ValidateCustomerCreateOrderRequest(validate *validator.Validate, customerCr
 	if len(errors) > 0 {
 		return web.ValidationError{
 			Code:               400,
-			ProductionMessage:  "Bad Request",
+			ProductionMessage:  "Validation error",
 			DevelopmentMessage: "Validation error",
 			Errors:             errors,
 		}
