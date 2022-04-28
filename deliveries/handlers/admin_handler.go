@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -186,5 +187,159 @@ func (handler AdminHandler) DetailOrderHistory(c echo.Context) error {
 		Error: nil,
 		Links: links,
 		Data: histories,
+	})
+}
+
+/*
+ * List Order (Admin)
+ * ------------------------------------
+ * Mendapatkan list order berdasarkan query param tersedia
+ * GET /api/orders
+ */
+func (handler AdminHandler) ListOrders(c echo.Context) error {
+	
+	links := map[string]string{}
+	_, role, _ := middleware.ReadToken(c.Get("user"))
+
+	// pagination param
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		limit = 50
+	}
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		page = 1
+	}
+	links["self"] = configs.Get().App.BaseURL + "/api/orders?page=" + strconv.Itoa(page)
+
+	// Reject if not admin
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// filters & sorts
+	filters := []map[string]interface{} {}
+	sorts := []map[string]interface{}{
+		{ "field": "total_volume", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortVolume")]},
+		{ "field": "total_weight", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortWeight")]},
+		{ "field": "distance", 		"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]},
+	}
+
+	// Multi status filters
+	statusQuery := c.QueryParam("status")
+	if statusQuery != "" {
+		statusArr := strings.Split(statusQuery, ",")
+		statusFilters := []map[string]string{}
+		for _, status := range statusArr {
+			statusFilters = append(statusFilters, map[string]string{
+				"field": "status", 
+				"operator": "=", 
+				"value": status,
+			})
+		}
+		filters = append(filters, map[string]interface{}{
+			"or": statusFilters,
+		})
+	}
+	truckTypeID := c.QueryParam("truck_type")
+	if truckTypeID != "" {
+		filters = append(filters, map[string]interface{}{ "field": "truck_type_id", "operator": "=", "value": truckTypeID })
+	}
+
+	// call order service
+	ordersRes, err := handler.orderService.FindAll(limit, page, filters, sorts)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// make pagination data & formatting pagination links
+	paginationRes, err := handler.orderService.GetPagination(page, limit, filters)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusInternalServerError,
+			Error: err.Error(),
+			Links: links,
+		})
+	}
+	pageUrl := fmt.Sprintf("%s/api/orders?page=", configs.Get().App.BaseURL)
+	links["first"] = pageUrl + "1"
+	links["last"] = pageUrl + strconv.Itoa(paginationRes.TotalPages)
+	if paginationRes.Page > 1 {
+		links["previous"] = pageUrl + strconv.Itoa(page - 1)
+	}
+	if paginationRes.Page < paginationRes.TotalPages {
+		links["previous"] = pageUrl + strconv.Itoa(page + 1)
+	}
+
+	// Success list response
+	return c.JSON(http.StatusOK, web.SuccessListResponse{
+		Status: "OK",
+		Error: nil,
+		Code: http.StatusOK,
+		Links: links,
+		Data: ordersRes,
+		Pagination: paginationRes,
+	})
+}
+
+/*
+ * Driver - Detail order
+ * ------------------------------------
+ * Mendapatkan detail order
+ * GET /api/order/{orderID}
+ */
+func (handler AdminHandler) DetailOrder(c echo.Context) error {
+	links := map[string]string{}
+	_, role, err  := middleware.ReadToken(c.Get("user"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "OK",
+			Code: http.StatusBadRequest,
+			Error: "Order ID parameter is invalid",
+			Links: links,
+		})
+	}
+
+	// orderID param
+	orderID, err := strconv.Atoi(c.Param("orderID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "OK",
+			Code: http.StatusBadRequest,
+			Error: "Order ID parameter is invalid",
+			Links: links,
+		})
+	}
+
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// set self links and filters
+	links["self"] = fmt.Sprintf("%s/api/orders/%s", configs.Get().App.BaseURL,strconv.Itoa(orderID))
+	
+	// call service order
+	orderRes, err := handler.orderService.Find(orderID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code: http.StatusOK,
+		Error: nil,
+		Links: links,
+		Data: orderRes,
 	})
 }
