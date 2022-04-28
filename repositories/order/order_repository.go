@@ -125,7 +125,9 @@ func (repository OrderRepository) FindFirst(filters []map[string]interface{}) (e
 		}
 	}
 	tx := builder.First(&order)
-	if tx.Error != nil {
+	if tx.RowsAffected <= 0 {
+		return entities.Order{}, web.WebError{Code: 200, Message: "no result"}
+	} else if tx.Error != nil {
 		return entities.Order{}, web.WebError{Code: 500, Message: tx.Error.Error()}
 	}
 	return order, nil

@@ -14,9 +14,9 @@ func RegisterCustomerRoute(e *echo.Echo, customerHandler *handlers.CustomerHandl
 	group.DELETE("", customerHandler.DeleteCustomer, middleware.JWTMiddleware()) // delete customer
 
 	order := e.Group("/api/customers/orders", middleware.JWTMiddleware())
-	order.GET("", orderHandler.Index)
 	order.POST("", customerHandler.CreateOrder)
-	order.GET("/:orderID", orderHandler.Show)
+	order.GET("", customerHandler.ListOrders)
+	order.GET("/:orderID", customerHandler.DetailOrder)
 	order.GET("/:orderID/histories", customerHandler.DetailOrderHistory)
 }
 
@@ -24,6 +24,10 @@ func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler) {
 	group := e.Group("/api/drivers")
 	group.POST("", driverHandler.CreateDriver)                            // Registration driver
 	group.PUT("", driverHandler.UpdateDriver, middleware.JWTMiddleware()) // Edit driver profile
+
+	order := e.Group("/api/drivers/orders", middleware.JWTMiddleware())
+	order.GET("", driverHandler.ListOrders)
+	e.GET("/api/drivers/current_order", driverHandler.CurrentOrder, middleware.JWTMiddleware())
 }
 
 func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
