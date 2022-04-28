@@ -26,7 +26,7 @@ func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler, or
 	group.PUT("", driverHandler.UpdateDriver, middleware.JWTMiddleware()) // Edit driver profile
 
 	order := e.Group("/api/drivers/orders", middleware.JWTMiddleware())
-	order.GET("", orderHandler.Index)
+	order.GET("", driverHandler.ListOrders)
 }
 
 func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {

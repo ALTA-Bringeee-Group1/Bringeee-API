@@ -45,8 +45,13 @@ func main() {
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
 
 	authHandler := handlers.NewAuthHandler(authService)
+<<<<<<< HEAD
 	customerHandler := handlers.NewCustomerHandler(userService, orderService)
 	driverHandler := handlers.NewDriverHandler(userService)
+=======
+	userHandler := handlers.NewUserHandler(userService, orderService)
+	driverHandler := handlers.NewDriverHandler(userService, orderService)
+>>>>>>> refactor: driver list order handler
 	adminHandler := handlers.NewAdminHandler(userService, orderService)
 	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
 	regionHandler := handlers.NewRegionHandler(regionService)

@@ -54,6 +54,16 @@ func (handler OrderHandler) Index(c echo.Context) error {
 		page = 1
 	}
 
+	// reject if not customer
+	if role != "customer" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
 	// Multi status filters
 	statusQuery := c.QueryParam("status")
 	if statusQuery != "" {
@@ -71,64 +81,28 @@ func (handler OrderHandler) Index(c echo.Context) error {
 		})
 	}
 
-	if role == "customer" {
-		// set self links and filters
-		links["self"] = configs.Get().App.BaseURL + "/api/customers/orders?page=" + strconv.Itoa(page)
-		filters = append(filters, map[string]interface{}{
-			"field": "customer_id", 
-			"operator": "=", 
-			"value": strconv.Itoa(userID),
-		})
+	// set self links and filters
+	links["self"] = configs.Get().App.BaseURL + "/api/customers/orders?page=" + strconv.Itoa(page)
+	filters = append(filters, map[string]interface{}{
+		"field": "customer_id", 
+		"operator": "=", 
+		"value": strconv.Itoa(userID),
+	})
 
-		// get authenticated userdata
-		_, err := handler.userService.FindCustomer(userID)
-		if err != nil {
-			return helpers.WebErrorResponse(c, err, links)
-		}
-		
-		// call order service
-		ordersRes, err = handler.orderService.FindAll(0, 0, filters, []map[string]interface{}{
-			{ "field": "updated_at", "desc": true },
-		})
-		if err != nil {
-			return helpers.WebErrorResponse(c, err, links)
-		}
-		
-	} else if role == "driver" {
-		// find userdata driver
-		driver, err := handler.userService.FindByDriver("user_id", strconv.Itoa(userID))
-		if err != nil {
-			return c.JSON(http.StatusUnauthorized, web.ErrorResponse{ 
-				Status: "ERROR", 
-				Code: http.StatusUnauthorized,
-				Error: "Unauthorized user",  
-				Links: links,
-			})
-		}
-		// set self links and filters
-		links["self"] = configs.Get().App.BaseURL + "/api/drivers/orders?page=" + strconv.Itoa(page)
-		filters = append(filters, map[string]interface{}{
-			"field": "truck_type_id", 
-			"operator": "=", 
-			"value": strconv.Itoa(int(driver.TruckTypeID)),
-		})
-
-		// sorts
-		sorts := []map[string]interface{}{
-			{ "field": "updated_at", "desc": true },
-		}
-		sorts = append(sorts, map[string]interface{}{"field": "total_volume", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortVolume")]})
-		sorts = append(sorts, map[string]interface{}{"field": "total_weight", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortWeight")]})
-		sorts = append(sorts, map[string]interface{}{"field": "distance", 		"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]})
-
-		// call order service
-		ordersRes, err = handler.orderService.FindAll(0, 0, filters, sorts)
-		if err != nil {
-			return helpers.WebErrorResponse(c, err, links)
-		}
-	} else if role == "admin" {
-		return c.JSON(200, "Unimplemented admin feature")
+	// get authenticated userdata
+	_, err = handler.userService.FindCustomer(userID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
 	}
+	
+	// call order service
+	ordersRes, err = handler.orderService.FindAll(0, 0, filters, []map[string]interface{}{
+		{ "field": "updated_at", "desc": true },
+	})
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+		
 
 	// make pagination data & formatting pagination links
 	paginationRes, err := handler.orderService.GetPagination(page, limit, filters)
