@@ -48,8 +48,8 @@ func main() {
 	routes.RegisterAuthRoute(e, authHandler)
 
 	regionRepository := regionRepository.NewRegionRepository(db)
-	regionService := regionService.NewRegionService(*regionRepository)
-	regionHandler := handlers.NewRegionHandler(*regionService)
+	regionService := regionService.NewRegionService(regionRepository)
+	regionHandler := handlers.NewRegionHandler(regionService)
 	routes.RegisterRegionHandler(e, regionHandler)
 
 	orderRepository := orderRepository.NewOrderRepository(db)

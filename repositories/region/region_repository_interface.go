@@ -25,6 +25,15 @@ type RegionRepositoryInterface interface {
 	FindAllCity(provinceID int, sort []map[string]interface{}) ([]entities.City, error)
 
 	/*
+	* Find City
+	* -------------------------------
+	* Mencari data kota tunggal berdasarkan ID
+	*
+	* @var id 		data id
+	*/
+	FindCity(id int) (entities.City, error)
+
+	/*
 	 * Find All District
 	 * -------------------------------
 	 * Mengambil semua data kecamatan berdasarkan kota

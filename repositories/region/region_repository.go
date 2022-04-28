@@ -67,8 +67,28 @@ func (repository RegionRepository) FindAllCity(provinceID int, sorts []map[strin
 
 	// Operation
 	tx := builder.Find(&city)
-	if tx.Error != nil {
-		return []entities.City{}, web.WebError{Code: 500, DevelopmentMessage: "Server data error", ProductionMessage: tx.Error.Error()}
+	if tx.RowsAffected <= 0 {
+		return []entities.City{}, web.WebError{Code: 400, Message: "City with current ID is not found"}
+	} else if tx.Error != nil {
+		return []entities.City{}, web.WebError{Code: 500, ProductionMessage: "Server data error", DevelopmentMessage: tx.Error.Error()}
+	}
+	return city, nil
+}
+
+/*
+ * Find City
+ * -------------------------------
+ * Mencari data kota tunggal berdasarkan ID
+ *
+ * @var id 		data id
+ */
+func (repository RegionRepository) FindCity(id int) (entities.City, error) {
+	city := entities.City{}
+	tx := repository.db.Find(&city, id)
+	if tx.RowsAffected <= 0 {
+		return entities.City{}, web.WebError{Code: 400, DevelopmentMessage: "cannot get city data with specified id", ProductionMessage: "data error"}
+	} else if tx.Error != nil {
+		return entities.City{}, web.WebError{Code: 500, DevelopmentMessage: "server error", ProductionMessage: "server error"}
 	}
 	return city, nil
 }
@@ -94,8 +114,10 @@ func (repository RegionRepository) FindAllDistrict(cityID int, sorts []map[strin
 
 	// Operation
 	tx := builder.Find(&districts)
-	if tx.Error != nil {
-		return []entities.District{}, web.WebError{Code: 500, DevelopmentMessage: "Server data error", ProductionMessage: tx.Error.Error()}
+	if tx.RowsAffected <= 0 {
+		return []entities.District{}, web.WebError{Code: 400, Message: "District with current ID is not found"}
+	} else if tx.Error != nil {
+		return []entities.District{}, web.WebError{Code: 500, ProductionMessage: "Server data error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return districts, nil
 }
