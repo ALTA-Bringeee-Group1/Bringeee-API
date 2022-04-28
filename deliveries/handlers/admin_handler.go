@@ -31,10 +31,10 @@ func (handler AdminHandler) DeleteDriver(c echo.Context) error {
 	_, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id")}
 	if role != "admin" {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -85,10 +85,10 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 		})
 	}
 	if role != "admin" {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -197,10 +197,10 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 		})
 	}
 	if role != "admin" {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -271,10 +271,10 @@ func (handler AdminHandler) GetSingleDriver(c echo.Context) error {
 		})
 	}
 	if role != "admin" {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -317,10 +317,10 @@ func (handler AdminHandler) GetSingleCustomer(c echo.Context) error {
 		})
 	}
 	if role != "admin" {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
