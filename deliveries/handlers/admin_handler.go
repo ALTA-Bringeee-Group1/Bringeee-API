@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"bringeee-capstone/configs"
+	"bringeee-capstone/deliveries/helpers"
 	middleware "bringeee-capstone/deliveries/middlewares"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	orderService "bringeee-capstone/services/order"
 	userService "bringeee-capstone/services/user"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"reflect"
@@ -16,11 +19,13 @@ import (
 
 type AdminHandler struct {
 	userService *userService.UserService
+	orderService orderService.OrderServiceInterface
 }
 
-func NewAdminHandler(service *userService.UserService) *AdminHandler {
+func NewAdminHandler(service *userService.UserService, orderService orderService.OrderServiceInterface) *AdminHandler {
 	return &AdminHandler{
 		userService: service,
+		orderService: orderService,
 	}
 }
 
@@ -139,5 +144,42 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 		Error:  nil,
 		Links:  links,
 		Data:   userRes,
+	})
+}
+
+
+/* 
+ * Admin - Detail Order - Get Histories
+ * ---------------------------------
+ * List history tracking dari satu detail order tunggal
+ * GET /api/orders/{orderID}/histories
+ */
+func (handler AdminHandler) DetailOrderHistory(c echo.Context) error {
+	links := map[string]string{}
+	orderID, err := strconv.Atoi(c.Param("orderID"))
+	links["self"] = fmt.Sprintf("%s/api/customer/orders/%s/histories", configs.Get().App.BaseURL, c.Param("orderID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "ERROR",
+			Code: 400,
+			Error: "Order ID parameter is invalid",
+			Links: links,
+		})
+	}
+
+	// Get order tracking histories
+	histories, err := handler.orderService.FindAllHistory(orderID, []map[string]interface{}{
+		{ "field": "created_at", "desc": true },
+	})
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code: http.StatusOK,
+		Error: nil,
+		Links: links,
+		Data: histories,
 	})
 }
