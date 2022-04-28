@@ -80,8 +80,8 @@ type CustomerCreateOrderRequest struct {
 	DestinationEndLat string `form:"destination_end_lat" validate:"required"`
 	DestinationEndLong string `form:"destination_end_long" validate:"required"`
 	TruckTypeID int `form:"truck_type_id" validate:"required"`
-	TotalVolume string `form:"total_volume" validate:"required"`
-	TotalWeight string `form:"total_weight" validate:"required"`
+	TotalVolume int `form:"total_volume" validate:"required"`
+	TotalWeight int `form:"total_weight" validate:"required"`
 	Description string `form:"description"`
 }
 
