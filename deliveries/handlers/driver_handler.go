@@ -222,3 +222,56 @@ func (handler DriverHandler) ListOrders(c echo.Context) error {
 		Pagination: paginationRes,
 	})
 }
+
+/*
+ * Driver - Current order
+ * ------------------------------------
+ * Mendapatkan detail order customer
+ * yang hanya dimiliki customer
+ * GET /api/drivers/current_order
+ */
+func (handler DriverHandler) CurrentOrder(c echo.Context) error {
+	userID, role, _ := middleware.ReadToken(c.Get("user"))
+	links := map[string]string{}
+
+	// reject if not customer
+	if role != "driver" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// set self links and filters
+	links["self"] = fmt.Sprintf("%s/api/drivers/current_order", configs.Get().App.BaseURL)
+
+	// find userdata driver
+	driver, err := handler.userService.FindByDriver("user_id", strconv.Itoa(userID))
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{ 
+			Status: "ERROR", 
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",  
+			Links: links,
+		})
+	}
+
+	// service call
+	orderRes, err := handler.orderService.FindFirst([]map[string]interface{}{
+		{ "field": "driver_id", "operator": "=", "value": strconv.Itoa(int(driver.ID))},
+		{ "field": "status", 	"operator": "=", "value": "ON_PROCESS"},
+	})
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code: http.StatusOK,
+		Error: nil,
+		Links: links,
+		Data: orderRes,
+	})
+}
