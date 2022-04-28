@@ -504,7 +504,9 @@ func (service UserService) FindDriver(id int) (entities.DriverResponse, error) {
 	if err != nil {
 		return entities.DriverResponse{}, err
 	}
+	user, err := service.userRepo.FindByCustomer("id", strconv.Itoa(int(driver.UserID)))
 	driverRes := entities.DriverResponse{}
+	copier.Copy(&driverRes, &user)
 	copier.Copy(&driverRes, &driver)
 
 	return driverRes, err

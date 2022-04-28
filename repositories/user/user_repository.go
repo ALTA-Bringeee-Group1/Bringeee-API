@@ -198,7 +198,7 @@ func (repo UserRepository) CountAllCustomer(filters []map[string]string) (int64,
 
 func (repo UserRepository) CountAllDriver(filters []map[string]string) (int64, error) {
 	var count int64
-	builder := repo.db.Model(&entities.Driver{})
+	builder := repo.db.Model(&entities.Driver{}).Joins("User")
 	// Where filters
 	for _, filter := range filters {
 		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
