@@ -145,6 +145,10 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 
 func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 
+	// Get token
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+
 	// Translate query param to map of filters
 	filters := []map[string]string{}
 	name := c.QueryParam("name")
@@ -221,8 +225,23 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 			})
 		}
 	}
-	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")}
-
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")}
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
+	}
+	if role != "admin" {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
+	}
 	// pagination param
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
@@ -233,9 +252,9 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 		links := map[string]string{"self": configs.Get().App.BaseURL}
 		return c.JSON(400, helpers.MakeErrorResponse("ERROR", 400, "page Parameter format is invalid", links))
 	}
-	links["self"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")
+	links["self"] = configs.Get().App.BaseURL + "/api/drivers?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")
 
-	// Get all events
+	// Get all drivers
 	driversRes, err := handler.userService.FindAllDriver(limit, page, filters, sorts)
 	if err != nil {
 		if reflect.TypeOf(err).String() == "web.WebError" {
@@ -255,13 +274,13 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 		panic("not returning custom error")
 	}
 
-	links["first"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=1"
-	links["last"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.TotalPages)
+	links["first"] = configs.Get().App.BaseURL + "/api/drivers?limit=" + c.QueryParam("limit") + "&page=1"
+	links["last"] = configs.Get().App.BaseURL + "/api/drivers?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.TotalPages)
 	if pagination.Page > 1 {
-		links["prev"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.Page-1)
+		links["prev"] = configs.Get().App.BaseURL + "/api/drivers?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.Page-1)
 	}
 	if pagination.Page < pagination.TotalPages {
-		links["next"] = configs.Get().App.BaseURL + "/api/events?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.Page+1)
+		links["next"] = configs.Get().App.BaseURL + "/api/drivers?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.Page+1)
 	}
 
 	// success response

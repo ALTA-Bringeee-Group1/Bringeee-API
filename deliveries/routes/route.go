@@ -25,6 +25,7 @@ func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler) {
 }
 
 func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
+	e.GET("api/drivers", AdminHandler.GetAllDriver, middleware.JWTMiddleware())
 	e.PUT("/api/drivers/:id", AdminHandler.UpdateDriverByAdmin, middleware.JWTMiddleware()) // edit driver credential
 	e.DELETE("api/drivers/:id", AdminHandler.DeleteDriver, middleware.JWTMiddleware())      // delete driver
 }
