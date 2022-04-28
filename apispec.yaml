@@ -1718,6 +1718,71 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
+    /api/drivers/history_orders:
+        get:
+            tags:
+                - 'Driver'
+            description: Get history completed orders by driver
+            summary: Get history completed orders by driver
+            security:
+                - JWTAuthDriver: []
+            parameters:
+                - in: query
+                  name: sortVolume
+                  schema:
+                      type: boolean
+                      example: true
+                - in: query
+                  name: sortWeight
+                  schema:
+                      type: boolean
+                      example: true
+                - in: query
+                  name: sortDistance
+                  schema:
+                      type: boolean
+                      example: true
+            responses:
+                '200':
+                    description: Success getting list of available order for driver
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/order_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
 
     # ------------------------------------------------
     # Admin
