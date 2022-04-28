@@ -122,7 +122,14 @@ type UpdateDriverByAdminRequest struct {
 type DriverResponse struct {
 	ID                uint              `json:"id"`
 	UserID            uint              `json:"user_id"`
-	User              CustomerResponse  `json:"user"`
+	Email             string            `json:"email"`
+	Name              string            `json:"name"`
+	DOB               time.Time         `json:"dob"`
+	Gender            string            `json:"gender"`
+	Address           string            `json:"address"`
+	PhoneNumber       string            `json:"phone_number"`
+	Avatar            string            `json:"avatar"`
+	Role              string            `json:"role"`
 	TruckTypeID       uint              `json:"truck_type_id"`
 	TruckType         TruckTypeResponse `json:"truck_type"`
 	KtpFile           string            `json:"ktp_file"`
