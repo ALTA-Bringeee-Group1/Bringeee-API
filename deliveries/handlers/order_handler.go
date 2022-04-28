@@ -6,7 +6,6 @@ import (
 	middleware "bringeee-capstone/deliveries/middlewares"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
-	userRepository "bringeee-capstone/repositories/user"
 	orderService "bringeee-capstone/services/order"
 	userService "bringeee-capstone/services/user"
 	"fmt"
@@ -20,18 +19,15 @@ import (
 type OrderHandler struct {
 	orderService orderService.OrderServiceInterface
 	userService userService.UserServiceInterface
-	userRepository userRepository.UserRepositoryInterface
 }
 
 func NewOrderHandler(
 	service orderService.OrderServiceInterface,
 	userService userService.UserServiceInterface,
-	userRepository userRepository.UserRepositoryInterface,
 ) *OrderHandler {
 	return &OrderHandler{
 		orderService: service,
 		userService: userService,
-		userRepository: userRepository,
 	}
 }
 
@@ -101,7 +97,7 @@ func (handler OrderHandler) Index(c echo.Context) error {
 		}
 	case "driver":
 		// find userdata driver
-		driver, err := handler.userRepository.FindByDriver("user_id", strconv.Itoa(userID))
+		driver, err := handler.userService.FindByDriver("user_id", strconv.Itoa(userID))
 		if err != nil {
 			return c.JSON(http.StatusUnauthorized, web.ErrorResponse{ 
 				Status: "ERROR", 
