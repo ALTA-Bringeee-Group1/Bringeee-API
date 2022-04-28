@@ -26,10 +26,18 @@ func NewAdminHandler(service *userService.UserService) *AdminHandler {
 
 func (handler AdminHandler) DeleteDriver(c echo.Context) error {
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, tx := strconv.Atoi(c.Param("id"))
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id")}
+	if tx != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
 	if role != "admin" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Code:   http.StatusUnauthorized,
@@ -39,10 +47,10 @@ func (handler AdminHandler) DeleteDriver(c echo.Context) error {
 		})
 	}
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -70,17 +78,25 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 	// Bind request to user request
 	userReq := entities.UpdateDriverByAdminRequest{}
 	c.Bind(&userReq)
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, tx := strconv.Atoi(c.Param("id"))
 
 	// Get token
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id")}
-	if err != nil {
+	if tx != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Code:   http.StatusBadRequest,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -189,10 +205,10 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 	}
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")}
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -250,23 +266,23 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 
 func (handler AdminHandler) GetSingleDriver(c echo.Context) error {
 	// Get param and token
-	id, err := strconv.Atoi(c.Param("id"))
+	id, tx := strconv.Atoi(c.Param("id"))
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id")}
-	if err != nil {
+	if tx != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Code:   http.StatusBadRequest,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "invalid parameter",
 			Links:  links,
 		})
 	}
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
@@ -296,23 +312,23 @@ func (handler AdminHandler) GetSingleDriver(c echo.Context) error {
 
 func (handler AdminHandler) GetSingleCustomer(c echo.Context) error {
 	// Get param and token
-	id, err := strconv.Atoi(c.Param("id"))
+	id, tx := strconv.Atoi(c.Param("id"))
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers/" + c.Param("id")}
-	if err != nil {
+	if tx != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Code:   http.StatusBadRequest,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "invalid parameter",
 			Links:  links,
 		})
 	}
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
-			Code:   http.StatusBadRequest,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
-			Error:  "bad request",
+			Error:  "unauthorized",
 			Links:  links,
 		})
 	}
