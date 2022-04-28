@@ -54,14 +54,11 @@ func main() {
 	routes.RegisterRegionHandler(e, regionHandler)
 
 	orderRepository := orderRepository.NewOrderRepository(db)
-	orderService := orderService.NewOrderService(orderRepository)
+	orderHistoryRepository := orderHistoryRepository.NewOrderHistoryRepository(db)
+	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository)
 	orderHandler := handlers.NewOrderHandler(orderService, userService)
 	
 	routes.RegisterCustomerRoute(e, userHandler, orderHandler)
 
-	routes.RegisterCustomerRoute(e, userHandler, orderHandler)
-
-
-	_ = orderHistoryRepository.NewOrderHistoryRepository(db)
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
