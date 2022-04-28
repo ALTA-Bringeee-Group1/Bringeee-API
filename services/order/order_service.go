@@ -187,6 +187,9 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 		return entities.OrderResponse{}, err
 	}
 
+	// Log
+	service.orderHistoryRepository.Create(int(order.ID), "Order dibuat dan diajukan oleh customer", "customer")
+
 	// get newly order data
 	orderRes, err := service.Find(int(order.ID))
 	if err != nil {
