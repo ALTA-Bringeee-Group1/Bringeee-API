@@ -8,7 +8,7 @@ import (
 	"bringeee-capstone/entities/web"
 	userService "bringeee-capstone/services/user"
 	"mime/multipart"
-	"reflect"
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -31,24 +31,26 @@ func (handler AdminHandler) DeleteDriver(c echo.Context) error {
 	_, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id")}
 	if role != "admin" {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	if err != nil {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 
 	// call delete service
 	err = handler.userService.DeleteDriver(id)
 	if err != nil {
-		if reflect.TypeOf(err).String() == "web.WebError" {
-			webErr := err.(web.WebError)
-			return c.JSON(webErr.Code, web.ErrorResponse{
-				Code:   webErr.Code,
-				Status: "ERROR",
-				Error:  webErr.Error(),
-				Links:  links,
-			})
-		}
+		return helpers.WebErrorResponse(c, err, links)
 	}
 
 	// response
@@ -75,10 +77,20 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 	_, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id")}
 	if err != nil {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	if role != "admin" {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	// avatar
 	files := map[string]*multipart.FileHeader{}
@@ -90,25 +102,7 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 	// Update via user service call
 	userRes, err := handler.userService.UpdateDriverByAdmin(userReq, id, files)
 	if err != nil {
-		if reflect.TypeOf(err).String() == "web.WebError" {
-			webErr := err.(web.WebError)
-			return c.JSON(webErr.Code, web.ErrorResponse{
-				Code:   webErr.Code,
-				Status: "ERROR",
-				Error:  webErr.Error(),
-				Links:  links,
-			})
-		} else if reflect.TypeOf(err).String() == "web.ValidationError" {
-			valErr := err.(web.ValidationError)
-			return c.JSON(valErr.Code, web.ValidationErrorResponse{
-				Status: "ERROR",
-				Code:   valErr.Code,
-				Error:  valErr.Error(),
-				Errors: valErr.Errors,
-				Links:  links,
-			})
-		}
-
+		return helpers.WebErrorResponse(c, err, links)
 	}
 
 	// response
@@ -195,10 +189,20 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 	}
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")}
 	if err != nil {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	if role != "admin" {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	// pagination param
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
@@ -249,15 +253,30 @@ func (handler AdminHandler) GetSingleDriver(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id")}
 	if err != nil {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
 	if err != nil {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	if role != "admin" {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 
 	// Get eventdata
@@ -280,15 +299,30 @@ func (handler AdminHandler) GetSingleCustomer(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers/" + c.Param("id")}
 	if err != nil {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
 	if err != nil {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 	if role != "admin" {
-		return helpers.WebErrorResponse(c, err, links)
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "bad request",
+			Links:  links,
+		})
 	}
 
 	// Get eventdata
