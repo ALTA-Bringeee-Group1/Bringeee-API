@@ -55,11 +55,11 @@ type OrderHistory struct {
 }
 
 type OrderHistoryResponse struct {
-	ID uint 		 `json:"id"`
-	Log string		 `json:"log"`
-	Actor string	 `json:"actor"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID uint 		 	`json:"id"`
+	Log string		 	`json:"log"`
+	Actor string	 	`json:"actor"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 

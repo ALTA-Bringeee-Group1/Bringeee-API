@@ -127,7 +127,7 @@ type OrderServiceInterface interface {
 	 * @return order	list order dalam bentuk entity response
 	 * @return error	error
 	 */
-	FindAllHistory(sorts []map[string]interface{}) ([]entities.OrderHistoryResponse, error)
+	FindAllHistory(orderID int, sorts []map[string]interface{}) ([]entities.OrderHistoryResponse, error)
 
 	/*
 	 * Webhook

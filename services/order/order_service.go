@@ -4,6 +4,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderRepository "bringeee-capstone/repositories/order"
+	orderHistoryRepository "bringeee-capstone/repositories/order_history"
 	"mime/multipart"
 
 	"github.com/jinzhu/copier"
@@ -11,11 +12,13 @@ import (
 
 type OrderService struct {
 	orderRepository orderRepository.OrderRepositoryInterface
+	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface
 }
 
-func NewOrderService(repository orderRepository.OrderRepositoryInterface) *OrderService {
+func NewOrderService(repository orderRepository.OrderRepositoryInterface, orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface) *OrderService {
 	return &OrderService{
 		orderRepository: repository,
+		orderHistoryRepository: orderHistoryRepository,
 	}
 }
 
@@ -206,8 +209,14 @@ func (service OrderService) GetPayment(orderID int, createPaymentRequest entitie
  * @return order	list order dalam bentuk entity domain
  * @return error	error
  */
-func (service OrderService) FindAllHistory(sorts []map[string]interface{}) ([]entities.OrderHistoryResponse, error) {
-	panic("implement me")
+func (service OrderService) FindAllHistory(orderID int, sorts []map[string]interface{}) ([]entities.OrderHistoryResponse, error) {
+	histories, err := service.orderHistoryRepository.FindAll(orderID, sorts)
+	if err != nil {
+		return []entities.OrderHistoryResponse{}, err
+	}
+	historiesRes := []entities.OrderHistoryResponse{}
+	copier.Copy(&historiesRes, &histories)
+	return historiesRes, nil
 }
 /*
  * Webhook
