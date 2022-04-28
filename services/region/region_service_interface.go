@@ -11,7 +11,7 @@ type RegionServiceInterface interface {
 	 * @var sort		sort data, { field, sort[bool] }
 	 * @return Province	list provinsi dalam entity response
 	 */
-	findAllProvince(sort []map[string]interface{}) ([]entities.ProvinceResponse, error)
+	FindAllProvince(sort []map[string]interface{}) ([]entities.ProvinceResponse, error)
 
 	/*
 	 * Find All City
@@ -21,7 +21,7 @@ type RegionServiceInterface interface {
 	 * @var sort		sort data, { field, sort[bool] }
 	 * @return City		list kota dalam entity response
 	 */
-	findAllCity(provinceID int, sort []map[string]interface{}) ([]entities.CityResponse, error)
+	FindAllCity(provinceID int, sort []map[string]interface{}) ([]entities.CityResponse, error)
 
 	/*
 	 * Find All District
@@ -31,5 +31,5 @@ type RegionServiceInterface interface {
 	 * @var sort		sort data, { field, sort[bool] }
 	 * @return District	list kecamatan dalam entity response 
 	 */
-	findAllDistrict(cityID int, sort []map[string]interface{}) ([]entities.DistrictResponse, error)
+	FindAllDistrict(cityID int, provinceID int, sort []map[string]interface{}) ([]entities.DistrictResponse, error)
 }
