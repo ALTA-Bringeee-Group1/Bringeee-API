@@ -158,14 +158,12 @@ func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 }
 
 /*
-<<<<<<< HEAD
-=======
  * Customer - List Order 
  * ------------------------------------
  * Mendapatkan list order berdasarkan 
  * query param yang telah ditentukan
  */
-func (handler UserHandler) ListOrders(c echo.Context) error {
+func (handler CustomerHandler) ListOrders(c echo.Context) error {
 	
 	userID, role, _ := middleware.ReadToken(c.Get("user"))
 	links := map[string]string{}
@@ -262,9 +260,74 @@ func (handler UserHandler) ListOrders(c echo.Context) error {
 	})
 }
 
+/*
+ * Customer - Detail Order
+ * ------------------------------------
+ * Mendapatkan detail order customer
+ * yang hanya dimiliki customer
+ */
+func (handler CustomerHandler) DetailOrder(c echo.Context) error {
+	userID, role, _ := middleware.ReadToken(c.Get("user"))
+	links := map[string]string{}
+	orderRes := entities.OrderResponse{}
+
+	// orderID param
+	orderID, err := strconv.Atoi(c.Param("orderID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "OK",
+			Code: http.StatusBadRequest,
+			Error: "Order ID parameter is invalid",
+			Links: links,
+		})
+	}
+
+	// reject if not customer
+	if role != "customer" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// set self links and filters
+	links["self"] = fmt.Sprintf("%s/api/customers/orders/%s", configs.Get().App.BaseURL,strconv.Itoa(orderID))
+
+	// get authenticated userdata
+	customer, err := handler.userService.FindCustomer(userID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+	
+	// call service order
+	orderRes, err = handler.orderService.Find(orderID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// reject if customer_id doesn't match
+	if orderRes.CustomerID != customer.ID {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusBadRequest,
+			Error: "order doesn't belong to currently authenticated customer",
+			Links: links,
+		})
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code: http.StatusOK,
+		Error: nil,
+		Links: links,
+		Data: orderRes,
+	})
+}
+
 
 /* 
->>>>>>> refactor: customer list order handler
  * Customer - Detail Order - Get Histories
  * ---------------------------------
  * List history tracking dari satu detail order tunggal

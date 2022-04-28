@@ -55,14 +55,19 @@ func main() {
 	adminHandler := handlers.NewAdminHandler(userService, orderService)
 	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
 	regionHandler := handlers.NewRegionHandler(regionService)
-	orderHandler := handlers.NewOrderHandler(orderService, userService)
+	_ = handlers.NewOrderHandler(orderService, userService)
 
-	routes.RegisterDriverRoute(e, driverHandler, orderHandler)
+	routes.RegisterDriverRoute(e, driverHandler)
 	routes.RegisterAdminRoute(e, adminHandler)
 	routes.RegisterTruckTypeRoute(e, truckTypeHandler)
 	routes.RegisterAuthRoute(e, authHandler)
 	routes.RegisterRegionHandler(e, regionHandler)
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
 
+<<<<<<< HEAD
+=======
+	routes.RegisterCustomerRoute(e, userHandler)
+	
+>>>>>>> refactor: customer detail order handler
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
