@@ -16,7 +16,7 @@ type Order struct {
 	TotalVolume int
 	TotalWeight int
 	Distance int `gorm:"default:null"`
-	EstimatedPrice int64
+	EstimatedPrice int64 `gorm:"default:null"`
 	FixPrice int64 `gorm:"default:null"`
 	TransactionID string `gorm:"default:null"`
 	Status string
@@ -80,8 +80,8 @@ type CustomerCreateOrderRequest struct {
 	DestinationEndLat string `form:"destination_end_lat" validate:"required"`
 	DestinationEndLong string `form:"destination_end_long" validate:"required"`
 	TruckTypeID int `form:"truck_type_id" validate:"required"`
-	TotalVolume string `form:"total_volume" validate:"required"`
-	TotalWeight string `form:"total_weight" validate:"required"`
+	TotalVolume int `form:"total_volume" validate:"required"`
+	TotalWeight int `form:"total_weight" validate:"required"`
 	Description string `form:"description"`
 }
 
