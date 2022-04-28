@@ -24,4 +24,5 @@ func WebErrorResponse(c echo.Context, err error, links map[string]string) error 
 		Error: "Server Error",
 		Links: links,
 	})
-} 
+
+}

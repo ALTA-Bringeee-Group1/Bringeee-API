@@ -7,11 +7,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterCustomerRoute(e *echo.Echo, userHandler *handlers.UserHandler) {
+func RegisterCustomerRoute(e *echo.Echo, userHandler *handlers.UserHandler, orderHandler *handlers.OrderHandler) {
 	group := e.Group("/api/customers")
 	group.POST("", userHandler.CreateCustomer)                               // Registration customer
 	group.PUT("", userHandler.UpdateCustomer, middleware.JWTMiddleware())    // Edit customer profile
 	group.DELETE("", userHandler.DeleteCustomer, middleware.JWTMiddleware()) // delete customer
+
+	order := e.Group("/api/customers/orders", middleware.JWTMiddleware())
+	order.GET("", orderHandler.Index)
+	order.GET("/:orderID", orderHandler.Show)
 }
 
 func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler) {
