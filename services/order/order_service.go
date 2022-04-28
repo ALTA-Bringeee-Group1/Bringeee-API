@@ -46,6 +46,7 @@ func (service OrderService) FindAll(limit int, page int, filters []map[string]in
 	copier.Copy(&ordersRes, &orders)
 	for i, order := range orders {
 		copier.Copy(&ordersRes[i], &order.Destination)
+		ordersRes[i].ID = order.ID 	// fix: overlap destinationID vs orderID
 	}
 	return ordersRes, nil
 }
@@ -98,6 +99,8 @@ func (service OrderService) Find(id int) (entities.OrderResponse, error) {
 	orderRes := entities.OrderResponse{}
 	copier.Copy(&orderRes, &order)
 	copier.Copy(&orderRes, &order.Destination)
+	orderRes.ID = order.ID 	// fix: overlap destinationID vs orderID
+
 
 	return orderRes, nil
 }
@@ -122,6 +125,7 @@ func (service OrderService) FindFirst(filters []map[string]interface{}) (entitie
 	orderRes := entities.OrderResponse{}
 	copier.Copy(&orderRes, &order)
 	copier.Copy(&orderRes, &order.Destination)
+	orderRes.ID = order.ID 	// fix: overlap destinationID vs orderID
 
 	return orderRes, nil
 }
