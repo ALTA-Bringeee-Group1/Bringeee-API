@@ -300,7 +300,7 @@ func (handler UserHandler) CreateOrder(c echo.Context) error {
 
 	orderRes, err := handler.orderService.Create(orderReq, filesReq, userID)
 	if err != nil {
-		helpers.WebErrorResponse(c, err, links)
+		return helpers.WebErrorResponse(c, err, links)
 	}
 
 	return c.JSON(http.StatusOK, web.SuccessResponse{
