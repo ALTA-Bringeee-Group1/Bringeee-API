@@ -47,7 +47,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService, orderService)
 	driverHandler := handlers.NewDriverHandler(userService)
-	adminHandler := handlers.NewAdminHandler(userService)
+	adminHandler := handlers.NewAdminHandler(userService, orderService)
 	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
 	regionHandler := handlers.NewRegionHandler(regionService)
 	orderHandler := handlers.NewOrderHandler(orderService, userService)
@@ -59,6 +59,6 @@ func main() {
 	routes.RegisterRegionHandler(e, regionHandler)
 
 	routes.RegisterCustomerRoute(e, userHandler, orderHandler)
-
+	
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }

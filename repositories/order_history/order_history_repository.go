@@ -30,7 +30,7 @@ func NewOrderHistoryRepository(db *gorm.DB) *OrderHistoryRepository {
  */
 func (repository OrderHistoryRepository) FindAll(orderID int, sorts []map[string]interface{}) ([]entities.OrderHistory, error) {
 	orderHistories := []entities.OrderHistory{}
-	builder := repository.db
+	builder := repository.db.Where("order_id = ?", orderID)
 	// OrderBy Filters
 	for _, sort := range sorts {
 		builder.Order(clause.OrderByColumn{Column: clause.Column{Name: sort["field"].(string)}, Desc: sort["desc"].(bool)})
