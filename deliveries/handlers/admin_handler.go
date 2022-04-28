@@ -195,20 +195,10 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 	// Sort parameter
 	sorts := []map[string]interface{}{}
 	sortName := c.QueryParam("sortName")
-	if sortName != "" {
-		switch sortName {
-		case "1":
-			sorts = append(sorts, map[string]interface{}{
-				"field": "name",
-				"desc":  true,
-			})
-		case "0":
-			sorts = append(sorts, map[string]interface{}{
-				"field": "name",
-				"desc":  false,
-			})
-		}
-	}
+	sorts = append(sorts, map[string]interface{}{
+		"field": "name",
+		"desc":  map[string]bool{"1": true, "0": false}[sortName],
+	})
 
 	sortAge := c.QueryParam("sortAge")
 	if sortAge != "" {

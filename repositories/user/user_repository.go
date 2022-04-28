@@ -166,7 +166,7 @@ func (repo UserRepository) FindAllCustomer(limit int, offset int, filters []map[
 
 func (repo UserRepository) FindAllDriver(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.Driver, error) {
 	drivers := []entities.Driver{}
-	builder := repo.db.Preload("User").Preload("TruckType").Limit(limit).Offset(offset)
+	builder := repo.db.Joins("User").Preload("User").Preload("TruckType").Limit(limit).Offset(offset)
 	// Where filters
 	for _, filter := range filters {
 		builder.Where(filter["field"]+" "+filter["operator"]+" ?", filter["value"])
