@@ -7,7 +7,9 @@ import (
 	"bringeee-capstone/entities/web"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
+	userRepository "bringeee-capstone/repositories/user"
 	"mime/multipart"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -15,16 +17,18 @@ import (
 )
 
 type OrderService struct {
-	orderRepository orderRepository.OrderRepositoryInterface
+	orderRepository        orderRepository.OrderRepositoryInterface
 	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface
-	validate *validator.Validate
+	userRepository         userRepository.UserRepositoryInterface
+	validate               *validator.Validate
 }
 
-func NewOrderService(repository orderRepository.OrderRepositoryInterface, orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface) *OrderService {
+func NewOrderService(repository orderRepository.OrderRepositoryInterface, orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface, userRepository userRepository.UserRepositoryInterface) *OrderService {
 	return &OrderService{
-		orderRepository: repository,
+		orderRepository:        repository,
 		orderHistoryRepository: orderHistoryRepository,
-		validate: validator.New(),
+		userRepository:         userRepository,
+		validate:               validator.New(),
 	}
 }
 
@@ -41,7 +45,7 @@ func NewOrderService(repository orderRepository.OrderRepositoryInterface, orderH
  * @return error	error
  */
 func (service OrderService) FindAll(limit int, page int, filters []map[string]interface{}, sorts []map[string]interface{}) ([]entities.OrderResponse, error) {
-	
+
 	offset := (page - 1) * limit
 
 	// Repository action find all order
@@ -56,10 +60,11 @@ func (service OrderService) FindAll(limit int, page int, filters []map[string]in
 	for i, order := range orders {
 		copier.Copy(&ordersRes[i], &order.Destination)
 		copier.Copy(&ordersRes[i].Driver, &order.Driver.User)
-		ordersRes[i].ID = order.ID 	// fix: overlap destinationID vs orderID
+		ordersRes[i].ID = order.ID // fix: overlap destinationID vs orderID
 	}
 	return ordersRes, nil
 }
+
 /*
  * Get Pagination
  * -------------------------------
@@ -84,12 +89,13 @@ func (service OrderService) GetPagination(limit int, page int, filters []map[str
 		totalPages = 1
 	}
 	return web.Pagination{
-		Page: page,
-		Limit: limit,
-		TotalPages: int(totalPages),
+		Page:         page,
+		Limit:        limit,
+		TotalPages:   int(totalPages),
 		TotalRecords: int(totalRows),
 	}, nil
 }
+
 /*
  * Find
  * -------------------------------
@@ -110,8 +116,7 @@ func (service OrderService) Find(id int) (entities.OrderResponse, error) {
 	copier.Copy(&orderRes, &order)
 	copier.Copy(&orderRes, &order.Destination)
 	copier.Copy(&orderRes.Driver, &order.Driver.User)
-	orderRes.ID = order.ID 	// fix: overlap destinationID vs orderID
-
+	orderRes.ID = order.ID // fix: overlap destinationID vs orderID
 
 	return orderRes, nil
 }
@@ -121,7 +126,7 @@ func (service OrderService) Find(id int) (entities.OrderResponse, error) {
  * -------------------------------
  * Mengambil order pertama berdasarkan filter yang telah di tentukan pada parameter
  * dan mengambil data pertama sebagai data order tunggal
- * @var filter 
+ * @var filter
  * @return OrderResponse	order response dalam bentuk tunggal
  * @return error			error
  */
@@ -137,7 +142,7 @@ func (service OrderService) FindFirst(filters []map[string]interface{}) (entitie
 	copier.Copy(&orderRes, &order)
 	copier.Copy(&orderRes, &order.Destination)
 	copier.Copy(&orderRes.Driver, &order.Driver.User)
-	orderRes.ID = order.ID 	// fix: overlap destinationID vs orderID
+	orderRes.ID = order.ID // fix: overlap destinationID vs orderID
 
 	return orderRes, nil
 }
@@ -148,7 +153,7 @@ func (service OrderService) FindFirst(filters []map[string]interface{}) (entitie
  * Membuat order baru berdasarkan user yang sedang login
  * @var orderRequest		request create order oleh customer
  * @var files				list file request untuk diteruskan ke validation dan upload
- * @return OrderResponse	order response 
+ * @return OrderResponse	order response
  */
 func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int) (entities.OrderResponse, error) {
 	// validation
@@ -171,14 +176,14 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 		case "order_picture":
 			fileFile, err := file.Open()
 			if err != nil {
-				return entities.OrderResponse{}, web.WebError{Code: 500, Message: "Cannot process the requested file"}	
+				return entities.OrderResponse{}, web.WebError{Code: 500, Message: "Cannot process the requested file"}
 			}
 			defer fileFile.Close()
-			
+
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := helpers.UploadFileToS3("orders/order_picture/" + fileName, fileFile)
+			fileUrl, err := helpers.UploadFileToS3("orders/order_picture/"+fileName, fileFile)
 			if err != nil {
-				return entities.OrderResponse{}, web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file" ,DevelopmentMessage: err.Error()}
+				return entities.OrderResponse{}, web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
 			order.OrderPicture = fileUrl
 		}
@@ -197,66 +202,165 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 	orderRes, err := service.Find(int(order.ID))
 	if err != nil {
 		return entities.OrderResponse{}, web.WebError{
-			Code: 500, 
-			DevelopmentMessage: "Cannot get newly inserted data: " + err.Error(), 
-			ProductionMessage: "Cannot get newly data",
+			Code:               500,
+			DevelopmentMessage: "Cannot get newly inserted data: " + err.Error(),
+			ProductionMessage:  "Cannot get newly data",
 		}
 	}
 	return orderRes, nil
 }
+
 /*
  * Admin Set fixed price order
  * -------------------------------
  * Set fixed price order oleh admin untuk diteruskan kembali ke user agar di konfirmasi/cancel
+ * @var orderID				orderID
  * @var orderRequest		request create order oleh customer
- * @return OrderResponse	order response 
+ * @return OrderResponse	order response
  */
-func (service OrderService) SetFixOrder(setPriceRequest entities.AdminSetPriceOrderRequest) error  {
-	panic("implement me")
+func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.AdminSetPriceOrderRequest) error  {
+	err := validations.ValidateAdminSetPriceOrderRequest(service.validate, setPriceRequest)
+	if err != nil {
+		return err
+	}
+
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+
+	// reject if status other than requested
+	if order.Status != "REQUESTED" {
+		return web.WebError{
+			Code: 400,
+			Message: "Status order was already confirmed or cancelled",
+		}
+	}
+	
+	// Update via repository
+	order.FixPrice = setPriceRequest.FixedPrice
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return err
+	}
+	service.orderHistoryRepository.Create(orderID, "Perubahan detail order oleh admin", "admin")
+	return nil
 }
+
 /*
  * Confirm Order
  * -------------------------------
  * Confirm order yang sudah dibuat
  * @var orderID				ID Order yang akan di cancel
- * @return OrderResponse	order response 
+ * @return OrderResponse	order response
  */
 func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) error  {
-	panic("implement me")
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+
+	// set fix price = estimated price if fix price empty
+	if order.FixPrice <= 0 {
+		order.FixPrice = order.EstimatedPrice
+	}
+
+	// reject if status other than requested
+	if order.Status != "REQUESTED" {
+		return web.WebError{
+			Code: 400,
+			Message: "Status order was already confirmed or cancelled",
+		}
+	}
+
+	// reject if order doesn't belong to customer (except admin)
+	if !isAdmin {
+		if order.CustomerID != uint(userID) {
+			return web.WebError{
+				Code: 400,
+				Message: "Order doesn't belong to currently authenticated user",
+			}
+		}
+	}
+
+	// Update via repository
+	order.Status = "CONFIRMED"
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return err
+	}
+	service.orderHistoryRepository.Create(orderID, "Order dikonfirmasi", map[bool]string{true: "admin", false: "customer"}[isAdmin])
+	return nil
 }
+
 /*
  * Cancel Order
  * -------------------------------
  * Cancel order yang sudah dibuat
  * @var orderID				ID Order yang akan di cancel
- * @return OrderResponse	order response 
+ * @return OrderResponse	order response
  */
 func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) error  {
-	panic("implement me")
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+
+	// reject if status other than requested
+	if order.Status != "REQUESTED" && order.Status != "CONFIRMED" {
+		return web.WebError{
+			Code: 400,
+			Message: "Cannot cancel order: status order was already " + order.Status,
+		}
+	}
+
+	// reject if order doesn't belong to customer (except admin)
+	if !isAdmin {
+		if order.CustomerID != uint(userID) {
+			return web.WebError{
+				Code: 400,
+				Message: "Order doesn't belong to currently authenticated user",
+			}
+		}
+	}
+
+	// Update via repository
+	order.Status = "CANCELLED"
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return err
+	}
+	service.orderHistoryRepository.Create(orderID, "Order dibatalkan", map[bool]string{true: "admin", false: "customer"}[isAdmin])
+	return nil
 }
+
 /*
  * Create Payment
  * -------------------------------
  * Buat pembayaran untuk order tertentu ke layanan pihak ketiga
  * @var orderID					ID Order yang akan di cancel
  * @var createPaymentRequest	request payment
- * @return PaymentResponse		response payment 
+ * @return PaymentResponse		response payment
  */
 func (service OrderService) CreatePayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error) {
 	panic("implement me")
 }
+
 /*
  * Get Payment
  * -------------------------------
  * Mengambil data pembayaran yang sudah ada berdasarkan transaction_id yang sudah di set pada order
  * @var orderID					ID Order yang akan di cancel
  * @var createPaymentRequest	request payment
- * @return PaymentResponse		response payment 
+ * @return PaymentResponse		response payment
  */
 func (service OrderService) GetPayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error) {
 	panic("implement me")
 }
-	
+
 /*
  * Find All History
  * -------------------------------
@@ -278,6 +382,7 @@ func (service OrderService) FindAllHistory(orderID int, sorts []map[string]inter
 	copier.Copy(&historiesRes, &histories)
 	return historiesRes, nil
 }
+
 /*
  * Webhook
  * -------------------------------
@@ -295,7 +400,7 @@ func (service OrderService) PaymentWebhook(orderID int) error {
 
 	// if status settlement, set order to MANIFESTED
 	// if status is deny, cancel, expire, set to CANCELLED
-	
+
 	panic("implement me")
 }
 
@@ -307,7 +412,40 @@ func (service OrderService) PaymentWebhook(orderID int) error {
  * @var userID		authenticated user (role: driver)
  */
 func (service OrderService) TakeOrder(orderID int, userID int) error {
-	panic("implement me")
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "The requested ID doesn't match with any record"}
+	}
+	driver, err := service.userRepository.FindByDriver("user_id", strconv.Itoa(userID))
+	if err != nil {
+		return web.WebError{Code: 500, ProductionMessage: "The requested Driver ID doesn't match with any record", DevelopmentMessage: err.Error()}
+	}
+	if driver.Status == "BUSY" {
+		return web.WebError{Code: 400, Message: "Finish your current order first"}
+	}
+	if order.DriverID != 0 {
+		return web.WebError{Code: 400, Message: "This order already taken by someone else"}
+	}
+	if order.TruckTypeID != driver.TruckTypeID {
+		return web.WebError{Code: 400, Message: "Cannot take order that doesn't match with your truck type"}
+	}
+	if order.Status != "MANIFESTED" {
+		return web.WebError{Code: 400, ProductionMessage: "This order hasn't been paid for by the customer"}
+	}
+	order.DriverID = driver.ID
+	order.Status = "ON_PROCESS"
+	order, err = service.orderRepository.Update(order, userID)
+	if err != nil {
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update order: " + err.Error()}
+	}
+	driver.Status = "BUSY"
+	driver, err = service.userRepository.UpdateDriver(driver, userID)
+	if err != nil {
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update driver:" + err.Error()}
+	}
+	// Log
+	service.orderHistoryRepository.Create(int(order.ID), "Order diambil oleh "+driver.User.Name, "driver")
+	return err
 }
 
 /*
@@ -318,5 +456,60 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
  * @var userID		authenticated user (role: driver)
  */
 func (service OrderService) FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader) error {
-	panic("implement me")
+	// validation
+	err := validations.ValidateUpdateOrderRequest(files)
+	if err != nil {
+		return err
+	}
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+	driver, err := service.userRepository.FindByDriver("user_id", strconv.Itoa(userID))
+	if err != nil {
+		return err
+	}
+	if order.Status != "ON_PROCESS" {
+		return web.WebError{Code: 400, Message: "Order wasn't on process"}
+	}
+	if order.DriverID == 0 {
+		return web.WebError{Code: 400, Message: "The current order has not belong to any driver, take the order first"}
+	}
+	if order.DriverID != driver.ID {
+		return web.WebError{Code: 400, Message: "Cannot finish order that belong to someone else"}
+	}
+
+	// Upload file to cloud storage
+	for field, file := range files {
+		switch field {
+		case "arrived_picture":
+			fileFile, err := file.Open()
+			if err != nil {
+				return web.WebError{Code: 500, Message: "Cannot process the requested file"}
+			}
+			defer fileFile.Close()
+
+			fileName := uuid.New().String() + file.Filename
+			fileUrl, err := helpers.UploadFileToS3("orders/arrived_picture/"+fileName, fileFile)
+			if err != nil {
+				return web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
+			}
+			order.ArrivedPicture = fileUrl
+		}
+	}
+
+	order.Status = "DELIVERED"
+	order, err = service.orderRepository.Update(order, userID)
+	if err != nil {
+		return web.WebError{Code: 500, ProductionMessage: "Cannot update current order", DevelopmentMessage: "Update order error: " + err.Error()}
+	}
+	driver.Status = "IDLE"
+	driver, err = service.userRepository.UpdateDriver(driver, userID)
+	if err != nil {
+		return web.WebError{Code: 500, ProductionMessage: "Cannot update current driver", DevelopmentMessage: "Update driver error: " + err.Error()}
+	}
+	// Log
+	service.orderHistoryRepository.Create(int(order.ID), "Order yang diantar "+driver.User.Name+" telah sampai di tujuan", "driver")
+
+	return err
 }

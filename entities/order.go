@@ -136,7 +136,7 @@ type OrderResponse struct {
 	TotalWeight int	`json:"total_weight"`
 	Distance int	`json:"distance"`
 	EstimatedPrice int64	`json:"estimated_price"`
-	FixedPrice int64	`json:"fixed_price"`
+	FixPrice int64	`json:"fix_price"`
 	TransactionID interface{}	`json:"transaction_id"`
 	Status string	`json:"status"`
 	Description string	`json:"description"`

@@ -3,6 +3,8 @@ package user
 import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	"bringeee-capstone/utils"
+	"fmt"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -125,6 +127,7 @@ func (repo UserRepository) UpdateCustomer(user entities.User, id int) (entities.
 }
 
 func (repo UserRepository) UpdateDriver(driver entities.Driver, id int) (entities.Driver, error) {
+	fmt.Println(utils.JsonEncode(driver))
 	tx := repo.db.Save(&driver)
 	if tx.Error != nil {
 		// return Kode 500 jika error

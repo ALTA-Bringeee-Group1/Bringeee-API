@@ -17,13 +17,13 @@ import (
 )
 
 type DriverHandler struct {
-	userService *userService.UserService
+	userService  *userService.UserService
 	orderService orderService.OrderServiceInterface
 }
 
 func NewDriverHandler(service *userService.UserService, orderService orderService.OrderServiceInterface) *DriverHandler {
 	return &DriverHandler{
-		userService: service,
+		userService:  service,
 		orderService: orderService,
 	}
 }
@@ -122,7 +122,6 @@ func (handler DriverHandler) UpdateDriver(c echo.Context) error {
 	})
 }
 
-
 /*
  * List Order (Driver)
  * ------------------------------------
@@ -130,7 +129,7 @@ func (handler DriverHandler) UpdateDriver(c echo.Context) error {
  * role spesific tertentu (customer, admin & driver)
  */
 func (handler DriverHandler) ListOrders(c echo.Context) error {
-	
+
 	links := map[string]string{}
 	userID, role, _ := middleware.ReadToken(c.Get("user"))
 
@@ -149,41 +148,41 @@ func (handler DriverHandler) ListOrders(c echo.Context) error {
 	if role != "driver" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
 	// find userdata driver
 	driver, err := handler.userService.FindByDriver("user_id", strconv.Itoa(userID))
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{ 
-			Status: "ERROR", 
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",  
-			Links: links,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
 	// filters & sorts
-	filters := []map[string]interface{} {
+	filters := []map[string]interface{}{
 		{
-			"field": "truck_type_id", 
-			"operator": "=", 
-			"value": strconv.Itoa(int(driver.TruckTypeID)),
-		}, 
+			"field":    "truck_type_id",
+			"operator": "=",
+			"value":    strconv.Itoa(int(driver.TruckTypeID)),
+		},
 		{
-			"field": "status", 
-			"operator": "=", 
-			"value": "MANIFESTED",
+			"field":    "status",
+			"operator": "=",
+			"value":    "MANIFESTED",
 		},
 	}
 	sorts := []map[string]interface{}{
-		{ "field": "updated_at", 	"desc": true },
-		{ "field": "total_volume", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortVolume")]},
-		{ "field": "total_weight", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortWeight")]},
-		{ "field": "distance", 		"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]},
+		{"field": "updated_at", "desc": true},
+		{"field": "total_volume", "desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortVolume")]},
+		{"field": "total_weight", "desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortWeight")]},
+		{"field": "distance", "desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]},
 	}
 
 	// call order service
@@ -197,28 +196,28 @@ func (handler DriverHandler) ListOrders(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusInternalServerError,
-			Error: err.Error(),
-			Links: links,
+			Code:   http.StatusInternalServerError,
+			Error:  err.Error(),
+			Links:  links,
 		})
 	}
 	pageUrl := fmt.Sprintf("%s/api/customers/orders?page=", configs.Get().App.BaseURL)
 	links["first"] = pageUrl + "1"
 	links["last"] = pageUrl + strconv.Itoa(paginationRes.TotalPages)
 	if paginationRes.Page > 1 {
-		links["previous"] = pageUrl + strconv.Itoa(page - 1)
+		links["previous"] = pageUrl + strconv.Itoa(page-1)
 	}
 	if paginationRes.Page < paginationRes.TotalPages {
-		links["previous"] = pageUrl + strconv.Itoa(page + 1)
+		links["previous"] = pageUrl + strconv.Itoa(page+1)
 	}
 
 	// Success list response
 	return c.JSON(http.StatusOK, web.SuccessListResponse{
-		Status: "OK",
-		Error: nil,
-		Code: http.StatusOK,
-		Links: links,
-		Data: ordersRes,
+		Status:     "OK",
+		Error:      nil,
+		Code:       http.StatusOK,
+		Links:      links,
+		Data:       ordersRes,
 		Pagination: paginationRes,
 	})
 }
@@ -238,9 +237,9 @@ func (handler DriverHandler) CurrentOrder(c echo.Context) error {
 	if role != "driver" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
@@ -250,18 +249,18 @@ func (handler DriverHandler) CurrentOrder(c echo.Context) error {
 	// find userdata driver
 	driver, err := handler.userService.FindByDriver("user_id", strconv.Itoa(userID))
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{ 
-			Status: "ERROR", 
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",  
-			Links: links,
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
 	// service call
 	orderRes, err := handler.orderService.FindFirst([]map[string]interface{}{
-		{ "field": "driver_id", "operator": "=", "value": strconv.Itoa(int(driver.ID))},
-		{ "field": "status", 	"operator": "=", "value": "ON_PROCESS"},
+		{"field": "driver_id", "operator": "=", "value": strconv.Itoa(int(driver.ID))},
+		{"field": "status", "operator": "=", "value": "ON_PROCESS"},
 	})
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
@@ -269,9 +268,109 @@ func (handler DriverHandler) CurrentOrder(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
-		Data: orderRes,
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data:   orderRes,
+	})
+}
+
+func (handler DriverHandler) TakeOrder(c echo.Context) error {
+	// Get param and token
+	id, tx := strconv.Atoi(c.Param("id"))
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/orders/" + c.Param("id") + "/take_order"}
+	if tx != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
+	token := c.Get("user")
+	tokenID, role, err := middleware.ReadToken(token)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if role != "driver" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	err = handler.orderService.TakeOrder(id, tokenID)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"id": id,
+		},
+	})
+}
+
+func (handler DriverHandler) FinishOrder(c echo.Context) error {
+	// Get param and token
+	id, tx := strconv.Atoi(c.Param("id"))
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/orders/" + c.Param("id") + "/take_order"}
+	if tx != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
+	token := c.Get("user")
+	tokenID, role, err := middleware.ReadToken(token)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if role != "driver" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	// Read files
+	files := map[string]*multipart.FileHeader{}
+	arrived_picture, _ := c.FormFile("arrived_picture")
+	files["arrived_picture"] = arrived_picture
+
+	err = handler.orderService.FinishOrder(id, tokenID, files)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"id": id,
+		},
 	})
 }
