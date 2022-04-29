@@ -27,6 +27,8 @@ func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler) {
 
 	order := e.Group("/api/drivers/orders", middleware.JWTMiddleware())
 	order.GET("", driverHandler.ListOrders)
+	order.POST("/:id/take_order", driverHandler.TakeOrder, middleware.JWTMiddleware())
+	order.POST("/:id/finish_order", driverHandler.FinishOrder, middleware.JWTMiddleware())
 	e.GET("/api/drivers/current_order", driverHandler.CurrentOrder, middleware.JWTMiddleware())
 }
 
