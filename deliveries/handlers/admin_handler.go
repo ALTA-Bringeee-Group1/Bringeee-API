@@ -18,13 +18,13 @@ import (
 )
 
 type AdminHandler struct {
-	userService *userService.UserService
+	userService  *userService.UserService
 	orderService orderService.OrderServiceInterface
 }
 
 func NewAdminHandler(service *userService.UserService, orderService orderService.OrderServiceInterface) *AdminHandler {
 	return &AdminHandler{
-		userService: service,
+		userService:  service,
 		orderService: orderService,
 	}
 }
@@ -368,8 +368,7 @@ func (handler AdminHandler) GetSingleCustomer(c echo.Context) error {
 	})
 }
 
-
-/* 
+/*
  * Admin - Detail Order - Get Histories
  * ---------------------------------
  * List history tracking dari satu detail order tunggal
@@ -382,9 +381,9 @@ func (handler AdminHandler) DetailOrderHistory(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
-			Code: 400,
-			Error: "Order ID parameter is invalid",
-			Links: links,
+			Code:   400,
+			Error:  "Order ID parameter is invalid",
+			Links:  links,
 		})
 	}
 
@@ -395,7 +394,7 @@ func (handler AdminHandler) DetailOrderHistory(c echo.Context) error {
 
 	// Get order tracking histories
 	histories, err := handler.orderService.FindAllHistory(orderID, []map[string]interface{}{
-		{ "field": "created_at", "desc": true },
+		{"field": "created_at", "desc": true},
 	})
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
@@ -403,10 +402,10 @@ func (handler AdminHandler) DetailOrderHistory(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
-		Data: histories,
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data:   histories,
 	})
 }
 
@@ -417,7 +416,7 @@ func (handler AdminHandler) DetailOrderHistory(c echo.Context) error {
  * GET /api/orders
  */
 func (handler AdminHandler) ListOrders(c echo.Context) error {
-	
+
 	links := map[string]string{}
 	_, role, _ := middleware.ReadToken(c.Get("user"))
 
@@ -436,18 +435,18 @@ func (handler AdminHandler) ListOrders(c echo.Context) error {
 	if role != "admin" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
 	// filters & sorts
-	filters := []map[string]interface{} {}
+	filters := []map[string]interface{}{}
 	sorts := []map[string]interface{}{
-		{ "field": "total_volume", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortVolume")]},
-		{ "field": "total_weight", 	"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortWeight")]},
-		{ "field": "distance", 		"desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]},
+		{"field": "total_volume", "desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortVolume")]},
+		{"field": "total_weight", "desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortWeight")]},
+		{"field": "distance", "desc": map[string]bool{"1": true, "0": false}[c.QueryParam("sortDistance")]},
 	}
 
 	// Multi status filters
@@ -457,9 +456,9 @@ func (handler AdminHandler) ListOrders(c echo.Context) error {
 		statusFilters := []map[string]string{}
 		for _, status := range statusArr {
 			statusFilters = append(statusFilters, map[string]string{
-				"field": "status", 
-				"operator": "=", 
-				"value": status,
+				"field":    "status",
+				"operator": "=",
+				"value":    status,
 			})
 		}
 		filters = append(filters, map[string]interface{}{
@@ -468,7 +467,7 @@ func (handler AdminHandler) ListOrders(c echo.Context) error {
 	}
 	truckTypeID := c.QueryParam("truck_type")
 	if truckTypeID != "" {
-		filters = append(filters, map[string]interface{}{ "field": "truck_type_id", "operator": "=", "value": truckTypeID })
+		filters = append(filters, map[string]interface{}{"field": "truck_type_id", "operator": "=", "value": truckTypeID})
 	}
 
 	// call order service
@@ -482,28 +481,28 @@ func (handler AdminHandler) ListOrders(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusInternalServerError,
-			Error: err.Error(),
-			Links: links,
+			Code:   http.StatusInternalServerError,
+			Error:  err.Error(),
+			Links:  links,
 		})
 	}
 	pageUrl := fmt.Sprintf("%s/api/orders?page=", configs.Get().App.BaseURL)
 	links["first"] = pageUrl + "1"
 	links["last"] = pageUrl + strconv.Itoa(paginationRes.TotalPages)
 	if paginationRes.Page > 1 {
-		links["previous"] = pageUrl + strconv.Itoa(page - 1)
+		links["previous"] = pageUrl + strconv.Itoa(page-1)
 	}
 	if paginationRes.Page < paginationRes.TotalPages {
-		links["previous"] = pageUrl + strconv.Itoa(page + 1)
+		links["previous"] = pageUrl + strconv.Itoa(page+1)
 	}
 
 	// Success list response
 	return c.JSON(http.StatusOK, web.SuccessListResponse{
-		Status: "OK",
-		Error: nil,
-		Code: http.StatusOK,
-		Links: links,
-		Data: ordersRes,
+		Status:     "OK",
+		Error:      nil,
+		Code:       http.StatusOK,
+		Links:      links,
+		Data:       ordersRes,
 		Pagination: paginationRes,
 	})
 }
@@ -516,13 +515,13 @@ func (handler AdminHandler) ListOrders(c echo.Context) error {
  */
 func (handler AdminHandler) DetailOrder(c echo.Context) error {
 	links := map[string]string{}
-	_, role, err  := middleware.ReadToken(c.Get("user"))
+	_, role, err := middleware.ReadToken(c.Get("user"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "OK",
-			Code: http.StatusBadRequest,
-			Error: "Order ID parameter is invalid",
-			Links: links,
+			Code:   http.StatusBadRequest,
+			Error:  "Order ID parameter is invalid",
+			Links:  links,
 		})
 	}
 
@@ -531,24 +530,24 @@ func (handler AdminHandler) DetailOrder(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "OK",
-			Code: http.StatusBadRequest,
-			Error: "Order ID parameter is invalid",
-			Links: links,
+			Code:   http.StatusBadRequest,
+			Error:  "Order ID parameter is invalid",
+			Links:  links,
 		})
 	}
 
 	if role != "admin" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
 	// set self links and filters
-	links["self"] = fmt.Sprintf("%s/api/orders/%s", configs.Get().App.BaseURL,strconv.Itoa(orderID))
-	
+	links["self"] = fmt.Sprintf("%s/api/orders/%s", configs.Get().App.BaseURL, strconv.Itoa(orderID))
+
 	// call service order
 	orderRes, err := handler.orderService.Find(orderID)
 	if err != nil {
@@ -557,13 +556,59 @@ func (handler AdminHandler) DetailOrder(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
-		Data: orderRes,
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data:   orderRes,
 	})
 }
 
+func (handler AdminHandler) VerifiedDriverAccount(c echo.Context) error {
+	// Get param and token
+	id, tx := strconv.Atoi(c.Param("id"))
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/drivers/" + c.Param("id") + "/confirm"}
+	if tx != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	driverErr := handler.userService.VerifiedDriverAccount(id)
+	if driverErr != nil {
+		return helpers.WebErrorResponse(c, driverErr, links)
+	}
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"id": id,
+		},
+	})
+}
 /*
  * Admin - Set fixed price
  * ------------------------------------

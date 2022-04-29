@@ -33,6 +33,7 @@ func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler) {
 }
 
 func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
+	e.POST("api/drivers/:id/confirm", AdminHandler.VerifiedDriverAccount, middleware.JWTMiddleware())
 	e.GET("api/drivers", AdminHandler.GetAllDriver, middleware.JWTMiddleware())
 	e.GET("api/drivers/:id", AdminHandler.GetSingleDriver, middleware.JWTMiddleware())
 	e.GET("api/customers/:id", AdminHandler.GetSingleCustomer, middleware.JWTMiddleware())

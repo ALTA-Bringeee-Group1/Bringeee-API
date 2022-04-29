@@ -22,4 +22,5 @@ type UserServiceInterface interface {
 	FindByDriver(field string, value string) (entities.DriverResponse, error)
 	FindDriver(id int) (entities.DriverResponse, error)
 	DeleteDriver(id int) error
+	VerifiedDriverAccount(id int) error
 }
