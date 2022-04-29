@@ -255,6 +255,11 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
 		return err
 	}
 
+	// set fix price = estimated price if fix price empty
+	if order.FixPrice <= 0 {
+		order.FixPrice = order.EstimatedPrice
+	}
+
 	// reject if status other than requested
 	if order.Status != "REQUESTED" {
 		return web.WebError{
