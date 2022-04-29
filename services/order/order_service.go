@@ -426,11 +426,11 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
 	if order.TruckTypeID != driver.TruckTypeID {
 		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Cannot take order that doesn't match with your truck type"}
 	}
-	if order.Status != "CONFIRMED" {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "This order is not confirmed by admin"}
+	if order.Status != "MANIFESTED" {
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "This order has not been paid for by the customer"}
 	}
 	order.DriverID = driver.ID
-	order.Status = "MANIFESTED"
+	order.Status = "ON PROCESS"
 	order, err = service.orderRepository.Update(order, userID)
 	if err != nil {
 		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current order"}
