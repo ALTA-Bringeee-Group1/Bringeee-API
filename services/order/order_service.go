@@ -295,7 +295,38 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
  * @return OrderResponse	order response 
  */
 func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) error  {
-	panic("implement me")
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+
+	// reject if status other than requested
+	if order.Status != "REQUESTED" && order.Status != "CONFIRMED" {
+		return web.WebError{
+			Code: 400,
+			Message: "Cannot cancel order: status order was already " + order.Status,
+		}
+	}
+
+	// reject if order doesn't belong to customer (except admin)
+	if !isAdmin {
+		if order.CustomerID != uint(userID) {
+			return web.WebError{
+				Code: 400,
+				Message: "Order doesn't belong to currently authenticated user",
+			}
+		}
+	}
+
+	// Update via repository
+	order.Status = "CANCELLED"
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return err
+	}
+	service.orderHistoryRepository.Create(orderID, "Order dibatalkan", map[bool]string{true: "admin", false: "customer"}[isAdmin])
+	return nil
 }
 /*
  * Create Payment
