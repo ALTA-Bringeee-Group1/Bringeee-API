@@ -620,3 +620,58 @@ func (handler AdminHandler) SetFixedPrice(c echo.Context) error {
 		},
 	})
 }
+
+/*
+ * Admin - Confirm order
+ * ------------------------------------
+ * Mendapatkan detail order
+ * POST /api/order/{orderID}/confirm
+ */
+func (handler AdminHandler) ConfirmOrder(c echo.Context) error {
+	links := map[string]string{}
+	orderID, err := strconv.Atoi(c.Param("orderID"))
+	links["self"] = fmt.Sprintf("%s/api/orders/%s", configs.Get().App.BaseURL, c.Param("orderID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusBadRequest,
+			Error: "Invalid order id parameter",
+			Links: links,
+		})
+	}
+	userID, role, err := middleware.ReadToken(c.Get("user"))
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// reject if not admin
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code: http.StatusUnauthorized,
+			Error: "Unauthorized user",
+			Links: links,
+		})
+	}
+
+	// service action
+	err = handler.orderService.ConfirmOrder(orderID, userID, map[string]bool{"admin": true, "": false}[role])
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code: http.StatusOK,
+		Error: nil,
+		Links: links,
+		Data: map[string]interface{} {
+			"id": orderID,
+		},
+	})
+}
