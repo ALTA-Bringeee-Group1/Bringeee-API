@@ -6,6 +6,7 @@ import (
 	"bringeee-capstone/deliveries/routes"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
+	paymentRepository "bringeee-capstone/repositories/payment"
 	regionRepository "bringeee-capstone/repositories/region"
 	truckRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
@@ -37,6 +38,7 @@ func main() {
 	truckTypeRepository := truckRepository.NewTruckTypeRepository(db)
 	orderRepository := orderRepository.NewOrderRepository(db)
 	orderHistoryRepository := orderHistoryRepository.NewOrderHistoryRepository(db)
+	midtransPaymentRepository := paymentRepository.NewMidtransPaymentRepository()
 
 	authService := authService.NewAuthService(userRepository)
 	userService := userService.NewUserService(userRepository, truckTypeRepository)
@@ -58,7 +60,6 @@ func main() {
 	routes.RegisterAuthRoute(e, authHandler)
 	routes.RegisterRegionHandler(e, regionHandler)
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
-
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
 
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
