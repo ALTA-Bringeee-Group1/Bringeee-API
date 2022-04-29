@@ -670,3 +670,18 @@ func (service UserService) FindByCustomer(field string, value string) (entities.
 
 	return userRes, err
 }
+
+func (service UserService) VerifiedDriverAccount(id int) error {
+	driver, err := service.userRepo.FindDriver(id)
+	if err != nil {
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "The requested ID user doesn't match with any record"}
+	}
+	if driver.AccountStatus != "VERIFIED" {
+		driver.AccountStatus = "VERIFIED"
+	} else {
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "This account already VERIFIED"}
+	}
+	driver, err = service.userRepo.UpdateDriver(driver, int(driver.ID))
+
+	return err
+}
