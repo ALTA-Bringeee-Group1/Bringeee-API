@@ -418,30 +418,30 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
 	}
 	driver, err := service.userRepository.FindByDriver("user_id", strconv.Itoa(userID))
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "The requested Driver ID doesn't match with any record"}
+		return web.WebError{Code: 500, ProductionMessage: "The requested Driver ID doesn't match with any record", DevelopmentMessage: err.Error()}
 	}
-	if driver.Status != "BUSY" {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Finish your current order first"}
+	if driver.Status == "BUSY" {
+		return web.WebError{Code: 400, Message: "Finish your current order first"}
 	}
 	if order.DriverID != 0 {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "This order already taken by someone else"}
+		return web.WebError{Code: 400, Message: "This order already taken by someone else"}
 	}
 	if order.TruckTypeID != driver.TruckTypeID {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Cannot take order that doesn't match with your truck type"}
+		return web.WebError{Code: 400, Message: "Cannot take order that doesn't match with your truck type"}
 	}
 	if order.Status != "MANIFESTED" {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "This order has not been paid for by the customer"}
+		return web.WebError{Code: 400, ProductionMessage: "This order hasn't been paid for by the customer"}
 	}
 	order.DriverID = driver.ID
-	order.Status = "ON PROCESS"
+	order.Status = "ON_PROCESS"
 	order, err = service.orderRepository.Update(order, userID)
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current order"}
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update order: " + err.Error()}
 	}
 	driver.Status = "BUSY"
 	driver, err = service.userRepository.UpdateDriver(driver, userID)
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current driver"}
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update driver:" + err.Error()}
 	}
 	// Log
 	service.orderHistoryRepository.Create(int(order.ID), "Order diambil oleh "+driver.User.Name, "driver")
