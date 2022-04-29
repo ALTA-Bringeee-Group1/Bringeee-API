@@ -40,7 +40,7 @@ func main() {
 
 	authService := authService.NewAuthService(userRepository)
 	userService := userService.NewUserService(userRepository, truckTypeRepository)
-	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository)
+	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository, userRepository)
 	regionService := regionService.NewRegionService(regionRepository)
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
 
@@ -60,6 +60,6 @@ func main() {
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
 
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
-	
+
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
