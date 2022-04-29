@@ -42,6 +42,7 @@ func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
 	order.GET("/:orderID", AdminHandler.DetailOrder)
 	order.PATCH("/:orderID", AdminHandler.SetFixedPrice)
 	order.POST("/:orderID/confirm", AdminHandler.ConfirmOrder)
+	order.POST("/:orderID/cancel", AdminHandler.CancelOrder)
 	order.GET("/:orderID/histories", AdminHandler.DetailOrderHistory)
 }
 
