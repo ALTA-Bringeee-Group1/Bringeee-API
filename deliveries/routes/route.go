@@ -40,6 +40,7 @@ func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
 	order := e.Group("/api/orders", middleware.JWTMiddleware())
 	order.GET("", AdminHandler.ListOrders)
 	order.GET("/:orderID", AdminHandler.DetailOrder)
+	order.PATCH("/:orderID", AdminHandler.SetFixedPrice)
 	order.GET("/:orderID/histories", AdminHandler.DetailOrderHistory)
 }
 
