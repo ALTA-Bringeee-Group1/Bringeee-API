@@ -488,10 +488,11 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 			if err != nil {
 				return web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
-			order.OrderPicture = fileUrl
+			order.ArrivedPicture = fileUrl
 		}
 	}
 	order.Status = "DELIVERED"
+
 	order, err = service.orderRepository.Update(order, userID)
 	if err != nil {
 		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current order"}
