@@ -208,11 +208,38 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
  * Admin Set fixed price order
  * -------------------------------
  * Set fixed price order oleh admin untuk diteruskan kembali ke user agar di konfirmasi/cancel
+ * @var orderID				orderID
  * @var orderRequest		request create order oleh customer
  * @return OrderResponse	order response 
  */
-func (service OrderService) SetFixOrder(setPriceRequest entities.AdminSetPriceOrderRequest) error  {
-	panic("implement me")
+func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.AdminSetPriceOrderRequest) error  {
+	err := validations.ValidateAdminSetPriceOrderRequest(service.validate, setPriceRequest)
+	if err != nil {
+		return err
+	}
+
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+
+	// reject if status other than requested
+	if order.Status != "REQUESTED" {
+		return web.WebError{
+			Code: 400,
+			Message: "Status order was already confirmed or cancelled",
+		}
+	}
+	
+	// Update via repository
+	order.FixPrice = setPriceRequest.FixedPrice
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return err
+	}
+	service.orderHistoryRepository.Create(orderID, "Perubahan detail order oleh admin", "admin")
+	return nil
 }
 /*
  * Confirm Order
@@ -222,7 +249,38 @@ func (service OrderService) SetFixOrder(setPriceRequest entities.AdminSetPriceOr
  * @return OrderResponse	order response 
  */
 func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) error  {
-	panic("implement me")
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+
+	// reject if status other than requested
+	if order.Status != "REQUESTED" {
+		return web.WebError{
+			Code: 400,
+			Message: "Status order was already confirmed or cancelled",
+		}
+	}
+
+	// reject if order doesn't belong to customer (except admin)
+	if !isAdmin {
+		if order.CustomerID != uint(userID) {
+			return web.WebError{
+				Code: 400,
+				Message: "Order doesn't belong to currently authenticated user",
+			}
+		}
+	}
+
+	// Update via repository
+	order.Status = "CONFIRMED"
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return err
+	}
+	service.orderHistoryRepository.Create(orderID, "Order dikonfirmasi", map[bool]string{true: "admin", false: "customer"}[isAdmin])
+	return nil
 }
 /*
  * Cancel Order
