@@ -459,28 +459,26 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 	// validation
 	err := validations.ValidateUpdateOrderRequest(files)
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
+		return err
 	}
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "The requested ID doesn't match with any record"}
+		return err
 	}
 	driver, err := service.userRepository.FindByDriver("user_id", strconv.Itoa(userID))
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "The requested Driver ID doesn't match with any record"}
+		return err
 	}
-	if order.Status == "DELIVERED" {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Already finish!"}
+	if order.Status != "ON_PROCESS" {
+		return web.WebError{Code: 400, Message: "Order wasn't on process"}
 	}
 	if order.DriverID == 0 {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "The current order has not belong to somenone else, take the ordrer first"}
+		return web.WebError{Code: 400, Message: "The current order has not belong to any driver, take the order first"}
 	}
 	if order.DriverID != driver.ID {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Cannot finish order that belong to someone else"}
+		return web.WebError{Code: 400, Message: "Cannot finish order that belong to someone else"}
 	}
-	if len(files) == 0 {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Arrived picture must be filled"}
-	}
+
 	// Upload file to cloud storage
 	for field, file := range files {
 		switch field {
@@ -499,16 +497,16 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 			order.ArrivedPicture = fileUrl
 		}
 	}
-	order.Status = "DELIVERED"
 
+	order.Status = "DELIVERED"
 	order, err = service.orderRepository.Update(order, userID)
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current order"}
+		return web.WebError{Code: 500, ProductionMessage: "Cannot update current order", DevelopmentMessage: "Update order error: " + err.Error()}
 	}
 	driver.Status = "IDLE"
 	driver, err = service.userRepository.UpdateDriver(driver, userID)
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current driver"}
+		return web.WebError{Code: 500, ProductionMessage: "Cannot update current driver", DevelopmentMessage: "Update driver error: " + err.Error()}
 	}
 	// Log
 	service.orderHistoryRepository.Create(int(order.ID), "Order yang diantar "+driver.User.Name+" telah sampai di tujuan", "driver")
