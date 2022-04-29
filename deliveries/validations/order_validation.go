@@ -46,8 +46,12 @@ var orderErrorMessages = map[string]string{
  * [field]: [size]
  */
 var orderFileSizeRules = map[string]int{
-	"avatar": 1024 * 1024, // 1MB
+	"avatar":        1024 * 1024, // 1MB
 	"order_picture": 1024 * 1024,
+}
+
+var finishFileSizeRules = map[string]int{
+	"arrived_picture": 1024 * 1024,
 }
 
 /*
@@ -57,8 +61,11 @@ var orderFileSizeRules = map[string]int{
  * [field]: ext1|ext2|ext3...
  */
 var orderFileExtRules = map[string]string{
-	"avatar": "jpg|jpeg|png|webp|bmp",
+	"avatar":        "jpg|jpeg|png|webp|bmp",
 	"order_picture": "jpg|jpeg|png|webp|bmp",
+}
+var finishFileExtRules = map[string]string{
+	"arrived_picture": "jpg|jpeg|png|webp|bmp",
 }
 
 /*
@@ -99,6 +106,21 @@ func ValidateAdminSetPriceOrderRequest(validate *validator.Validate, adminSetPri
 	return nil
 }
 
+func ValidateUpdateOrderRequest(orderFiles map[string]*multipart.FileHeader) error {
+
+	errors := []web.ValidationErrorItem{}
+
+	validateOrderFiles(orderFiles, finishFileSizeRules, finishFileExtRules, &errors)
+	if len(errors) > 0 {
+		return web.ValidationError{
+			Code:               400,
+			ProductionMessage:  "Bad Request",
+			DevelopmentMessage: "Validation error",
+			Errors:             errors,
+		}
+	}
+	return nil
+}
 
 func validateOrderStruct(validate *validator.Validate, request interface{}, errorMessages map[string]string, errors *[]web.ValidationErrorItem) {
 	err := validate.Struct(request)
