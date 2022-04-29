@@ -36,6 +36,7 @@ var orderErrorMessages = map[string]string{
 	"TruckTypeID|required"				: "truck type id is required",
 	"TotalVolume|required"				: "total volume is required",
 	"TotalWeight|required"				: "total weight is required",
+	"FixedPrice|required"				: "fixed price is required",
 }
 
 /*
@@ -73,6 +74,20 @@ func ValidateCustomerCreateOrderRequest(validate *validator.Validate, customerCr
 	validateOrderStruct(validate, customerCreateOrderReq, orderErrorMessages, &errors)
 	validateOrderFiles(files, orderFileSizeRules, orderFileExtRules, &errors)
 
+	if len(errors) > 0 {
+		return web.ValidationError{
+			Code:               400,
+			ProductionMessage:  "Validation error",
+			DevelopmentMessage: "Validation error",
+			Errors:             errors,
+		}
+	}
+	return nil
+}
+
+func ValidateAdminSetPriceOrderRequest(validate *validator.Validate, adminSetPriceOrderReq entities.AdminSetPriceOrderRequest) error {
+	errors := []web.ValidationErrorItem{}
+	validateOrderStruct(validate, adminSetPriceOrderReq, orderErrorMessages, &errors)
 	if len(errors) > 0 {
 		return web.ValidationError{
 			Code:               400,
