@@ -420,6 +420,9 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
 	if err != nil {
 		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "The requested Driver ID doesn't match with any record"}
 	}
+	if driver.Status != "BUSY" {
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Finish your current order first"}
+	}
 	if order.DriverID != 0 {
 		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "This order already taken by someone else"}
 	}
@@ -434,6 +437,11 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
 	order, err = service.orderRepository.Update(order, userID)
 	if err != nil {
 		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current order"}
+	}
+	driver.Status = "BUSY"
+	driver, err = service.userRepository.UpdateDriver(driver, userID)
+	if err != nil {
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current driver"}
 	}
 	// Log
 	service.orderHistoryRepository.Create(int(order.ID), "Order diambil oleh "+driver.User.Name, "driver")
@@ -496,6 +504,11 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 	order, err = service.orderRepository.Update(order, userID)
 	if err != nil {
 		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current order"}
+	}
+	driver.Status = "IDLE"
+	driver, err = service.userRepository.UpdateDriver(driver, userID)
+	if err != nil {
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot update current driver"}
 	}
 	// Log
 	service.orderHistoryRepository.Create(int(order.ID), "Order yang diantar "+driver.User.Name+" telah sampai di tujuan", "driver")
