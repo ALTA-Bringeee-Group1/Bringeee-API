@@ -72,9 +72,10 @@ type OrderServiceInterface interface {
 	 * -------------------------------
 	 * Set fixed price order oleh admin untuk diteruskan kembali ke user agar di konfirmasi/cancel
 	 * @var orderRequest		request create order oleh customer
+	 * @var orderID				orderID
 	 * @return OrderResponse	order response 
 	 */
-	SetFixOrder(setPriceRequest entities.AdminSetPriceOrderRequest) error 
+	SetFixOrder(orderID int, setPriceRequest entities.AdminSetPriceOrderRequest) error 
 
 	/*
 	 * Confirm Order
