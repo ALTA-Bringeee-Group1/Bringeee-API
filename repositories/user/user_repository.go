@@ -32,7 +32,7 @@ func (repo UserRepository) StoreCustomer(user entities.User) (entities.User, err
 	tx := repo.db.Create(&user)
 	if tx.Error != nil {
 		// return kode 500 jika error
-		return entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return user, nil
 }
@@ -49,7 +49,7 @@ func (repo UserRepository) StoreDriver(driver entities.Driver) (entities.Driver,
 	if tx.Error != nil {
 
 		// return kode 500 jika error
-		return entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return driver, nil
 }
@@ -60,11 +60,11 @@ func (repo UserRepository) FindByCustomer(field string, value string) (entities.
 	if tx.Error != nil {
 
 		// return kode 500 jika terjadi error
-		return entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	} else if tx.RowsAffected <= 0 {
 
 		// return kode 400 jika tidak ditemukan
-		return entities.User{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "permintaan buruk"}
+		return entities.User{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "data not exist"}
 	}
 	return user, nil
 }
@@ -76,11 +76,11 @@ func (repo UserRepository) FindCustomer(id int) (entities.User, error) {
 	if tx.Error != nil {
 
 		// Return error dengan code 500
-		return entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	} else if tx.RowsAffected <= 0 {
 
 		// Return error dengan code 400 jika tidak ditemukan
-		return entities.User{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "permintaan buruk"}
+		return entities.User{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "data not exist"}
 	}
 	return user, nil
 }
@@ -91,11 +91,11 @@ func (repo UserRepository) FindByDriver(field string, value string) (entities.Dr
 	if tx.Error != nil {
 
 		// return kode 500 jika terjadi error
-		return entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	} else if tx.RowsAffected <= 0 {
 
 		// return kode 400 jika tidak ditemukan
-		return entities.Driver{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "permintaan buruk"}
+		return entities.Driver{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "data not exist"}
 	}
 	return driver, nil
 }
@@ -107,11 +107,11 @@ func (repo UserRepository) FindDriver(id int) (entities.Driver, error) {
 	if tx.Error != nil {
 
 		// Return error dengan code 500
-		return entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	} else if tx.RowsAffected <= 0 {
 
 		// Return error dengan code 400 jika tidak ditemukan
-		return entities.Driver{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "permintaan buruk"}
+		return entities.Driver{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "data not exist"}
 
 	}
 	return driver, nil
@@ -121,7 +121,7 @@ func (repo UserRepository) UpdateCustomer(user entities.User, id int) (entities.
 	tx := repo.db.Save(&user)
 	if tx.Error != nil {
 		// return Kode 500 jika error
-		return entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return user, nil
 }
@@ -131,7 +131,7 @@ func (repo UserRepository) UpdateDriver(driver entities.Driver, id int) (entitie
 	tx := repo.db.Save(&driver)
 	if tx.Error != nil {
 		// return Kode 500 jika error
-		return entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return driver, nil
 }
@@ -143,7 +143,7 @@ func (repo UserRepository) DeleteCustomer(id int) error {
 	if tx.Error != nil {
 
 		// return kode 500 jika error
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return nil
 }
@@ -161,7 +161,7 @@ func (repo UserRepository) FindAllCustomer(limit int, offset int, filters []map[
 	}
 	tx := builder.Find(&users)
 	if tx.Error != nil {
-		return []entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return []entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return users, nil
 }
@@ -179,7 +179,7 @@ func (repo UserRepository) FindAllDriver(limit int, offset int, filters []map[st
 	}
 	tx := builder.Find(&drivers)
 	if tx.Error != nil {
-		return []entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return []entities.Driver{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return drivers, nil
 }
@@ -193,7 +193,7 @@ func (repo UserRepository) CountAllCustomer(filters []map[string]string) (int64,
 	}
 	tx := builder.Count(&count)
 	if tx.Error != nil {
-		return -1, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "permintaan buruk"}
+		return -1, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "data not exist"}
 	}
 	return count, nil
 }
@@ -207,7 +207,7 @@ func (repo UserRepository) CountAllDriver(filters []map[string]string) (int64, e
 	}
 	tx := builder.Count(&count)
 	if tx.Error != nil {
-		return -1, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "permintaan buruk"}
+		return -1, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "data not exist"}
 	}
 	return count, nil
 }
@@ -219,7 +219,7 @@ func (repo UserRepository) DeleteDriver(id int) error {
 	if tx.Error != nil {
 
 		// return kode 500 jika error
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "servernya error"}
+		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
 	return nil
 }

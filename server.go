@@ -41,7 +41,7 @@ func main() {
 	midtransPaymentRepository := paymentRepository.NewMidtransPaymentRepository()
 
 	authService := authService.NewAuthService(userRepository)
-	userService := userService.NewUserService(userRepository, truckTypeRepository)
+	userService := userService.NewUserService(userRepository, truckTypeRepository, orderRepository)
 	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository, userRepository, midtransPaymentRepository)
 	regionService := regionService.NewRegionService(regionRepository)
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)

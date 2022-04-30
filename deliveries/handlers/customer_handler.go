@@ -133,7 +133,7 @@ func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 	token := c.Get("user")
 	tokenId, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
-	if role == "driver" {
+	if role != "customer" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Code:   http.StatusUnauthorized,
 			Status: "ERROR",
@@ -532,7 +532,8 @@ func (handler CustomerHandler) CancelOrder(c echo.Context) error {
 		},
 	})
 }
-/* 
+
+/*
  * Customer - Create payment
  * ---------------------------------
  * Membuat detail pembayaran agar order untuk dibayarkan
@@ -544,9 +545,9 @@ func (handler CustomerHandler) CreatePayment(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusBadRequest,
-			Error: "Invalid order id parameter",
-			Links: links,
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid order id parameter",
+			Links:  links,
 		})
 	}
 	links["self"] = fmt.Sprintf("%s/api/customers/orders/%s/payment", configs.Get().App.BaseURL, c.Param("orderID"))
@@ -556,17 +557,17 @@ func (handler CustomerHandler) CreatePayment(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 	if role != "customer" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
@@ -578,9 +579,9 @@ func (handler CustomerHandler) CreatePayment(c echo.Context) error {
 	if int(order.CustomerID) != userID {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "This order doesn't belong to currently authenticated user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "This order doesn't belong to currently authenticated user",
+			Links:  links,
 		})
 	}
 
@@ -593,14 +594,14 @@ func (handler CustomerHandler) CreatePayment(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
-		Data: paymentRes,
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data:   paymentRes,
 	})
 }
 
-/* 
+/*
  * Customer - Get payment detail
  * ---------------------------------
  * Mendapatkan detail pembayaran untuk order yang sudah dibuatkan payment
@@ -612,9 +613,9 @@ func (handler CustomerHandler) GetPayment(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusBadRequest,
-			Error: "Invalid order id parameter",
-			Links: links,
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid order id parameter",
+			Links:  links,
 		})
 	}
 	links["self"] = fmt.Sprintf("%s/api/customers/orders/%s/payment", configs.Get().App.BaseURL, c.Param("orderID"))
@@ -624,17 +625,17 @@ func (handler CustomerHandler) GetPayment(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 	if role != "customer" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 	// reject if order belong to someone else
@@ -645,9 +646,9 @@ func (handler CustomerHandler) GetPayment(c echo.Context) error {
 	if int(order.CustomerID) != userID {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "This order doesn't belong to currently authenticated user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "This order doesn't belong to currently authenticated user",
+			Links:  links,
 		})
 	}
 	// service payment action
@@ -657,15 +658,14 @@ func (handler CustomerHandler) GetPayment(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
-		Data: paymentRes,
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data:   paymentRes,
 	})
 }
 
-
-/* 
+/*
  * Customer - Cancel payment order
  * ---------------------------------
  * Mendapatkan detail pembayaran untuk order yang sudah dibuatkan payment
@@ -677,9 +677,9 @@ func (handler CustomerHandler) CancelPayment(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusBadRequest,
-			Error: "Invalid order id parameter",
-			Links: links,
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid order id parameter",
+			Links:  links,
 		})
 	}
 	links["self"] = fmt.Sprintf("%s/api/customers/orders/%s/payment/cancel", configs.Get().App.BaseURL, c.Param("orderID"))
@@ -689,17 +689,17 @@ func (handler CustomerHandler) CancelPayment(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 	if role != "customer" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 	// reject if order belong to someone else
@@ -710,9 +710,9 @@ func (handler CustomerHandler) CancelPayment(c echo.Context) error {
 	if int(order.CustomerID) != userID {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "This order doesn't belong to currently authenticated user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "This order doesn't belong to currently authenticated user",
+			Links:  links,
 		})
 	}
 	// service payment action
@@ -722,9 +722,9 @@ func (handler CustomerHandler) CancelPayment(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
 		Data: map[string]interface{}{
 			"id": orderID,
 		},
