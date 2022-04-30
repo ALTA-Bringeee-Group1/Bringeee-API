@@ -7,9 +7,11 @@ import (
 	"bringeee-capstone/entities/web"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
+	paymentRepository "bringeee-capstone/repositories/payment"
 	userRepository "bringeee-capstone/repositories/user"
 	"mime/multipart"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -20,14 +22,21 @@ type OrderService struct {
 	orderRepository        orderRepository.OrderRepositoryInterface
 	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface
 	userRepository         userRepository.UserRepositoryInterface
+	paymentRepository      paymentRepository.PaymentRepositoryInterface
 	validate               *validator.Validate
 }
 
-func NewOrderService(repository orderRepository.OrderRepositoryInterface, orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface, userRepository userRepository.UserRepositoryInterface) *OrderService {
+func NewOrderService(
+	repository orderRepository.OrderRepositoryInterface, 
+	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface,
+	userRepository         userRepository.UserRepositoryInterface,
+	paymentRepository paymentRepository.PaymentRepositoryInterface,
+) *OrderService {
 	return &OrderService{
 		orderRepository:        repository,
 		orderHistoryRepository: orderHistoryRepository,
 		userRepository:         userRepository,
+		paymentRepository: 		paymentRepository,
 		validate:               validator.New(),
 	}
 }
@@ -360,7 +369,39 @@ func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) e
  * @return PaymentResponse		response payment
  */
 func (service OrderService) CreatePayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error) {
-	panic("implement me")
+	// validation
+	err := validations.ValidateSimpleStruct(service.validate, createPaymentRequest)
+	if err != nil {
+		return entities.PaymentResponse{}, err
+	}
+
+	paymentRes := entities.PaymentResponse{}
+
+	// // order detail
+	// order, err := service.orderRepository.Find(orderID)
+	// if err != nil {
+	// 	return entities.PaymentResponse{}, web.WebError{ Code: 400, ProductionMessage: "Cannot get order details", DevelopmentMessage: "Error order detail: " + err.Error() }
+	// }
+	order := entities.Order{}
+	order.ID = uint(orderID)
+
+	// Process payment by method
+	switch strings.ToUpper(createPaymentRequest.PaymentMethod) {
+	case "BANK_TRANSFER_BCA":
+		paymentRes, err = service.paymentRepository.CreateBankTransferBCA(order)
+	case "BANK_TRANSFER_BNI":
+		paymentRes, err = service.paymentRepository.CreateBankTransferBNI(order)
+	case "BANK_TRANSFER_BRI":
+		paymentRes, err = service.paymentRepository.CreateBankTransferBRI(order)
+	case "BANK_TRANSFER_MANDIRI":
+		paymentRes, err = service.paymentRepository.CreateBankTransferMandiri(order)
+	case "BANK_TRANSFER_PERMATA":
+		paymentRes, err = service.paymentRepository.CreateBankTransferPermata(order)
+	}
+	if err != nil {
+		return entities.PaymentResponse{}, err
+	}
+	return paymentRes, nil
 }
 
 /*
