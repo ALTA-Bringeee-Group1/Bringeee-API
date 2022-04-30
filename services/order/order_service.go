@@ -433,7 +433,7 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
  * @var createPaymentRequest	request payment
  * @return PaymentResponse		response payment
  */
-func (service OrderService) GetPayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error) {
+func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, error) {
 	panic("implement me")
 }
 
