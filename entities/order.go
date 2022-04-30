@@ -88,7 +88,7 @@ type CustomerCreateOrderRequest struct {
 }
 
 type CreatePaymentRequest struct {
-	PaymentMethod string `form:"payment_method"`
+	PaymentMethod string `form:"payment_method" validate:"required"`
 }
 
 type PaymentResponse struct {
