@@ -51,7 +51,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities
 			"bank": "bca",
 		},
 	})
-	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
+	request, err := http.NewRequest(http.MethodPost, repository.baseURL + "/charge", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
@@ -112,7 +112,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities
 			"bank": "bni",
 		},
 	})
-	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
+	request, err := http.NewRequest(http.MethodPost, repository.baseURL + "/charge", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
@@ -173,7 +173,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBRI(order entities
 			"bank": "bri",
 		},
 	})
-	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
+	request, err := http.NewRequest(http.MethodPost, repository.baseURL + "/charge", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
@@ -235,7 +235,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferMandiri(order enti
 			"bill_info2": "Online purchase",
 		},
 	})
-	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
+	request, err := http.NewRequest(http.MethodPost, repository.baseURL + "/charge", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
@@ -293,7 +293,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferPermata(order enti
 			"gross_amount": order.FixPrice,
 		},
 	})
-	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
+	request, err := http.NewRequest(http.MethodPost, repository.baseURL + "/charge", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
@@ -332,4 +332,17 @@ func (repository MidtransPaymentRepository) CreateBankTransferPermata(order enti
 		TransactionExpire: trTime.Add(time.Hour * 24),
 	}
 	return paymentRes, nil
+}
+
+/*
+ * Get Payment detail
+ * -------------------------------
+ * Mengambil data transaksi berdasarkan `transaction_id`
+ *
+ * @var transaction_id		Transaction ID
+ * @return PaymentResponse	Response
+ */
+func (repository MidtransPaymentRepository) GetPaymentStatus(transactionID string) (entities.PaymentResponse, error) {
+	// req, err := http.NewRequest(http.MethodGet, repository.baseURL + "/" + transactionID + "/status", nil)
+	panic("as")
 }
