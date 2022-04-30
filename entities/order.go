@@ -3,12 +3,13 @@ package entities
 import (
 	"time"
 
+	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 )
 
 type Order struct {
 	gorm.Model
-	DriverID uint `gorm:"default:null"`
+	DriverID null.Int `gorm:"default:null"`
 	CustomerID uint
 	DestinationID uint
 	TruckTypeID int
@@ -91,7 +92,7 @@ type CreatePaymentRequest struct {
 
 type PaymentResponse struct {
 	OrderID string 				`json:"order_id"`
-	TransactionID string		`json:"transaction_id"`
+	TransactionID string 		`json:"transaction_id"`
 	PaymentMethod string 		`json:"payment_method"`
 	BillNumber string 			`json:"bill_number"`
 	Bank string 				`json:"bank"`
