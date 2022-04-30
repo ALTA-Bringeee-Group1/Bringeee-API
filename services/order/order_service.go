@@ -452,6 +452,47 @@ func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, e
 }
 
 /*
+ * Cancel Order payment
+ * -------------------------------
+ * Cancel payment order yang sudah dibuat
+ * @var orderID 	order id terkait
+ * @return 			error
+ */
+func (service OrderService) CancelPayment(orderID int) error {
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return nil
+	}
+	// reject if status is other than confirmed
+	if order.Status != "CONFIRMED" {
+		return web.WebError{ Code: 400, Message: "Order hasn't been confirmed or already been paid"}
+	}
+	// reject if transaction_id is empty
+	if order.TransactionID == "" {
+		return web.WebError{
+			Code:    400,
+			Message: "Payment transaction hasn't been created or already been cancelled",
+		}
+	}
+
+	// repository action
+	err = service.paymentRepository.CancelPayment(order.TransactionID, order.PaymentMethod)
+	if err != nil {
+		return err
+	}
+	// update order
+	order.DriverID = null.IntFromPtr(nil)
+	order.PaymentMethod = ""
+	order.TransactionID = ""
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return web.WebError{ Code: 500, ProductionMessage: "Failed to update order data", DevelopmentMessage: "update order fail:" + err.Error() }
+	}
+	return nil
+}
+
+/*
  * Find All History
  * -------------------------------
  * Mengambil data order berdasarkan filters dan sorts
