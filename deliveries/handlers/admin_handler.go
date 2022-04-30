@@ -883,3 +883,52 @@ func (handler AdminHandler) GetAllCustomer(c echo.Context) error {
 		Pagination: pagination,
 	})
 }
+
+func (handler AdminHandler) DeleteCustomer(c echo.Context) error {
+
+	id, tx := strconv.Atoi(c.Param("id"))
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers" + c.Param("id")}
+	if tx != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusBadRequest,
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	// call delete service
+	err = handler.userService.DeleteCustomer(id)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"id": id,
+		},
+	})
+}
