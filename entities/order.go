@@ -20,6 +20,7 @@ type Order struct {
 	EstimatedPrice int64 `gorm:"default:null"`
 	FixPrice int64 `gorm:"default:null"`
 	TransactionID string `gorm:"default:null"`
+	PaymentMethod string `gorm:"default:null"`
 	Status string
 	Description string `gorm:"default:null"`
 	ArrivedPicture string `gorm:"default:null"`
