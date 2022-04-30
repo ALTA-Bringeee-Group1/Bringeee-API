@@ -459,6 +459,20 @@ func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, e
  * @return 			error
  */
 func (service OrderService) CancelPayment(orderID int) error {
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return nil
+	}
+	// reject if status is other than confirmed
+	if order.Status != "CONFIRMED" {
+		return web.WebError{ Code: 400, Message: "Order hasn't been confirmed or already been paid"}
+	}
+	// repository action
+	err = service.paymentRepository.CancelPayment(order.TransactionID, order.PaymentMethod)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
