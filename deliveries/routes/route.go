@@ -19,6 +19,7 @@ func RegisterCustomerRoute(e *echo.Echo, customerHandler *handlers.CustomerHandl
 	order.POST("/:orderID/cancel", customerHandler.CancelOrder)
 	order.GET("", customerHandler.ListOrders)
 	order.GET("/:orderID", customerHandler.DetailOrder)
+	order.POST("/:orderID/payment", customerHandler.CreatePayment)
 	order.GET("/:orderID/histories", customerHandler.DetailOrderHistory)
 }
 

@@ -62,5 +62,26 @@ func main() {
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
 
+	// err := orderService.ConfirmOrder(1, 2, false)
+	// fmt.Println(err)
+
+	// data, err := orderService.CreatePayment(5, entities.CreatePaymentRequest{ PaymentMethod: "BANK_TRANSFER_MANDIRI" })
+	// if err != nil {
+	// 	fmt.Println(utils.JsonEncode(err))
+	// }
+	// fmt.Println(utils.JsonEncode(data))
+	// fmt.Println(utils.JsonEncode(configs.Get().Payment.MidtransServerKey))	
+	
+	// paymentRes, _ := midtransPaymentRepository.GetPaymentStatus("4da46a8a-b133-4ec2-b23c-76f795245018", "BANK_TRANSFER_MANDIRI")
+	// fmt.Println(utils.JsonEncode(paymentRes))
+	// paymentRes, _ = midtransPaymentRepository.GetPaymentStatus("80da96ea-ce20-45eb-a89f-320759d41272", "BANK_TRANSFER_BRI")
+	// fmt.Println(utils.JsonEncode(paymentRes))
+	// paymentRes, _ = midtransPaymentRepository.GetPaymentStatus("83d81c00-8eb5-4de1-8450-7d57bfb52ecc", "BANK_TRANSFER_BNI")
+	// fmt.Println(utils.JsonEncode(paymentRes))
+	// paymentRes, _ = midtransPaymentRepository.GetPaymentStatus("01072be0-cd5a-4dfc-a63a-d9c199f0cb94", "BANK_TRANSFER_PERMATA")
+	// fmt.Println(utils.JsonEncode(paymentRes))
+	// paymentRes, _ = midtransPaymentRepository.GetPaymentStatus("51e3a2a7-fe69-44be-875e-0d75df142299", "BANK_TRANSFER_BCA")
+	// fmt.Println(utils.JsonEncode(paymentRes))
+	
 	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
