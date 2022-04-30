@@ -144,10 +144,11 @@ type OrderServiceInterface interface {
 	 * Payment Webhook notification, dikirimkan oleh layanan pihak ketiga
 	 * referensi: https://docs.midtrans.com/en/after-payment/http-notification
 	 *
-	 * @var orer 		order id
+	 * @var order 		order id
+	 * @var status 		payment status
 	 * @return error	error
 	 */
-	PaymentWebhook(orderID int) error
+	PaymentWebhook(orderID int, status string) error
 
 	/*
 	 * Take order for shipping
