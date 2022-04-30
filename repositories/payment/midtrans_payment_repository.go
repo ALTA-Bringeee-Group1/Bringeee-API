@@ -342,7 +342,110 @@ func (repository MidtransPaymentRepository) CreateBankTransferPermata(order enti
  * @var transaction_id		Transaction ID
  * @return PaymentResponse	Response
  */
-func (repository MidtransPaymentRepository) GetPaymentStatus(transactionID string) (entities.PaymentResponse, error) {
-	// req, err := http.NewRequest(http.MethodGet, repository.baseURL + "/" + transactionID + "/status", nil)
-	panic("as")
+func (repository MidtransPaymentRepository) GetPaymentStatus(transactionID string, paymentMethod string) (entities.PaymentResponse, error) {
+	req, err := http.NewRequest(http.MethodGet, repository.baseURL + "/" + transactionID + "/status", nil)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.Get().Payment.MidtransServerKey + ":")))
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+	}
+	res, err := repository.client.Do(req)
+	if err != nil {
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+	}
+	defer res.Body.Close()
+	
+	paymentRes := entities.PaymentResponse {}
+	switch paymentMethod {
+	case "BANK_TRANSFER_BCA":
+		bcaResponse := entities.MidtransBankTransferBCAResponse{}
+		err = json.NewDecoder(res.Body).Decode(&bcaResponse)
+
+		// translate response
+		grossAmount, _ := strconv.ParseFloat(bcaResponse.GrossAmount, 64)
+		trTime, _ := time.Parse("2006-01-02 15:04:05", bcaResponse.TransactionTime)
+		paymentRes = entities.PaymentResponse {
+			OrderID: bcaResponse.OrderID,
+			TransactionID: bcaResponse.TransactionID,
+			PaymentMethod: "BANK_TRANSFER_BCA",
+			BillNumber: bcaResponse.VaNumbers[0].VaNumber,
+			Bank: bcaResponse.VaNumbers[0].Bank,
+			GrossAmount: int64(grossAmount),
+			TransactionTime: trTime,
+			TransactionExpire: trTime.Add(time.Hour * 24),
+		}
+	case "BANK_TRANSFER_BNI":
+		bniResponse := entities.MidtransBankTransferBNIResponse{}
+		err = json.NewDecoder(res.Body).Decode(&bniResponse)
+
+		// translate response
+		grossAmount, _ := strconv.ParseFloat(bniResponse.GrossAmount, 64)
+		trTime, _ := time.Parse("2006-01-02 15:04:05", bniResponse.TransactionTime)
+		paymentRes = entities.PaymentResponse {
+			OrderID: bniResponse.OrderID,
+			TransactionID: bniResponse.TransactionID,
+			PaymentMethod: "BANK_TRANSFER_BNI",
+			BillNumber: bniResponse.VaNumbers[0].VaNumber,
+			Bank: bniResponse.VaNumbers[0].Bank,
+			GrossAmount: int64(grossAmount),
+			TransactionTime: trTime,
+			TransactionExpire: trTime.Add(time.Hour * 24),
+		}
+	case "BANK_TRANSFER_BRI":
+		briResponse := entities.MidtransBankTransferBRIResponse{}
+		err = json.NewDecoder(res.Body).Decode(&briResponse)
+
+		// translate response
+		grossAmount, _ := strconv.ParseFloat(briResponse.GrossAmount, 64)
+		trTime, _ := time.Parse("2006-01-02 15:04:05", briResponse.TransactionTime)
+		paymentRes = entities.PaymentResponse {
+			OrderID: briResponse.OrderID,
+			TransactionID: briResponse.TransactionID,
+			PaymentMethod: "BANK_TRANSFER_BRI",
+			BillNumber: briResponse.VaNumbers[0].VaNumber,
+			Bank: briResponse.VaNumbers[0].Bank,
+			GrossAmount: int64(grossAmount),
+			TransactionTime: trTime,
+			TransactionExpire: trTime.Add(time.Hour * 24),
+		}
+	case "BANK_TRANSFER_MANDIRI":
+		mandiriResponse := entities.MidtransBankTransferMandiriResponse{}
+		err = json.NewDecoder(res.Body).Decode(&mandiriResponse)
+
+		// Translate
+		grossAmount, _ := strconv.ParseFloat(mandiriResponse.GrossAmount, 64)
+		trTime, _ := time.Parse("2006-01-02 15:04:05", mandiriResponse.TransactionTime)
+		paymentRes = entities.PaymentResponse {
+			OrderID: mandiriResponse.OrderID,
+			TransactionID: mandiriResponse.TransactionID,
+			PaymentMethod: "BANK_TRANSFER_BRI",
+			BillNumber: mandiriResponse.BillKey,
+			Bank: "mandiri",
+			GrossAmount: int64(grossAmount),
+			TransactionTime: trTime,
+			TransactionExpire: trTime.Add(time.Hour * 24),
+		}
+	case "BANK_TRANSFER_PERMATA":
+		permataResponse := entities.MidtransBankTransferPermataResponse{}
+		err = json.NewDecoder(res.Body).Decode(&permataResponse)
+
+		// translate response
+		grossAmount, _ := strconv.ParseFloat(permataResponse.GrossAmount, 64)
+		trTime, _ := time.Parse("2006-01-02 15:04:05", permataResponse.TransactionTime)
+		paymentRes = entities.PaymentResponse {
+			OrderID: permataResponse.OrderID,
+			TransactionID: permataResponse.TransactionID,
+			PaymentMethod: "BANK_TRANSFER_PERMATA",
+			BillNumber: permataResponse.PermataVaNumber,
+			Bank: "permata",
+			GrossAmount: int64(grossAmount),
+			TransactionTime: trTime,
+			TransactionExpire: trTime.Add(time.Hour * 24),
+		}
+	}
+	if err != nil {
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Failed parsing data:" + err.Error() }
+	}
+	return paymentRes, nil
 }
