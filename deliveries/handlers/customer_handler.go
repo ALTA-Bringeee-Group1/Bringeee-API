@@ -443,7 +443,7 @@ func (handler CustomerHandler) CreateOrder(c echo.Context) error {
 func (handler CustomerHandler) ConfirmOrder(c echo.Context) error {
 	links := map[string]string{}
 	orderID, err := strconv.Atoi(c.Param("orderID"))
-	links["self"] = fmt.Sprintf("%s/api/orders/%s", configs.Get().App.BaseURL, c.Param("orderID"))
+	links["self"] = fmt.Sprintf("%s/api/customers/orders/%s", configs.Get().App.BaseURL, c.Param("orderID"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
@@ -489,7 +489,7 @@ func (handler CustomerHandler) ConfirmOrder(c echo.Context) error {
 func (handler CustomerHandler) CancelOrder(c echo.Context) error {
 	links := map[string]string{}
 	orderID, err := strconv.Atoi(c.Param("orderID"))
-	links["self"] = fmt.Sprintf("%s/api/orders/%s/cancel", configs.Get().App.BaseURL, c.Param("orderID"))
+	links["self"] = fmt.Sprintf("%s/api/customers/orders/%s/cancel", configs.Get().App.BaseURL, c.Param("orderID"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
