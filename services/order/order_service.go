@@ -408,6 +408,8 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
 		paymentRes, err = service.paymentRepository.CreateBankTransferMandiri(order)
 	case "BANK_TRANSFER_PERMATA":
 		paymentRes, err = service.paymentRepository.CreateBankTransferPermata(order)
+	default:
+		return entities.PaymentResponse{}, web.WebError{ Code: 400, Message: "Invalid payment method" }
 	}
 	if err != nil {
 		return entities.PaymentResponse{}, err
