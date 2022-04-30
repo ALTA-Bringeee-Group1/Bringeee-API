@@ -418,6 +418,7 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
 	// set order transaction
 	order.DriverID = null.IntFromPtr(nil)
 	order.TransactionID = paymentRes.TransactionID
+	order.PaymentMethod = createPaymentRequest.PaymentMethod
 	_, err = service.orderRepository.Update(order, int(order.ID))
 	if err != nil {
 		return entities.PaymentResponse{}, err
