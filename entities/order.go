@@ -91,6 +91,7 @@ type CreatePaymentRequest struct {
 
 type PaymentResponse struct {
 	OrderID string 				`json:"order_id"`
+	TransactionID string		`json:"transaction_id"`
 	PaymentMethod string 		`json:"payment_method"`
 	BillNumber string 			`json:"bill_number"`
 	Bank string 				`json:"bank"`
