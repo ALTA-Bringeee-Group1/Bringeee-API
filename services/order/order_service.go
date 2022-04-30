@@ -468,6 +468,14 @@ func (service OrderService) CancelPayment(orderID int) error {
 	if order.Status != "CONFIRMED" {
 		return web.WebError{ Code: 400, Message: "Order hasn't been confirmed or already been paid"}
 	}
+	// reject if transaction_id is empty
+	if order.TransactionID == "" {
+		return web.WebError{
+			Code:    400,
+			Message: "Payment transaction hasn't been created or already been cancelled",
+		}
+	}
+
 	// repository action
 	err = service.paymentRepository.CancelPayment(order.TransactionID, order.PaymentMethod)
 	if err != nil {
