@@ -251,6 +251,7 @@ func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.Ad
 	// Update via repository
 	order.FixPrice = setPriceRequest.FixedPrice
 	order.Status = "NEED_CUSTOMER_CONFIRM"
+	order.TransactionID = ""
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {
 		return err
