@@ -473,6 +473,14 @@ func (service OrderService) CancelPayment(orderID int) error {
 	if err != nil {
 		return err
 	}
+	// update order
+	order.DriverID = null.IntFromPtr(nil)
+	order.PaymentMethod = ""
+	order.TransactionID = ""
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return web.WebError{ Code: 500, ProductionMessage: "Failed to update order data", DevelopmentMessage: "update order fail:" + err.Error() }
+	}
 	return nil
 }
 
