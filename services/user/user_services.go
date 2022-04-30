@@ -6,6 +6,7 @@ import (
 	"bringeee-capstone/deliveries/validations"
 	"bringeee-capstone/entities"
 	web "bringeee-capstone/entities/web"
+	orderRepository "bringeee-capstone/repositories/order"
 	truckRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	"mime/multipart"
@@ -22,13 +23,15 @@ import (
 type UserService struct {
 	userRepo  userRepository.UserRepositoryInterface
 	truckRepo truckRepository.TruckTypeRepositoryInterface
+	orderRepo orderRepository.OrderRepositoryInterface
 	validate  *validator.Validate
 }
 
-func NewUserService(repository userRepository.UserRepositoryInterface, truckRepo truckRepository.TruckTypeRepositoryInterface) *UserService {
+func NewUserService(repository userRepository.UserRepositoryInterface, truckRepo truckRepository.TruckTypeRepositoryInterface, orderRepo orderRepository.OrderRepositoryInterface) *UserService {
 	return &UserService{
 		userRepo:  repository,
 		truckRepo: truckRepo,
+		orderRepo: orderRepo,
 		validate:  validator.New(),
 	}
 }
@@ -481,7 +484,10 @@ func (service UserService) DeleteCustomer(id int) error {
 	// Cari user berdasarkan ID via repo
 	user, err := service.userRepo.FindCustomer(id)
 	if err != nil {
-		return web.WebError{Code: 400, ProductionMessage: "server error", DevelopmentMessage: "The requested ID doesn't match with any record"}
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "data not exist"}
+	}
+	if user.Role != "customer" {
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "The requested ID doesn't match with any record"}
 	}
 
 	// Delete avatar lama jika ada yang baru
@@ -490,6 +496,15 @@ func (service UserService) DeleteCustomer(id int) error {
 		objectPathS3 := strings.TrimPrefix(u.Path, "/")
 		helpers.DeleteFromS3(objectPathS3)
 	}
+	// Delete user order
+	filters := []map[string]interface{}{
+		{
+			"field":    "user_id",
+			"operator": "=",
+			"value":    strconv.Itoa(int(user.ID)),
+		},
+	}
+	service.orderRepo.DeleteBatch(filters)
 
 	// Delete via repository
 	err = service.userRepo.DeleteCustomer(id)
