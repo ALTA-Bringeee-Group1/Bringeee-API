@@ -240,7 +240,7 @@ func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.Ad
 
 	// Update via repository
 	order.FixPrice = setPriceRequest.FixedPrice
-	order.Status = "CUSTOMER CONFIRM"
+	order.Status = "CUSTOMER_CONFIRM"
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {
 		return err
@@ -269,7 +269,7 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
 	}
 
 	// reject if status other than requested
-	if order.Status != "REQUESTED" && order.Status != "CUSTOMER CONFIRM" {
+	if order.Status != "REQUESTED" && order.Status != "CUSTOMER_CONFIRM" {
 		return web.WebError{
 			Code:    400,
 			Message: "Status order was already confirmed or cancelled",
@@ -283,7 +283,7 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
 				Code:    400,
 				Message: "Order doesn't belong to currently authenticated user",
 			}
-		} else if order.Status != "CUSTOMER CONFIRM" {
+		} else if order.Status != "CUSTOMER_CONFIRM" {
 			return web.WebError{
 				Code:    400,
 				Message: "Waiting for admin respon",
@@ -291,7 +291,7 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
 		}
 	}
 	if isAdmin {
-		if order.Status == "CUSTOMER CONFIRM" {
+		if order.Status == "CUSTOMER_CONFIRM" {
 			return web.WebError{
 				Code:    400,
 				Message: "Waiting for customer respon",
