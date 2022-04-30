@@ -14,7 +14,7 @@ type PaymentRepositoryInterface interface {
 	 * @var order	Entity domain order yang dibuatkan pembayaran
 	 * @return any	Response dari layanan pihak ketiga
 	 */
-	CreateBankTransferBCA(order entities.Order) (interface{}, error)
+	CreateBankTransferBCA(order entities.Order) (entities.PaymentResponse, error)
 
 	/*
 	 * Create Bank Transfer BNI
@@ -24,7 +24,7 @@ type PaymentRepositoryInterface interface {
 	 * @var order	Entity domain order yang dibuatkan pembayaran
 	 * @return any	Response dari layanan pihak ketiga
 	 */
-	CreateBankTransferBNI(order entities.Order) (interface{}, error)
+	CreateBankTransferBNI(order entities.Order) (entities.PaymentResponse, error)
 
 	/*
 	 * Create Bank Transfer BRI
@@ -34,7 +34,7 @@ type PaymentRepositoryInterface interface {
 	 * @var order	Entity domain order yang dibuatkan pembayaran
 	 * @return any	Response dari layanan pihak ketiga
 	 */
-	CreateBankTransferBRI(order entities.Order) (interface{}, error)
+	CreateBankTransferBRI(order entities.Order) (entities.PaymentResponse, error)
 
 	/*
 	 * Create Bank Transfer BRI
@@ -44,7 +44,7 @@ type PaymentRepositoryInterface interface {
 	 * @var order	Entity domain order yang dibuatkan pembayaran
 	 * @return any	Response dari layanan pihak ketiga
 	 */
-	CreateBankTransferMandiri(order entities.Order) (interface{}, error)
+	CreateBankTransferMandiri(order entities.Order) (entities.PaymentResponse, error)
 
 	/*
 	 * Create Bank Transfer BRI
@@ -54,5 +54,15 @@ type PaymentRepositoryInterface interface {
 	 * @var order	Entity domain order yang dibuatkan pembayaran
 	 * @return any	Response dari layanan pihak ketiga
 	 */
-	CreateBankTransferPermata(order entities.Order) (interface{}, error)
+	CreateBankTransferPermata(order entities.Order) (entities.PaymentResponse, error)
+
+	/*
+	* Get Payment detail
+	* -------------------------------
+	* Mengambil data transaksi berdasarkan `transaction_id`
+	*
+	* @var transaction_id		Transaction ID
+	* @return PaymentResponse	Response
+	*/
+	GetPaymentStatus(transactionID string, paymentMethod string) (entities.PaymentResponse, error)
 }

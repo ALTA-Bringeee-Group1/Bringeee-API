@@ -112,10 +112,9 @@ type OrderServiceInterface interface {
 	 * -------------------------------
 	 * Mengambil data pembayaran yang sudah ada berdasarkan transaction_id yang sudah di set pada order
 	 * @var orderID					ID Order yang akan di cancel
-	 * @var createPaymentRequest	request payment
 	 * @return PaymentResponse		response payment 
 	 */
-	GetPayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error)
+	GetPayment(orderID int) (entities.PaymentResponse, error)
 	
 	/*
 	 * Find All History

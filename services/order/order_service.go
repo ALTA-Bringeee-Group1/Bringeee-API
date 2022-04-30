@@ -7,27 +7,37 @@ import (
 	"bringeee-capstone/entities/web"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
+	paymentRepository "bringeee-capstone/repositories/payment"
 	userRepository "bringeee-capstone/repositories/user"
 	"mime/multipart"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
+	"gopkg.in/guregu/null.v4"
 )
 
 type OrderService struct {
 	orderRepository        orderRepository.OrderRepositoryInterface
 	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface
 	userRepository         userRepository.UserRepositoryInterface
+	paymentRepository      paymentRepository.PaymentRepositoryInterface
 	validate               *validator.Validate
 }
 
-func NewOrderService(repository orderRepository.OrderRepositoryInterface, orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface, userRepository userRepository.UserRepositoryInterface) *OrderService {
+func NewOrderService(
+	repository orderRepository.OrderRepositoryInterface, 
+	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface,
+	userRepository         userRepository.UserRepositoryInterface,
+	paymentRepository paymentRepository.PaymentRepositoryInterface,
+) *OrderService {
 	return &OrderService{
 		orderRepository:        repository,
 		orderHistoryRepository: orderHistoryRepository,
 		userRepository:         userRepository,
+		paymentRepository: 		paymentRepository,
 		validate:               validator.New(),
 	}
 }
@@ -301,6 +311,7 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
 
 	// Update via repository
 	order.Status = "CONFIRMED"
+	order.DriverID = null.IntFromPtr(nil)
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {
 		return err
@@ -324,7 +335,7 @@ func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) e
 	}
 
 	// reject if status other than requested
-	if order.Status != "REQUESTED" && order.Status != "CONFIRMED" && order.Status != "CUSTOMER CONFIRM" {
+	if order.Status != "REQUESTED" && order.Status != "CONFIRMED" && order.Status != "NEED_CUSTOMER_CONFIRM" {
 		return web.WebError{
 			Code:    400,
 			Message: "Cannot cancel order: status order was already " + order.Status,
@@ -343,6 +354,7 @@ func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) e
 
 	// Update via repository
 	order.Status = "CANCELLED"
+	order.DriverID = null.IntFromPtr(nil)
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {
 		return err
@@ -360,7 +372,60 @@ func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) e
  * @return PaymentResponse		response payment
  */
 func (service OrderService) CreatePayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error) {
-	panic("implement me")
+	// validation
+	err := validations.ValidateSimpleStruct(service.validate, createPaymentRequest)
+	if err != nil {
+		return entities.PaymentResponse{}, err
+	}
+
+	paymentRes := entities.PaymentResponse{}
+
+	// order detail
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return entities.PaymentResponse{}, web.WebError{ Code: 400, ProductionMessage: "Cannot get order details", DevelopmentMessage: "Error order detail: " + err.Error() }
+	}
+
+	// reject if status is other than confirmed
+	if order.Status != "CONFIRMED" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 400, Message: "Transaction hasn't been confirmed or already been paid"}
+	}
+
+	// reject if order has transaction
+	if order.TransactionID != "" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 400, Message: "Transaction has been set for this order" }
+	}
+
+	// Process payment by method
+	switch strings.ToUpper(createPaymentRequest.PaymentMethod) {
+	case "BANK_TRANSFER_BCA":
+		paymentRes, err = service.paymentRepository.CreateBankTransferBCA(order)
+	case "BANK_TRANSFER_BNI":
+		paymentRes, err = service.paymentRepository.CreateBankTransferBNI(order)
+	case "BANK_TRANSFER_BRI":
+		paymentRes, err = service.paymentRepository.CreateBankTransferBRI(order)
+	case "BANK_TRANSFER_MANDIRI":
+		paymentRes, err = service.paymentRepository.CreateBankTransferMandiri(order)
+	case "BANK_TRANSFER_PERMATA":
+		paymentRes, err = service.paymentRepository.CreateBankTransferPermata(order)
+	default:
+		return entities.PaymentResponse{}, web.WebError{ Code: 400, Message: "Invalid payment method" }
+	}
+	if err != nil {
+		return entities.PaymentResponse{}, err
+	}
+
+	// set order transaction
+	order.DriverID = null.IntFromPtr(nil)
+	order.TransactionID = paymentRes.TransactionID
+	order.PaymentMethod = createPaymentRequest.PaymentMethod
+	_, err = service.orderRepository.Update(order, int(order.ID))
+	if err != nil {
+		return entities.PaymentResponse{}, err
+	}
+	service.orderHistoryRepository.Create(orderID, "Pesanan sudah di bayarkan", "customer")
+
+	return paymentRes, nil
 }
 
 /*
@@ -371,8 +436,19 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
  * @var createPaymentRequest	request payment
  * @return PaymentResponse		response payment
  */
-func (service OrderService) GetPayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error) {
-	panic("implement me")
+func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, error) {
+	// get order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return entities.PaymentResponse{}, nil
+	}
+	
+	// get payment
+	paymentRes, err := service.paymentRepository.GetPaymentStatus(order.TransactionID, order.PaymentMethod)
+	if err != nil {
+		return entities.PaymentResponse{}, err
+	}
+	return paymentRes, nil
 }
 
 /*
@@ -437,7 +513,7 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
 	if driver.Status == "BUSY" {
 		return web.WebError{Code: 400, Message: "Finish your current order first"}
 	}
-	if order.DriverID != 0 {
+	if !order.DriverID.Valid {
 		return web.WebError{Code: 400, Message: "This order already taken by someone else"}
 	}
 	if order.TruckTypeID != driver.TruckTypeID {
@@ -446,7 +522,8 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
 	if order.Status != "MANIFESTED" {
 		return web.WebError{Code: 400, ProductionMessage: "This order hasn't been paid for by the customer"}
 	}
-	order.DriverID = driver.ID
+	driverID := int64(driver.ID)
+	order.DriverID = null.IntFromPtr(&driverID)
 	order.Status = "ON_PROCESS"
 	order, err = service.orderRepository.Update(order, userID)
 	if err != nil {
@@ -486,10 +563,10 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 	if order.Status != "ON_PROCESS" {
 		return web.WebError{Code: 400, Message: "Order wasn't on process"}
 	}
-	if order.DriverID == 0 {
+	if !order.DriverID.Valid {
 		return web.WebError{Code: 400, Message: "The current order has not belong to any driver, take the order first"}
 	}
-	if order.DriverID != driver.ID {
+	if uint(order.DriverID.Int64) != driver.ID {
 		return web.WebError{Code: 400, Message: "Cannot finish order that belong to someone else"}
 	}
 
