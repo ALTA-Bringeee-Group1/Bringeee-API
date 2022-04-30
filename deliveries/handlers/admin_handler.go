@@ -797,3 +797,89 @@ func (handler AdminHandler) CancelOrder(c echo.Context) error {
 		},
 	})
 }
+
+func (handler AdminHandler) GetAllCustomer(c echo.Context) error {
+
+	// Get token
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+
+	// Translate query param to map of filters
+	filters := []map[string]string{}
+	name := c.QueryParam("name")
+	if name != "" {
+		filters = append(filters, map[string]string{
+			"field":    "name",
+			"operator": "LIKE",
+			"value":    "%" + name + "%",
+		})
+	}
+
+	// Sort parameter
+	sorts := []map[string]interface{}{}
+	sortName := c.QueryParam("sortName")
+	sorts = append(sorts, map[string]interface{}{
+		"field": "name",
+		"desc":  map[string]bool{"1": true, "0": false}[sortName],
+	})
+
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	// pagination param
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(400, helpers.MakeErrorResponse("ERROR", 400, "Limit Parameter format is invalid", links))
+	}
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		links := map[string]string{"self": configs.Get().App.BaseURL}
+		return c.JSON(400, helpers.MakeErrorResponse("ERROR", 400, "page Parameter format is invalid", links))
+	}
+	links["self"] = configs.Get().App.BaseURL + "/api/customers?limit=" + c.QueryParam("limit") + "&page=" + c.QueryParam("page")
+
+	// Get all customers
+	customersRes, err := handler.userService.FindAllCustomer(limit, page, filters, sorts)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// Get pagination data
+	pagination, err := handler.userService.GetPaginationCustomer(limit, page, filters)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	links["first"] = configs.Get().App.BaseURL + "/api/customers?limit=" + c.QueryParam("limit") + "&page=1"
+	links["last"] = configs.Get().App.BaseURL + "/api/customers?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.TotalPages)
+	if pagination.Page > 1 {
+		links["prev"] = configs.Get().App.BaseURL + "/api/customers?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.Page-1)
+	}
+	if pagination.Page < pagination.TotalPages {
+		links["next"] = configs.Get().App.BaseURL + "/api/customers?limit=" + c.QueryParam("limit") + "&page=" + strconv.Itoa(pagination.Page+1)
+	}
+
+	// success response
+	return c.JSON(200, web.SuccessListResponse{
+		Status:     "OK",
+		Code:       200,
+		Error:      nil,
+		Links:      links,
+		Data:       customersRes,
+		Pagination: pagination,
+	})
+}
