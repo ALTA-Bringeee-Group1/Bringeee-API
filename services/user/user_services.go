@@ -569,7 +569,7 @@ func (service UserService) FindAllCustomer(limit, page int, filters []map[string
 	offset := (page - 1) * limit
 
 	usersRes := []entities.CustomerResponse{}
-	users, err := service.userRepo.FindAllDriver(limit, offset, filters, sorts)
+	users, err := service.userRepo.FindAllCustomer(limit, offset, filters, sorts)
 
 	copier.Copy(&usersRes, &users)
 
