@@ -8,6 +8,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 type MidtransPaymentRepository struct {
@@ -37,7 +39,7 @@ func NewMidtransPaymentRepository() *MidtransPaymentRepository {
  * @var order	Entity domain order yang dibuatkan pembayaran
  * @return any	Response dari layanan pihak ketiga
  */
-func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities.Order) (interface{}, error) {
+func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities.Order) (entities.PaymentResponse, error) {
 	// prepare request
 	requestBody, _ := json.Marshal(map[string]interface{}{
 		"payment_type": "bank_transfer",
@@ -51,7 +53,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities
 	})
 	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.Get().Payment.MidtransServerKey + ":")))
@@ -60,18 +62,34 @@ func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities
 	// do request
 	response, err := repository.client.Do(request)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
 	}
 	defer response.Body.Close()
 
 	// parse response
-	var data interface{}
+	var data entities.MidtransBankTransferBCAResponse
 	err = json.NewDecoder(response.Body).Decode(&data)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+	}
+	if data.StatusCode != "201" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, Message: "Error creating payment transaction" }
 	}
 
-	return data, nil
+	// translate response
+	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
+	paymentRes := entities.PaymentResponse {
+		OrderID: strconv.Itoa(int(order.ID)),
+		TransactionID: data.TransactionID,
+		PaymentMethod: "BANK_TRANSFER_BCA",
+		BillNumber: data.VaNumbers[0].VaNumber,
+		Bank: data.VaNumbers[0].Bank,
+		GrossAmount: int64(grossAmount),
+		TransactionTime: trTime,
+		TransactionExpire: trTime.Add(time.Hour * 24),
+	}
+	return paymentRes, nil
 }
 
 /*
@@ -82,7 +100,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities
  * @var order	Entity domain order yang dibuatkan pembayaran
  * @return any	Response dari layanan pihak ketiga
  */
-func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities.Order) (interface{}, error) {
+func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities.Order) (entities.PaymentResponse, error) {
 	// prepare request
 	requestBody, _ := json.Marshal(map[string]interface{}{
 		"payment_type": "bank_transfer",
@@ -96,7 +114,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities
 	})
 	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.Get().Payment.MidtransServerKey + ":")))
@@ -105,18 +123,34 @@ func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities
 	// do request
 	response, err := repository.client.Do(request)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
 	}
 	defer response.Body.Close()
 
 	// parse response
-	var data interface{}
+	var data entities.MidtransBankTransferBNIResponse
 	err = json.NewDecoder(response.Body).Decode(&data)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+	}
+	if data.StatusCode != "201" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, Message: "Error creating payment transaction" }
 	}
 
-	return data, nil
+	// translate response
+	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
+	paymentRes := entities.PaymentResponse {
+		OrderID: strconv.Itoa(int(order.ID)),
+		TransactionID: data.TransactionID,
+		PaymentMethod: "BANK_TRANSFER_BNI",
+		BillNumber: data.VaNumbers[0].VaNumber,
+		Bank: data.VaNumbers[0].Bank,
+		GrossAmount: int64(grossAmount),
+		TransactionTime: trTime,
+		TransactionExpire: trTime.Add(time.Hour * 24),
+	}
+	return paymentRes, nil
 }
 
 /*
@@ -127,7 +161,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities
  * @var order	Entity domain order yang dibuatkan pembayaran
  * @return any	Response dari layanan pihak ketiga
  */
-func (repository MidtransPaymentRepository) CreateBankTransferBRI(order entities.Order) (interface{}, error) {
+func (repository MidtransPaymentRepository) CreateBankTransferBRI(order entities.Order) (entities.PaymentResponse, error) {
 	// prepare request
 	requestBody, _ := json.Marshal(map[string]interface{}{
 		"payment_type": "bank_transfer",
@@ -141,7 +175,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBRI(order entities
 	})
 	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.Get().Payment.MidtransServerKey + ":")))
@@ -150,29 +184,45 @@ func (repository MidtransPaymentRepository) CreateBankTransferBRI(order entities
 	// do request
 	response, err := repository.client.Do(request)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
 	}
 	defer response.Body.Close()
 
 	// parse response
-	var data interface{}
+	var data entities.MidtransBankTransferBRIResponse
 	err = json.NewDecoder(response.Body).Decode(&data)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+	}
+	if data.StatusCode != "201" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, Message: "Error creating payment transaction" }
 	}
 
-	return data, nil
+	// translate response
+	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
+	paymentRes := entities.PaymentResponse {
+		OrderID: strconv.Itoa(int(order.ID)),
+		TransactionID: data.TransactionID,
+		PaymentMethod: "BANK_TRANSFER_BRI",
+		BillNumber: data.VaNumbers[0].VaNumber,
+		Bank: data.VaNumbers[0].Bank,
+		GrossAmount: int64(grossAmount),
+		TransactionTime: trTime,
+		TransactionExpire: trTime.Add(time.Hour * 24),
+	}
+	return paymentRes, nil
 }
 
 /*
- * Create Bank Transfer BRI
+ * Create Bank Transfer Mandiri
  * -------------------------------
  * Buat pembayaran untuk order tertentu menggunakan Mandiri
  *
  * @var order	Entity domain order yang dibuatkan pembayaran
  * @return any	Response dari layanan pihak ketiga
  */
-func (repository MidtransPaymentRepository) CreateBankTransferMandiri(order entities.Order) (interface{}, error) {
+func (repository MidtransPaymentRepository) CreateBankTransferMandiri(order entities.Order) (entities.PaymentResponse, error) {
 	// prepare request
 	requestBody, _ := json.Marshal(map[string]interface{}{
 		"payment_type": "echannel",
@@ -187,7 +237,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferMandiri(order enti
 	})
 	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.Get().Payment.MidtransServerKey + ":")))
@@ -196,29 +246,45 @@ func (repository MidtransPaymentRepository) CreateBankTransferMandiri(order enti
 	// do request
 	response, err := repository.client.Do(request)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
 	}
 	defer response.Body.Close()
 
 	// parse response
-	var data interface{}
+	var data entities.MidtransBankTransferMandiriResponse
 	err = json.NewDecoder(response.Body).Decode(&data)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+	}
+	if data.StatusCode != "201" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, Message: "Error creating payment transaction" }
 	}
 
-	return data, nil
+	// translate response
+	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
+	paymentRes := entities.PaymentResponse {
+		OrderID: strconv.Itoa(int(order.ID)),
+		TransactionID: data.TransactionID,
+		PaymentMethod: "BANK_TRANSFER_MANDIRI",
+		BillNumber: data.BillKey,
+		Bank: "mandiri",
+		GrossAmount: int64(grossAmount),
+		TransactionTime: trTime,
+		TransactionExpire: trTime.Add(time.Hour * 24),
+	}
+	return paymentRes, nil
 }
 
 /*
- * Create Bank Transfer BRI
+ * Create Bank Transfer Permata
  * -------------------------------
  * Buat pembayaran untuk order tertentu menggunakan Permata
  *
  * @var order	Entity domain order yang dibuatkan pembayaran
  * @return any	Response dari layanan pihak ketiga
  */
-func (repository MidtransPaymentRepository) CreateBankTransferPermata(order entities.Order) (interface{}, error) {
+func (repository MidtransPaymentRepository) CreateBankTransferPermata(order entities.Order) (entities.PaymentResponse, error) {
 	// prepare request
 	requestBody, _ := json.Marshal(map[string]interface{}{
 		"payment_type": "permata",
@@ -229,7 +295,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferPermata(order enti
 	})
 	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
 	}
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.Get().Payment.MidtransServerKey + ":")))
@@ -238,16 +304,32 @@ func (repository MidtransPaymentRepository) CreateBankTransferPermata(order enti
 	// do request
 	response, err := repository.client.Do(request)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "HTTP Response failed: " + err.Error() }
 	}
 	defer response.Body.Close()
 
 	// parse response
-	var data interface{}
+	var data entities.MidtransBankTransferPermataResponse
 	err = json.NewDecoder(response.Body).Decode(&data)
 	if err != nil {
-		return nil, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
+	}
+	if data.StatusCode != "201" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, Message: "Error creating payment transaction" }
 	}
 
-	return data, nil
+	// translate response
+	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
+	paymentRes := entities.PaymentResponse {
+		OrderID: strconv.Itoa(int(order.ID)),
+		TransactionID: data.TransactionID,
+		PaymentMethod: "BANK_TRANSFER_PERMATA",
+		BillNumber: data.PermataVaNumber,
+		Bank: "permata",
+		GrossAmount: int64(grossAmount),
+		TransactionTime: trTime,
+		TransactionExpire: trTime.Add(time.Hour * 24),
+	}
+	return paymentRes, nil
 }
