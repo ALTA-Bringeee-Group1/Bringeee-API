@@ -520,19 +520,25 @@ func (service OrderService) FindAllHistory(orderID int, sorts []map[string]inter
  * Payment Webhook notification, dikirimkan oleh layanan pihak ketiga
  * referensi: https://docs.midtrans.com/en/after-payment/http-notification
  *
- * @var limit 	batas limit hasil query
- * @var offset 	offset hasil query
- * @var filters	query untuk penyaringan data, { field, operator, value }
- * @var sorts	pengurutan data, { field, value[bool] }
- * @return order	list order dalam bentuk entity domain
+ * @var order 		order id
+ * @var status 		payment status
  * @return error	error
  */
-func (service OrderService) PaymentWebhook(orderID int) error {
-
-	// if status settlement, set order to MANIFESTED
-	// if status is deny, cancel, expire, set to CANCELLED
-
-	panic("implement me")
+func (service OrderService) PaymentWebhook(orderID int, status string) error {
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+	if status == "settlement" {
+		// if status settlement, set order to MANIFESTED
+	 	order.Status = "MANIFESTED"
+	} 
+	order.DriverID = null.IntFromPtr(nil)
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 /*

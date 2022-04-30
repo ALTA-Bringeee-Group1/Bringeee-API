@@ -68,3 +68,7 @@ func RegisterRegionHandler(e *echo.Echo, regionHandler *handlers.RegionHandler) 
 	e.GET("/api/provinces/:provinceID/cities", regionHandler.IndexCity)
 	e.GET("/api/provinces/:provinceID/cities/:cityID/districts", regionHandler.IndexDistrict)
 }
+
+func RegisterPaymentRoute(e *echo.Echo, paymentHandler *handlers.PaymentHandler) {
+	e.POST("/api/payments/midtrans_webhook", paymentHandler.MidtransWebhook)
+}
