@@ -115,6 +115,15 @@ type OrderServiceInterface interface {
 	 * @return PaymentResponse		response payment 
 	 */
 	GetPayment(orderID int) (entities.PaymentResponse, error)
+
+	/*
+	 * Cancel Order payment
+	 * -------------------------------
+	 * Cancel payment order yang sudah dibuat
+	 * @var orderID 	order id terkait
+	 * @return 			error
+	 */
+	CancelPayment(orderID int) error
 	
 	/*
 	 * Find All History

@@ -452,6 +452,17 @@ func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, e
 }
 
 /*
+ * Cancel Order payment
+ * -------------------------------
+ * Cancel payment order yang sudah dibuat
+ * @var orderID 	order id terkait
+ * @return 			error
+ */
+func (service OrderService) CancelPayment(orderID int) error {
+	return nil
+}
+
+/*
  * Find All History
  * -------------------------------
  * Mengambil data order berdasarkan filters dan sorts
