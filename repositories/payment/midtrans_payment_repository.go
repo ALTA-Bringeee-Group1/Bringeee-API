@@ -459,6 +459,27 @@ func (repository MidtransPaymentRepository) GetPaymentStatus(transactionID strin
 * @return PaymentResponse	Response
 */
 func (repository MidtransPaymentRepository) CancelPayment(transactionID string, paymentMethod string) error {
+	req, err := http.NewRequest(http.MethodPost, repository.baseURL + "/" + transactionID + "/cancel", nil)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.Get().Payment.MidtransServerKey + ":")))
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		return web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+	}
+	res, err := repository.client.Do(req)
+	if err != nil {
+		return web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: err.Error() }
+	}
+	defer res.Body.Close()
 
+	var data map[string]string
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Fail parsing data:" + err.Error() }
+	}
+	
+	if data["status_code"] != "200" {
+		return web.WebError{ Code: 500, ProductionMessage: "Cancel payment request failed: payment server error", DevelopmentMessage: "Cancel payment return status non 200 code" }
+	}
 	return nil
 }
