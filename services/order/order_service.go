@@ -16,6 +16,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
+	"gopkg.in/guregu/null.v4"
 )
 
 type OrderService struct {
@@ -310,6 +311,7 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
 
 	// Update via repository
 	order.Status = "CONFIRMED"
+	order.DriverID = null.IntFromPtr(nil)
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {
 		return err
@@ -352,6 +354,7 @@ func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) e
 
 	// Update via repository
 	order.Status = "CANCELLED"
+	order.DriverID = null.IntFromPtr(nil)
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {
 		return err
@@ -478,7 +481,7 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
 	if driver.Status == "BUSY" {
 		return web.WebError{Code: 400, Message: "Finish your current order first"}
 	}
-	if order.DriverID != 0 {
+	if !order.DriverID.Valid {
 		return web.WebError{Code: 400, Message: "This order already taken by someone else"}
 	}
 	if order.TruckTypeID != driver.TruckTypeID {
@@ -487,7 +490,8 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
 	if order.Status != "MANIFESTED" {
 		return web.WebError{Code: 400, ProductionMessage: "This order hasn't been paid for by the customer"}
 	}
-	order.DriverID = driver.ID
+	driverID := int64(driver.ID)
+	order.DriverID = null.IntFromPtr(&driverID)
 	order.Status = "ON_PROCESS"
 	order, err = service.orderRepository.Update(order, userID)
 	if err != nil {
@@ -527,10 +531,10 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 	if order.Status != "ON_PROCESS" {
 		return web.WebError{Code: 400, Message: "Order wasn't on process"}
 	}
-	if order.DriverID == 0 {
+	if !order.DriverID.Valid {
 		return web.WebError{Code: 400, Message: "The current order has not belong to any driver, take the order first"}
 	}
-	if order.DriverID != driver.ID {
+	if uint(order.DriverID.Int64) != driver.ID {
 		return web.WebError{Code: 400, Message: "Cannot finish order that belong to someone else"}
 	}
 
