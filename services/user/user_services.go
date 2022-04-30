@@ -362,6 +362,7 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 
 	return userRes, err
 }
+
 func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriverByAdminRequest, id int, files map[string]*multipart.FileHeader) (entities.DriverResponse, error) {
 
 	// validation
