@@ -525,6 +525,19 @@ func (service OrderService) FindAllHistory(orderID int, sorts []map[string]inter
  * @return error	error
  */
 func (service OrderService) PaymentWebhook(orderID int, status string) error {
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return err
+	}
+	if status == "settlement" {
+		// if status settlement, set order to MANIFESTED
+	 	order.Status = "MANIFESTED"
+	} 
+	order.DriverID = null.IntFromPtr(nil)
+	_, err = service.orderRepository.Update(order, orderID)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
