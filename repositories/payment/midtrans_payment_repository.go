@@ -449,3 +449,16 @@ func (repository MidtransPaymentRepository) GetPaymentStatus(transactionID strin
 	}
 	return paymentRes, nil
 }
+
+/*
+* Cancel payment
+* -------------------------------
+* Membatalkan data transaksi berdasarkan `transaction_id`
+*
+* @var transaction_id		Transaction ID
+* @return PaymentResponse	Response
+*/
+func (repository MidtransPaymentRepository) CancelPayment(transactionID string, paymentMethod string) error {
+
+	return nil
+}

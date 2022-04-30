@@ -65,4 +65,14 @@ type PaymentRepositoryInterface interface {
 	* @return PaymentResponse	Response
 	*/
 	GetPaymentStatus(transactionID string, paymentMethod string) (entities.PaymentResponse, error)
+
+	/*
+	* Cancel payment
+	* -------------------------------
+	* Membatalkan data transaksi berdasarkan `transaction_id`
+	*
+	* @var transaction_id		Transaction ID
+	* @return PaymentResponse	Response
+	*/
+	CancelPayment(transactionID string, paymentMethod string) error
 }
