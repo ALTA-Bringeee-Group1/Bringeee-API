@@ -434,7 +434,12 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
  * @return PaymentResponse		response payment
  */
 func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, error) {
-	panic("implement me")
+	// get order
+	_, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return entities.PaymentResponse{}, nil
+	}
+	return entities.PaymentResponse{}, nil
 }
 
 /*
