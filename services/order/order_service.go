@@ -393,7 +393,7 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
 	}
 
 	// reject if order has transaction
-	if order.TransactionID != "" {
+	if order.TransactionID != "" && order.TransactionID != "0" {
 		return entities.PaymentResponse{}, web.WebError{ Code: 400, Message: "Transaction has been set for this order" }
 	}
 
