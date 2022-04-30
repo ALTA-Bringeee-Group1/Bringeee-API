@@ -2,7 +2,7 @@ openapi: '3.0.3'
 
 info:
     title: Bringeee-API
-    version: v1.0
+    version: v1.2
     description: Cargo Agency management system API spesification built with echo golang
 
 components:
@@ -777,6 +777,55 @@ paths:
     # ------------------------------------------------
     # Registrasi User
     /api/customers:
+        get:
+            description: Get list of customers
+            summary: Get list of customers
+            tags:
+                - 'Admin'
+            security:
+                - JWTAuthAdmin: []
+            parameters:
+                - in: query
+                  name: name
+                  description: Search driver by name
+                  schema:
+                      type: string
+                      example: Ahmad
+                - in: query
+                  name: sortName
+                  description: Sort name alphabetically
+                  schema:
+                      type: boolean
+                      example: 1
+            responses:
+                '200':
+                    description: Success getting list of customers
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/customer_response'
+                                    pagination:
+                                        $ref: '#/components/schemas/pagination'
         post:
             description: Register a customer
             summary: Register a customer
@@ -901,7 +950,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
-    # Registrasi Driver
     /api/drivers:
         post:
             description: Register a driver
@@ -1249,6 +1297,91 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
 
+    /api/customers/orders/estimate:
+        post:
+            tags:
+                - 'Customer'
+            description: Calculate price in realtime based on 2 coordinate
+            summary: Calculate price in realtime based on 2 coordinate
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            requestBody:
+                required: true
+                content:
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                destination_start_lat:
+                                    type: string
+                                    example: '72.0239123'
+                                destination_start_long:
+                                    type: string
+                                    example: '72.0239123'
+                                destination_long_lat:
+                                    type: string
+                                    example: '72.0239123'
+                                destination_long_long:
+                                    type: string
+                                    example: '72.0239123'
+                                truck_type:
+                                    type: number
+                                    example: 223
+            responses:
+                '200':
+                    description: Success getting of single customer's order
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: object
+                                        properties:
+                                            estimated_price:
+                                                type: number
+                                                example: 230000
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '422':
+                    description: Validation failure
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_validation_response'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+
     /api/customers/orders/{orderID}:
         get:
             tags:
@@ -1441,7 +1574,7 @@ paths:
                       example: 27
             requestBody:
                 content:
-                    application/json:
+                    application/x-www-form-urlencoded:
                         schema:
                             $ref: '#/components/schemas/payment_request'
             responses:
@@ -1483,7 +1616,27 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/payment_response'
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'OK'
+                                    code:
+                                        type: number
+                                        example: 200
+                                    error:
+                                        type: string
+                                        example: null
+                                    links:
+                                        type: object
+                                        properties:
+                                            self:
+                                                type: string
+                                                example: 'somelink'
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/payment_response'
                 '401':
                     description: Unauthorized user
                     content:
@@ -1496,7 +1649,40 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
-
+    /api/customers/orders/{orderID}/payment/cancel:
+        post:
+            tags:
+                - 'Customer'
+            description: Cancel established order's payment
+            summary: Cancel established order's payment
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: orderID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success cancelling order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
     # ------------------------------------------------
     # Midtrans - Web hooks
     # ------------------------------------------------
