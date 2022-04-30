@@ -439,3 +439,96 @@ func (handler CustomerHandler) CreateOrder(c echo.Context) error {
 		},
 	})
 }
+
+func (handler CustomerHandler) ConfirmOrder(c echo.Context) error {
+	links := map[string]string{}
+	orderID, err := strconv.Atoi(c.Param("orderID"))
+	links["self"] = fmt.Sprintf("%s/api/orders/%s", configs.Get().App.BaseURL, c.Param("orderID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusBadRequest,
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
+	tokenID, role, err := middleware.ReadToken(c.Get("user"))
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusUnauthorized,
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	if role != "customer" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusUnauthorized,
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	err = handler.orderService.ConfirmOrder(orderID, tokenID, map[string]bool{"admin": true, "": false}[role])
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"id": orderID,
+		},
+	})
+}
+
+func (handler CustomerHandler) CancelOrder(c echo.Context) error {
+	links := map[string]string{}
+	orderID, err := strconv.Atoi(c.Param("orderID"))
+	links["self"] = fmt.Sprintf("%s/api/orders/%s/cancel", configs.Get().App.BaseURL, c.Param("orderID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusBadRequest,
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
+	tokenID, role, err := middleware.ReadToken(c.Get("user"))
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusUnauthorized,
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	if role != "customer" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusUnauthorized,
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	err = handler.orderService.CancelOrder(orderID, tokenID, map[string]bool{"admin": true, "": false}[role])
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse{
+		Status: "OK",
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"id": orderID,
+		},
+	})
+}

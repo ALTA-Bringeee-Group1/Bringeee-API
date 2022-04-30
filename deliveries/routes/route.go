@@ -15,6 +15,8 @@ func RegisterCustomerRoute(e *echo.Echo, customerHandler *handlers.CustomerHandl
 
 	order := e.Group("/api/customers/orders", middleware.JWTMiddleware())
 	order.POST("", customerHandler.CreateOrder)
+	order.POST("/:orderID/confirm", customerHandler.ConfirmOrder)
+	order.POST("/:orderID/cancel", customerHandler.CancelOrder)
 	order.GET("", customerHandler.ListOrders)
 	order.GET("/:orderID", customerHandler.DetailOrder)
 	order.GET("/:orderID/histories", customerHandler.DetailOrderHistory)
