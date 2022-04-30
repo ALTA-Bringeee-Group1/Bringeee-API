@@ -113,11 +113,32 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 			Links:  links,
 		})
 	}
+
 	// avatar
 	files := map[string]*multipart.FileHeader{}
 	stnk_file, _ := c.FormFile("stnk_file")
+	ktp_file, _ := c.FormFile("ktp_file")
+	driver_license_file, _ := c.FormFile("driver_license_file")
+	vehicle_picture, _ := c.FormFile("vehicle_picture")
 	if stnk_file != nil {
 		files["stnk_file"] = stnk_file
+	}
+	if ktp_file != nil {
+		files["ktp_file"] = ktp_file
+	}
+	if driver_license_file != nil {
+		files["driver_license_file"] = driver_license_file
+	}
+	if vehicle_picture != nil {
+		files["vehicle_picture"] = vehicle_picture
+	}
+	if userReq.NIK == "" && userReq.TruckTypeID == 0 && userReq.VehicleIdentifier == "" && len(files) == 0 {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "no such data filled",
+			Links:  links,
+		})
 	}
 
 	// Update via user service call
@@ -609,6 +630,7 @@ func (handler AdminHandler) VerifiedDriverAccount(c echo.Context) error {
 		},
 	})
 }
+
 /*
  * Admin - Set fixed price
  * ------------------------------------
@@ -622,18 +644,18 @@ func (handler AdminHandler) SetFixedPrice(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusBadRequest,
-			Error: "Invalid order id parameter",
-			Links: links,
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid order id parameter",
+			Links:  links,
 		})
 	}
 	_, role, err := middleware.ReadToken(c.Get("user"))
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
@@ -641,9 +663,9 @@ func (handler AdminHandler) SetFixedPrice(c echo.Context) error {
 	if role != "admin" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
@@ -657,10 +679,10 @@ func (handler AdminHandler) SetFixedPrice(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
-		Data: map[string]interface{} {
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
 			"id": orderID,
 		},
 	})
@@ -679,18 +701,18 @@ func (handler AdminHandler) ConfirmOrder(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusBadRequest,
-			Error: "Invalid order id parameter",
-			Links: links,
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid order id parameter",
+			Links:  links,
 		})
 	}
 	userID, role, err := middleware.ReadToken(c.Get("user"))
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
@@ -698,9 +720,9 @@ func (handler AdminHandler) ConfirmOrder(c echo.Context) error {
 	if role != "admin" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
@@ -712,10 +734,10 @@ func (handler AdminHandler) ConfirmOrder(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
-		Data: map[string]interface{} {
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
 			"id": orderID,
 		},
 	})
@@ -734,18 +756,18 @@ func (handler AdminHandler) CancelOrder(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusBadRequest,
-			Error: "Invalid order id parameter",
-			Links: links,
+			Code:   http.StatusBadRequest,
+			Error:  "Invalid order id parameter",
+			Links:  links,
 		})
 	}
 	userID, role, err := middleware.ReadToken(c.Get("user"))
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
@@ -753,9 +775,9 @@ func (handler AdminHandler) CancelOrder(c echo.Context) error {
 	if role != "admin" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
-			Code: http.StatusUnauthorized,
-			Error: "Unauthorized user",
-			Links: links,
+			Code:   http.StatusUnauthorized,
+			Error:  "Unauthorized user",
+			Links:  links,
 		})
 	}
 
@@ -767,10 +789,10 @@ func (handler AdminHandler) CancelOrder(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, web.SuccessResponse{
 		Status: "OK",
-		Code: http.StatusOK,
-		Error: nil,
-		Links: links,
-		Data: map[string]interface{} {
+		Code:   http.StatusOK,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
 			"id": orderID,
 		},
 	})

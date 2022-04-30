@@ -106,6 +106,18 @@ func (handler DriverHandler) UpdateDriver(c echo.Context) error {
 		files["avatar"] = avatar
 	}
 
+	if len(files) == 0 && userReq.Name == "" &&
+		userReq.Address == "" && userReq.Age == 0 && userReq.DOB == "" &&
+		userReq.Email == "" && userReq.Gender == "" && userReq.NIK == "" &&
+		userReq.Password == "" && userReq.PhoneNumber == "" && userReq.VehicleIdentifier == "" {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "no such data filled",
+			Links:  links,
+		})
+	}
+
 	// Update via user service call
 	userRes, err := handler.userService.UpdateDriver(userReq, tokenId, files)
 	if err != nil {
