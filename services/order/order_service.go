@@ -380,13 +380,21 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
 
 	paymentRes := entities.PaymentResponse{}
 
-	// // order detail
-	// order, err := service.orderRepository.Find(orderID)
-	// if err != nil {
-	// 	return entities.PaymentResponse{}, web.WebError{ Code: 400, ProductionMessage: "Cannot get order details", DevelopmentMessage: "Error order detail: " + err.Error() }
-	// }
-	order := entities.Order{}
-	order.ID = uint(orderID)
+	// order detail
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return entities.PaymentResponse{}, web.WebError{ Code: 400, ProductionMessage: "Cannot get order details", DevelopmentMessage: "Error order detail: " + err.Error() }
+	}
+
+	// reject if status is other than confirmed
+	if order.Status != "CONFIRMED" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 400, Message: "Transaction hasn't been confirmed or already been paid"}
+	}
+
+	// reject if order has transaction
+	if order.TransactionID != "" {
+		return entities.PaymentResponse{}, web.WebError{ Code: 400, Message: "Transaction has been set for this order" }
+	}
 
 	// Process payment by method
 	switch strings.ToUpper(createPaymentRequest.PaymentMethod) {
@@ -404,6 +412,16 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
 	if err != nil {
 		return entities.PaymentResponse{}, err
 	}
+
+	// set order transaction
+	order.DriverID = null.IntFromPtr(nil)
+	order.TransactionID = paymentRes.TransactionID
+	_, err = service.orderRepository.Update(order, int(order.ID))
+	if err != nil {
+		return entities.PaymentResponse{}, err
+	}
+	service.orderHistoryRepository.Create(orderID, "Pesanan sudah di bayarkan", "customer")
+
 	return paymentRes, nil
 }
 
