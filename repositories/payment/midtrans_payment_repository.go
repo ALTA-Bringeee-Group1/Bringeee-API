@@ -45,7 +45,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities
 		"payment_type": "bank_transfer",
 		"transaction_details": map[string]interface{} {
 			"order_id": order.ID,
-			"gross_amount": 90000,
+			"gross_amount": order.FixPrice,
 		},
 		"bank_transfer": map[string]interface{} {
 			"bank": "bca",
@@ -77,7 +77,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities
 	}
 
 	// translate response
-	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	grossAmount, _ := strconv.ParseFloat(data.GrossAmount, 64)
 	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
 	paymentRes := entities.PaymentResponse {
 		OrderID: strconv.Itoa(int(order.ID)),
@@ -106,7 +106,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities
 		"payment_type": "bank_transfer",
 		"transaction_details": map[string]interface{} {
 			"order_id": order.ID,
-			"gross_amount": 90000,
+			"gross_amount": order.FixPrice,
 		},
 		"bank_transfer": map[string]interface{} {
 			"bank": "bni",
@@ -138,7 +138,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities
 	}
 
 	// translate response
-	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	grossAmount, _ := strconv.ParseFloat(data.GrossAmount, 64)
 	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
 	paymentRes := entities.PaymentResponse {
 		OrderID: strconv.Itoa(int(order.ID)),
@@ -167,7 +167,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBRI(order entities
 		"payment_type": "bank_transfer",
 		"transaction_details": map[string]interface{} {
 			"order_id": order.ID,
-			"gross_amount": 90000,
+			"gross_amount": order.FixPrice,
 		},
 		"bank_transfer": map[string]interface{} {
 			"bank": "bri",
@@ -199,7 +199,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBRI(order entities
 	}
 
 	// translate response
-	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	grossAmount, _ := strconv.ParseFloat(data.GrossAmount, 64)
 	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
 	paymentRes := entities.PaymentResponse {
 		OrderID: strconv.Itoa(int(order.ID)),
@@ -228,7 +228,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferMandiri(order enti
 		"payment_type": "echannel",
 		"transaction_details": map[string]interface{} {
 			"order_id": order.ID,
-			"gross_amount": 90000,
+			"gross_amount": order.FixPrice,
 		},
 		"echannel": map[string]interface{} {
 			"bill_info1": "Payment:",
@@ -261,7 +261,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferMandiri(order enti
 	}
 
 	// translate response
-	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	grossAmount, _ := strconv.ParseFloat(data.GrossAmount, 64)
 	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
 	paymentRes := entities.PaymentResponse {
 		OrderID: strconv.Itoa(int(order.ID)),
@@ -290,7 +290,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferPermata(order enti
 		"payment_type": "permata",
 		"transaction_details": map[string]interface{} {
 			"order_id": order.ID,
-			"gross_amount": 90000,
+			"gross_amount": order.FixPrice,
 		},
 	})
 	request, err := http.NewRequest(http.MethodPost, repository.baseURL, bytes.NewBuffer(requestBody))
@@ -319,7 +319,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferPermata(order enti
 	}
 
 	// translate response
-	grossAmount, _ := strconv.Atoi(data.GrossAmount)
+	grossAmount, _ := strconv.ParseFloat(data.GrossAmount, 64)
 	trTime, _ := time.Parse("2006-01-02 15:04:05", data.TransactionTime)
 	paymentRes := entities.PaymentResponse {
 		OrderID: strconv.Itoa(int(order.ID)),
