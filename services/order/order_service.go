@@ -218,7 +218,7 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
  * @var orderRequest		request create order oleh customer
  * @return OrderResponse	order response
  */
-func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.AdminSetPriceOrderRequest) error  {
+func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.AdminSetPriceOrderRequest) error {
 	err := validations.ValidateAdminSetPriceOrderRequest(service.validate, setPriceRequest)
 	if err != nil {
 		return err
@@ -230,16 +230,17 @@ func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.Ad
 		return err
 	}
 
-	// reject if status other than requested
-	if order.Status != "REQUESTED" {
+	// reject if status other than requested and already fixed
+	if order.Status != "REQUESTED" && order.Status != "NEED_CUSTOMER_CONFIRM" {
 		return web.WebError{
-			Code: 400,
+			Code:    400,
 			Message: "Status order was already confirmed or cancelled",
 		}
 	}
-	
+
 	// Update via repository
 	order.FixPrice = setPriceRequest.FixedPrice
+	order.Status = "NEED_CUSTOMER_CONFIRM"
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {
 		return err
@@ -255,7 +256,7 @@ func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.Ad
  * @var orderID				ID Order yang akan di cancel
  * @return OrderResponse	order response
  */
-func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) error  {
+func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) error {
 	// get order
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
@@ -268,9 +269,9 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
 	}
 
 	// reject if status other than requested
-	if order.Status != "REQUESTED" {
+	if order.Status != "REQUESTED" && order.Status != "NEED_CUSTOMER_CONFIRM" {
 		return web.WebError{
-			Code: 400,
+			Code:    400,
 			Message: "Status order was already confirmed or cancelled",
 		}
 	}
@@ -279,8 +280,21 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
 	if !isAdmin {
 		if order.CustomerID != uint(userID) {
 			return web.WebError{
-				Code: 400,
+				Code:    400,
 				Message: "Order doesn't belong to currently authenticated user",
+			}
+		} else if order.Status != "NEED_CUSTOMER_CONFIRM" {
+			return web.WebError{
+				Code:    400,
+				Message: "Waiting for admin response",
+			}
+		}
+	}
+	if isAdmin {
+		if order.Status == "NEED_CUSTOMER_CONFIRM" {
+			return web.WebError{
+				Code:    400,
+				Message: "Waiting for customer response",
 			}
 		}
 	}
@@ -302,7 +316,7 @@ func (service OrderService) ConfirmOrder(orderID int, userID int, isAdmin bool) 
  * @var orderID				ID Order yang akan di cancel
  * @return OrderResponse	order response
  */
-func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) error  {
+func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) error {
 	// get order
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
@@ -310,9 +324,9 @@ func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) e
 	}
 
 	// reject if status other than requested
-	if order.Status != "REQUESTED" && order.Status != "CONFIRMED" {
+	if order.Status != "REQUESTED" && order.Status != "CONFIRMED" && order.Status != "CUSTOMER CONFIRM" {
 		return web.WebError{
-			Code: 400,
+			Code:    400,
 			Message: "Cannot cancel order: status order was already " + order.Status,
 		}
 	}
@@ -321,7 +335,7 @@ func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) e
 	if !isAdmin {
 		if order.CustomerID != uint(userID) {
 			return web.WebError{
-				Code: 400,
+				Code:    400,
 				Message: "Order doesn't belong to currently authenticated user",
 			}
 		}
