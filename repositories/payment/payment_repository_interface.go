@@ -55,4 +55,14 @@ type PaymentRepositoryInterface interface {
 	 * @return any	Response dari layanan pihak ketiga
 	 */
 	CreateBankTransferPermata(order entities.Order) (entities.PaymentResponse, error)
+
+	/*
+	* Get Payment detail
+	* -------------------------------
+	* Mengambil data transaksi berdasarkan `transaction_id`
+	*
+	* @var transaction_id		Transaction ID
+	* @return PaymentResponse	Response
+	*/
+	GetPaymentStatus(transactionID string, paymentMethod string) (entities.PaymentResponse, error)
 }
