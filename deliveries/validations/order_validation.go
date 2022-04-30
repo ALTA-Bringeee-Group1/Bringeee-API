@@ -37,6 +37,7 @@ var orderErrorMessages = map[string]string{
 	"TotalVolume|required"				: "total volume is required",
 	"TotalWeight|required"				: "total weight is required",
 	"FixedPrice|required"				: "fixed price is required",
+	"PaymentMethod|required"			: "Payment method is not defined",
 }
 
 /*
@@ -95,6 +96,19 @@ func ValidateCustomerCreateOrderRequest(validate *validator.Validate, customerCr
 func ValidateAdminSetPriceOrderRequest(validate *validator.Validate, adminSetPriceOrderReq entities.AdminSetPriceOrderRequest) error {
 	errors := []web.ValidationErrorItem{}
 	validateOrderStruct(validate, adminSetPriceOrderReq, orderErrorMessages, &errors)
+	if len(errors) > 0 {
+		return web.ValidationError{
+			Code:               400,
+			ProductionMessage:  "Validation error",
+			DevelopmentMessage: "Validation error",
+			Errors:             errors,
+		}
+	}
+	return nil
+}
+func ValidateSimpleStruct(validate *validator.Validate, object interface{}) error {
+	errors := []web.ValidationErrorItem{}
+	validateOrderStruct(validate, object, orderErrorMessages, &errors)
 	if len(errors) > 0 {
 		return web.ValidationError{
 			Code:               400,
