@@ -438,11 +438,17 @@ func (service OrderService) CreatePayment(orderID int, createPaymentRequest enti
  */
 func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, error) {
 	// get order
-	_, err := service.orderRepository.Find(orderID)
+	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
 		return entities.PaymentResponse{}, nil
 	}
-	return entities.PaymentResponse{}, nil
+	
+	// get payment
+	paymentRes, err := service.paymentRepository.GetPaymentStatus(order.TransactionID, order.PaymentMethod)
+	if err != nil {
+		return entities.PaymentResponse{}, err
+	}
+	return paymentRes, nil
 }
 
 /*
