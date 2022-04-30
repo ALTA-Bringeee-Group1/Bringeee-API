@@ -335,7 +335,7 @@ func (service OrderService) CancelOrder(orderID int, userID int, isAdmin bool) e
 	}
 
 	// reject if status other than requested
-	if order.Status != "REQUESTED" && order.Status != "CONFIRMED" && order.Status != "CUSTOMER CONFIRM" {
+	if order.Status != "REQUESTED" && order.Status != "CONFIRMED" && order.Status != "NEED_CUSTOMER_CONFIRM" {
 		return web.WebError{
 			Code:    400,
 			Message: "Cannot cancel order: status order was already " + order.Status,
