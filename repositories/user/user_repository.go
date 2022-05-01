@@ -159,7 +159,7 @@ func (repo UserRepository) FindAllCustomer(limit int, offset int, filters []map[
 	for _, sort := range sorts {
 		builder.Order(clause.OrderByColumn{Column: clause.Column{Name: sort["field"].(string)}, Desc: sort["desc"].(bool)})
 	}
-	tx := builder.Find(&users)
+	tx := builder.Where("role=?", "customer").Find(&users)
 	if tx.Error != nil {
 		return []entities.User{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: tx.Error.Error()}
 	}
