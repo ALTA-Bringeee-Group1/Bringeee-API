@@ -484,7 +484,7 @@ func (service UserService) DeleteCustomer(id int) error {
 	// Cari user berdasarkan ID via repo
 	user, err := service.userRepo.FindCustomer(id)
 	if err != nil {
-		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "data not exist"}
+		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "The request ID has been deleted or not exist"}
 	}
 	if user.Role != "customer" {
 		return web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "The requested ID doesn't match with any record"}
@@ -585,6 +585,9 @@ func (service UserService) FindAllCustomer(limit, page int, filters []map[string
 
 	usersRes := []entities.CustomerResponse{}
 	users, err := service.userRepo.FindAllCustomer(limit, offset, filters, sorts)
+	if len(users) == 0 {
+		return []entities.CustomerResponse{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Customers not exist"}
+	}
 
 	copier.Copy(&usersRes, &users)
 
@@ -597,6 +600,9 @@ func (service UserService) FindAllDriver(limit, page int, filters []map[string]s
 
 	driversRes := []entities.DriverResponse{}
 	drivers, err := service.userRepo.FindAllDriver(limit, offset, filters, sorts)
+	if len(drivers) == 0 {
+		return []entities.DriverResponse{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Drivers not exist"}
+	}
 	copier.Copy(&driversRes, &drivers)
 	for key, value := range drivers {
 		user, _ := service.userRepo.FindByCustomer("id", strconv.Itoa(int(value.UserID)))
