@@ -35,6 +35,7 @@ func RegisterDriverRoute(e *echo.Echo, driverHandler *handlers.DriverHandler) {
 	order.POST("/:id/take_order", driverHandler.TakeOrder, middleware.JWTMiddleware())
 	order.POST("/:id/finish_order", driverHandler.FinishOrder, middleware.JWTMiddleware())
 	e.GET("/api/drivers/current_order", driverHandler.CurrentOrder, middleware.JWTMiddleware())
+	e.GET("/api/drivers/history_orders", driverHandler.FinishedListOrders, middleware.JWTMiddleware())
 }
 
 func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
