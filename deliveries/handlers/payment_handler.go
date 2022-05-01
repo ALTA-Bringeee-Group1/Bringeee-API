@@ -22,6 +22,16 @@ func NewPaymentHandler(orderService orderService.OrderServiceInterface) *Payment
 	}
 }
 
+type MidtransHookRequest struct {
+	TransactionTime string `form:"transaction_time" json:"transaction_time"`
+	TransactionStatus string `form:"transaction_status" json:"transaction_status"`
+	OrderID string `form:"order_id" json:"order_id"`
+	MerchantID string `form:"merchant_id" json:"merchant_id"`
+	GrossAmount string `form:"gross_amount" json:"gross_amount"`
+	FraudStatus string `form:"fraud_status" json:"fraud_status"`
+	Currency string `form:"currency" json:"currency"`
+} 
+
 
 /*
  * Midtrans Payment notification Webhook
@@ -34,8 +44,9 @@ func (handler PaymentHandler) MidtransWebhook(c echo.Context) error {
 	links := map[string]string{}	
 	links["self"] = fmt.Sprintf("%s/api/payments/midtrans_webhook", configs.Get().App.BaseURL)
 
-	trStatus := c.FormValue("transaction_status")
-	if trStatus == "" {
+	midtransRequest := MidtransHookRequest{}
+	c.Bind(&midtransRequest)
+	if midtransRequest.TransactionStatus == "" {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
 			Code: http.StatusBadRequest,
@@ -43,7 +54,7 @@ func (handler PaymentHandler) MidtransWebhook(c echo.Context) error {
 			Links: links,
 		})
 	}
-	orderID, err := strconv.Atoi(c.FormValue("order_id"))
+	orderID, err := strconv.Atoi(midtransRequest.OrderID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
 			Status: "ERROR",
@@ -54,7 +65,7 @@ func (handler PaymentHandler) MidtransWebhook(c echo.Context) error {
 	}
 
 	// service call
-	err = handler.orderService.PaymentWebhook(orderID, trStatus)
+	err = handler.orderService.PaymentWebhook(orderID, midtransRequest.TransactionStatus)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
