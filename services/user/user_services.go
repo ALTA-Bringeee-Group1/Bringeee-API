@@ -585,10 +585,9 @@ func (service UserService) FindAllCustomer(limit, page int, filters []map[string
 
 	usersRes := []entities.CustomerResponse{}
 	users, err := service.userRepo.FindAllCustomer(limit, offset, filters, sorts)
-	if len(users) == 0 {
-		return []entities.CustomerResponse{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Customers not exist"}
+	if err != nil {
+		return []entities.CustomerResponse{}, err
 	}
-
 	copier.Copy(&usersRes, &users)
 
 	return usersRes, err
@@ -600,8 +599,8 @@ func (service UserService) FindAllDriver(limit, page int, filters []map[string]s
 
 	driversRes := []entities.DriverResponse{}
 	drivers, err := service.userRepo.FindAllDriver(limit, offset, filters, sorts)
-	if len(drivers) == 0 {
-		return []entities.DriverResponse{}, web.WebError{Code: 400, ProductionMessage: "bad request", DevelopmentMessage: "Drivers not exist"}
+	if err != nil {
+		return []entities.DriverResponse{}, err
 	}
 	copier.Copy(&driversRes, &drivers)
 	for key, value := range drivers {

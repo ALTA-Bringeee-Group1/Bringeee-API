@@ -169,8 +169,8 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 	if name != "" {
 		filters = append(filters, map[string]string{
 			"field":    "name",
-			"operator": "=",
-			"value":    name,
+			"operator": "LIKE",
+			"value":    "%" + name + "%",
 		})
 	}
 	gender := c.QueryParam("gender")
