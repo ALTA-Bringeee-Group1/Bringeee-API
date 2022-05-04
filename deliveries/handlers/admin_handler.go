@@ -7,6 +7,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderService "bringeee-capstone/services/order"
+	truckService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"fmt"
 	"mime/multipart"
@@ -19,13 +20,15 @@ import (
 
 type AdminHandler struct {
 	userService  *userService.UserService
+	truckService *truckService.TruckTypeService
 	orderService orderService.OrderServiceInterface
 }
 
-func NewAdminHandler(service *userService.UserService, orderService orderService.OrderServiceInterface) *AdminHandler {
+func NewAdminHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, truckService *truckService.TruckTypeService) *AdminHandler {
 	return &AdminHandler{
 		userService:  service,
 		orderService: orderService,
+		truckService: truckService,
 	}
 }
 
@@ -929,6 +932,216 @@ func (handler AdminHandler) DeleteCustomer(c echo.Context) error {
 		Links:  links,
 		Data: map[string]interface{}{
 			"id": id,
+		},
+	})
+}
+
+func (handler AdminHandler) CountCustomer(c echo.Context) error {
+
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/aggregates/customer_count"}
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	filters := []map[string]string{
+		{
+			"field":    "role",
+			"operator": "=",
+			"value":    "customer",
+		},
+	}
+
+	count, err := handler.userService.CountCustomer(filters)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"total": count,
+		},
+	})
+}
+
+func (handler AdminHandler) CountDriver(c echo.Context) error {
+
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/aggregates/drivers_count"}
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	filters := []map[string]string{}
+	status := c.QueryParam("status")
+	if status != "" {
+		filters = append(filters, map[string]string{
+			"field":    "status",
+			"operator": "=",
+			"value":    status,
+		})
+	}
+	account_status := c.QueryParam("account_status")
+	if account_status != "" {
+		filters = append(filters, map[string]string{
+			"field":    "account_status",
+			"operator": "=",
+			"value":    account_status,
+		})
+	}
+
+	truck_type := c.QueryParam("truck_type")
+	if truck_type != "" {
+		filters = append(filters, map[string]string{
+			"field":    "truck_type_id",
+			"operator": "=",
+			"value":    truck_type,
+		})
+	}
+
+	count, err := handler.userService.CountDriver(filters)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"total": count,
+		},
+	})
+}
+
+func (handler AdminHandler) CountOrder(c echo.Context) error {
+
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/aggregates/order_count"}
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	filters := []map[string]interface{}{}
+	status := c.QueryParam("status")
+	if status != "" {
+		filters = append(filters, map[string]interface{}{
+			"field":    "status",
+			"operator": "=",
+			"value":    status,
+		})
+	}
+
+	truck_type := c.QueryParam("truck_type")
+	if truck_type != "" {
+		filters = append(filters, map[string]interface{}{
+			"field":    "truck_type_id",
+			"operator": "=",
+			"value":    truck_type,
+		})
+	}
+
+	count, err := handler.orderService.CountOrder(filters)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"total": count,
+		},
+	})
+}
+
+func (handler AdminHandler) CountTruck(c echo.Context) error {
+
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/aggregates/truck_types_count"}
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	filters := []map[string]string{}
+
+	count, err := handler.truckService.CountTruck(filters)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data: map[string]interface{}{
+			"total": count,
 		},
 	})
 }
