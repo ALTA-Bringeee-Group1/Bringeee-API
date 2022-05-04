@@ -2,7 +2,6 @@ package truck_type
 
 import "bringeee-capstone/entities"
 
-
 type TruckTypeServiceInterface interface {
 
 	/*
@@ -18,4 +17,15 @@ type TruckTypeServiceInterface interface {
 	 * @return error		error
 	 */
 	FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.TruckTypeResponse, error)
+	/*
+	 * Count Truck
+	 * -------------------------------
+	 * Mengambil data truckType berdasarkan filters dan sorts
+	 *
+
+	 * @var sorts			pengurutan data, { field, value[bool] }
+	 * @return truckType	list truckType dalam bentuk entity domain
+	 * @return error		error
+	 */
+	CountTruck(filters []map[string]string) (int, error)
 }

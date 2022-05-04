@@ -27,7 +27,7 @@ type OrderServiceInterface interface {
 	 * -------------------------------
 	 * Mengambil order pertama berdasarkan filter yang telah di tentukan pada parameter
 	 * dan mengambil data pertama sebagai data order tunggal
-	 * @var filter 
+	 * @var filter
 	 * @return OrderResponse	order response dalam bentuk tunggal
 	 * @return error			error
 	 */
@@ -63,7 +63,7 @@ type OrderServiceInterface interface {
 	 * Membuat order baru berdasarkan user yang sedang login
 	 * @var orderRequest		request create order oleh customer
 	 * @var files				list file request untuk diteruskan ke validation dan upload
-	 * @return OrderResponse	order response 
+	 * @return OrderResponse	order response
 	 */
 	Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int) (entities.OrderResponse, error)
 
@@ -73,9 +73,9 @@ type OrderServiceInterface interface {
 	 * Set fixed price order oleh admin untuk diteruskan kembali ke user agar di konfirmasi/cancel
 	 * @var orderRequest		request create order oleh customer
 	 * @var orderID				orderID
-	 * @return OrderResponse	order response 
+	 * @return OrderResponse	order response
 	 */
-	SetFixOrder(orderID int, setPriceRequest entities.AdminSetPriceOrderRequest) error 
+	SetFixOrder(orderID int, setPriceRequest entities.AdminSetPriceOrderRequest) error
 
 	/*
 	 * Confirm Order
@@ -83,9 +83,9 @@ type OrderServiceInterface interface {
 	 * Confirm order yang sudah dibuat
 	 * @var orderID				ID Order yang akan di cancel
 	 * @var userID 				authenticated user id (role: customer, admin)
-	 * @return OrderResponse	order response 
+	 * @return OrderResponse	order response
 	 */
-	ConfirmOrder(orderID int, userID int, isAdmin bool) error 
+	ConfirmOrder(orderID int, userID int, isAdmin bool) error
 
 	/*
 	 * Cancel Order
@@ -93,9 +93,9 @@ type OrderServiceInterface interface {
 	 * Cancel order yang sudah dibuat
 	 * @var orderID				ID Order yang akan di cancel
 	 * @var userID				Authenticated user id (role: customer, admin)
-	 * @return OrderResponse	order response 
+	 * @return OrderResponse	order response
 	 */
-	CancelOrder(orderID int, userID int, isAdmin bool) error 
+	CancelOrder(orderID int, userID int, isAdmin bool) error
 
 	/*
 	 * Create Payment
@@ -103,16 +103,16 @@ type OrderServiceInterface interface {
 	 * Buat pembayaran untuk order tertentu ke layanan pihak ketiga
 	 * @var orderID					ID Order yang akan di cancel
 	 * @var createPaymentRequest	request payment
-	 * @return PaymentResponse		response payment 
+	 * @return PaymentResponse		response payment
 	 */
-	CreatePayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error) 
+	CreatePayment(orderID int, createPaymentRequest entities.CreatePaymentRequest) (entities.PaymentResponse, error)
 
 	/*
 	 * Get Payment
 	 * -------------------------------
 	 * Mengambil data pembayaran yang sudah ada berdasarkan transaction_id yang sudah di set pada order
 	 * @var orderID					ID Order yang akan di cancel
-	 * @return PaymentResponse		response payment 
+	 * @return PaymentResponse		response payment
 	 */
 	GetPayment(orderID int) (entities.PaymentResponse, error)
 
@@ -124,7 +124,7 @@ type OrderServiceInterface interface {
 	 * @return 			error
 	 */
 	CancelPayment(orderID int) error
-	
+
 	/*
 	 * Find All History
 	 * -------------------------------
@@ -168,4 +168,12 @@ type OrderServiceInterface interface {
 	 * @var files		list file request untuk diteruskan ke validation dan upload
 	 */
 	FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader) error
+
+	/*
+	 * Counnt Order
+	 * -------------------------------
+	 * Menghitung jumlah order
+	 * @var int 	return jumlah data
+	 */
+	CountOrder(filters []map[string]interface{}) (int, error)
 }

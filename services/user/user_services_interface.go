@@ -23,4 +23,6 @@ type UserServiceInterface interface {
 	FindDriver(id int) (entities.DriverResponse, error)
 	DeleteDriver(id int) error
 	VerifiedDriverAccount(id int) error
+	CountCustomer(filters []map[string]string) (int, error)
+	CountDriver(filters []map[string]string) (int, error)
 }

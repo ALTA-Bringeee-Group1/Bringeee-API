@@ -17,7 +17,6 @@ func NewTruckTypeService(repo truckTypeRepository.TruckTypeRepositoryInterface) 
 	}
 }
 
-
 /*
  * Find All
  * -------------------------------
@@ -42,6 +41,14 @@ func (service TruckTypeService) FindAll(limit int, page int, filters []map[strin
 	// Konversi ke truckType response
 	truckTypesRes := []entities.TruckTypeResponse{}
 	copier.Copy(&truckTypesRes, &truckTypes)
-	
+
 	return truckTypesRes, nil
+}
+
+func (service TruckTypeService) CountTruck(filters []map[string]string) (int, error) {
+	count, err := service.truckTypeRepo.CountAll(filters)
+	if err != nil {
+		return 0, err
+	}
+	return int(count), err
 }
