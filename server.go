@@ -17,7 +17,6 @@ import (
 	truckTypeService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"bringeee-capstone/utils"
-	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -45,7 +44,7 @@ func main() {
 
 	authService := authService.NewAuthService(userRepository)
 	userService := userService.NewUserService(userRepository, truckTypeRepository, orderRepository)
-	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository, userRepository, midtransPaymentRepository, distanceMatrixRepository)
+	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository, userRepository, midtransPaymentRepository, distanceMatrixRepository, truckTypeRepository)
 	regionService := regionService.NewRegionService(regionRepository)
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
 
@@ -68,16 +67,5 @@ func main() {
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
 	routes.RegisterPaymentRoute(e, paymentHandler)
 
-	// data, _ := distanceMatrixRepository.EstimateShortest(
-	// 	"-6.129634", 
-	// 	"106.827312", 
-	// 	"-7.795688637022531", 
-	// 	"110.3653103342137",
-	// )
-	// fmt.Println(utils.JsonEncode(data))
-
-	data, _ := orderService.EstimatePriceOrder(7)
-	fmt.Println(utils.JsonEncode(data))
-
-	// e.Logger.Fatal(e.Start(":" + config.App.Port))
+	e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
