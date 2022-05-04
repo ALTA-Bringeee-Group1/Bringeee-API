@@ -180,6 +180,12 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 		return entities.OrderResponse{}, err
 	}
 
+	// define trucktype data
+	truckType, err := service.truckTypeRepository.Find(orderRequest.TruckTypeID)
+	if err != nil {
+		return entities.OrderResponse{}, err
+	}
+
 	// convert request to domain
 	order := entities.Order{}
 	destination := entities.Destination{}
@@ -206,6 +212,21 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 			order.OrderPicture = fileUrl
 		}
 	}
+
+	// Price Estimation
+	var price int64
+	distance, err := service.distanceMatrixRepository.EstimateShortest(
+		orderRequest.DestinationStartLat,
+		orderRequest.DestinationStartLong,
+		orderRequest.DestinationEndLat,
+		orderRequest.DestinationEndLong,
+	)
+	if err != nil {
+		price = 0
+	}
+	price = int64(distance.DistanceValue / 1000) * truckType.PricePerDistance
+	order.EstimatedPrice = price
+	order.Distance = distance.DistanceValue / 1000
 
 	// repository call
 	order, err = service.orderRepository.Store(order, destination)
