@@ -940,7 +940,7 @@ func (handler AdminHandler) CountCustomer(c echo.Context) error {
 
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
-	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/aggregates/customer_count"}
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/aggregates/customers_count"}
 	if role != "admin" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Code:   http.StatusUnauthorized,
@@ -1052,7 +1052,7 @@ func (handler AdminHandler) CountOrder(c echo.Context) error {
 
 	token := c.Get("user")
 	_, role, err := middleware.ReadToken(token)
-	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/aggregates/order_count"}
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/aggregates/orders_count"}
 	if role != "admin" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Code:   http.StatusUnauthorized,
