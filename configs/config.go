@@ -30,6 +30,10 @@ type AppConfig struct {
 		MidtransBaseURLDevelopment 	string
 		MidtransServerKey		 	string
 	}
+	DistanceMatrix struct {
+		DistanceMatrixAPIKey	string
+		DistanceMatrixBaseURL	string
+	}
 }
 
 var appConfig *AppConfig
@@ -67,6 +71,9 @@ func initConfig() *AppConfig {
 		config.Payment.MidtransBaseURLProduction = ""
 		config.Payment.MidtransServerKey = ""
 
+		config.DistanceMatrix.DistanceMatrixAPIKey = ""
+		config.DistanceMatrix.DistanceMatrixBaseURL = ""
+
 		return &config
 	}
 
@@ -89,6 +96,9 @@ func initConfig() *AppConfig {
 	config.Payment.MidtransBaseURLProduction = os.Getenv("MIDTRANS_BASE_URL_PRODUCTION")
 	config.Payment.MidtransBaseURLDevelopment = os.Getenv("MIDTRANS_BASE_URL_DEVELOPMENT")
 	config.Payment.MidtransServerKey = os.Getenv("MIDTRANS_SERVER_KEY")
+
+	config.DistanceMatrix.DistanceMatrixAPIKey = os.Getenv("DISTANCE_MATRIX_API_KEY")
+	config.DistanceMatrix.DistanceMatrixBaseURL = os.Getenv("DISTANCE_MATRIX_BASE_URL")
 
 	return &config
 }
