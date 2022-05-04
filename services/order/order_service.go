@@ -9,6 +9,7 @@ import (
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
 	paymentRepository "bringeee-capstone/repositories/payment"
+	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	"mime/multipart"
 	"strconv"
@@ -26,6 +27,7 @@ type OrderService struct {
 	userRepository         		userRepository.UserRepositoryInterface
 	paymentRepository      		paymentRepository.PaymentRepositoryInterface
 	distanceMatrixRepository	distanceMatrixRepository.DistanceMatrixRepositoryInterface
+	truckTypeRepository			truckTypeRepository.TruckTypeRepositoryInterface
 	validate               		*validator.Validate
 }
 
@@ -35,13 +37,15 @@ func NewOrderService(
 	userRepository userRepository.UserRepositoryInterface,
 	paymentRepository paymentRepository.PaymentRepositoryInterface,
 	distanceMatrixRepository distanceMatrixRepository.DistanceMatrixRepositoryInterface,
-) *OrderService {
-	return &OrderService{
-		orderRepository:         	repository,
-		orderHistoryRepository:  	orderHistoryRepository,
-		userRepository:          	userRepository,
-		paymentRepository:       	paymentRepository,
-		distanceMatrixRepository: 	distanceMatrixRepository,
+	truckTypeRepository truckTypeRepository.TruckTypeRepositoryInterface,
+	) *OrderService {
+		return &OrderService{
+			orderRepository:         	repository,
+			orderHistoryRepository:  	orderHistoryRepository,
+			userRepository:          	userRepository,
+			paymentRepository:       	paymentRepository,
+			distanceMatrixRepository: 	distanceMatrixRepository,
+			truckTypeRepository: 		truckTypeRepository,
 		validate:               	validator.New(),
 	}
 }
@@ -670,10 +674,6 @@ func (service OrderService) CountOrder(filters []map[string]interface{}) (int, e
  * Melakukan estimasi harga berdasarkan koordinat destinasi origin yang dimasukkan
  * 
  * @var orderID 		int 		order id
- * @var originLat 		string 		koordinat lintang titik asal
- * @var originLong 		string		koordinat bujur titik asal
- * @var destinationLat 	string		koordinat lintang titik tujuan
- * @var destinationLat 	string		koordinat bujur titik tujuan
  */
 func (service OrderService) EstimatePriceOrder(orderID int) (int64, error) {
 
@@ -698,4 +698,44 @@ func (service OrderService) EstimatePriceOrder(orderID int) (int64, error) {
 	price := order.TruckType.PricePerDistance * int64(distance.DistanceValue / 1000)
 	
 	return price, nil
+}
+
+/*
+ * Estimate order price
+ * -------------------------------
+ * Melakukan estimasi harga berdasarkan EstimateOrderPriceRequest
+ * dan mengembalikan nilai harga kalkulasi jarak x truckType
+ */
+func (service OrderService) EstimateDistancePrice(request entities.EstimateOrderPriceRequest) (entities.DistanceAPIResponse, error) {
+	// validation
+	err := validations.ValidateSimpleStruct(service.validate, request)
+	if err != nil {
+		return entities.DistanceAPIResponse{}, err
+	}
+
+	// find order
+	truckTypeID, _ := strconv.Atoi(request.TruckTypeID)
+	truckType, err := service.truckTypeRepository.Find(truckTypeID)
+	if err != nil {
+		return entities.DistanceAPIResponse{}, err
+	}
+	
+	// get distance
+	distance, err := service.distanceMatrixRepository.EstimateShortest(
+		request.DestinationStartLat,
+		request.DestinationStartLong,
+		request.DestinationEndLat,
+		request.DestinationEndLong,
+	)
+	if err != nil {
+		return entities.DistanceAPIResponse{}, err
+	}
+
+	// calculate distance
+	price := truckType.PricePerDistance * int64(distance.DistanceValue / 1000)
+	distanceAPIRes := entities.DistanceAPIResponse{}
+	copier.Copy(&distanceAPIRes, &distance)
+	distanceAPIRes.EstimatedPrice = price
+	
+	return distanceAPIRes, nil
 }
