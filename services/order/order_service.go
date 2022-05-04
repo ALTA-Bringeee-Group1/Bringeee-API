@@ -689,37 +689,6 @@ func (service OrderService) CountOrder(filters []map[string]interface{}) (int, e
 	}
 	return int(count), err
 }
-/*
- * Estimate order price
- * -------------------------------
- * Melakukan estimasi harga berdasarkan koordinat destinasi origin yang dimasukkan
- * 
- * @var orderID 		int 		order id
- */
-func (service OrderService) EstimatePriceOrder(orderID int) (int64, error) {
-
-	// find order
-	order, err := service.orderRepository.Find(orderID)
-	if err != nil {
-		return 0, err
-	}
-	
-	// get distance
-	distance, err := service.distanceMatrixRepository.EstimateShortest(
-		order.Destination.DestinationStartLat,
-		order.Destination.DestinationStartLong,
-		order.Destination.DestinationEndLat,
-		order.Destination.DestinationEndLong,
-	)
-	if err != nil {
-		return 0, err
-	}
-
-	// calculate distance
-	price := order.TruckType.PricePerDistance * int64(distance.DistanceValue / 1000)
-	
-	return price, nil
-}
 
 /*
  * Estimate order price

@@ -180,15 +180,6 @@ type OrderServiceInterface interface {
 	/*
 	 * Estimate order price
 	 * -------------------------------
-	 * Melakukan estimasi harga berdasarkan koordinat destinasi origin yang dimasukkan
-	 * 
-	 * @var orderID 		int 		order id
-	 */
-	EstimatePriceOrder(orderID int) (int64, error)
-
-	/*
-	 * Estimate order price
-	 * -------------------------------
 	 * Melakukan estimasi harga berdasarkan EstimateOrderPriceRequest
 	 * dan mengembalikan nilai harga kalkulasi jarak x truckType
 	 */
