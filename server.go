@@ -45,9 +45,10 @@ func main() {
 
 	authService := authService.NewAuthService(userRepository)
 	userService := userService.NewUserService(userRepository, truckTypeRepository, orderRepository)
-	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository, userRepository, midtransPaymentRepository)
+	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository, userRepository, midtransPaymentRepository, distanceMatrixRepository)
 	regionService := regionService.NewRegionService(regionRepository)
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
+
 
 	authHandler := handlers.NewAuthHandler(authService)
 	customerHandler := handlers.NewCustomerHandler(userService, orderService)
@@ -67,15 +68,16 @@ func main() {
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
 	routes.RegisterPaymentRoute(e, paymentHandler)
 
-	data, _ := distanceMatrixRepository.EstimateShortest(
-		"-6.129634", 
-		"106.827312", 
-		"-7.795688637022531", 
-		"110.3653103342137",
-	)
-	fmt.Println(utils.JsonEncode(data))
+	// data, _ := distanceMatrixRepository.EstimateShortest(
+	// 	"-6.129634", 
+	// 	"106.827312", 
+	// 	"-7.795688637022531", 
+	// 	"110.3653103342137",
+	// )
+	// fmt.Println(utils.JsonEncode(data))
 
-	fmt.Println("Awok?")
+	data, _ := orderService.EstimatePriceOrder(7)
+	fmt.Println(utils.JsonEncode(data))
 
 	// e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
