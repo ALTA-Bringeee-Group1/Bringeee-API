@@ -48,6 +48,11 @@ func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
 	e.PUT("/api/drivers/:id", AdminHandler.UpdateDriverByAdmin, middleware.JWTMiddleware()) // edit driver credential
 	e.DELETE("api/drivers/:id", AdminHandler.DeleteDriver, middleware.JWTMiddleware())      // delete driver
 
+	e.GET("api/stats/aggregates/customer_count", AdminHandler.CountCustomer, middleware.JWTMiddleware())
+	e.GET("api/stats/aggregates/drivers_count", AdminHandler.CountDriver, middleware.JWTMiddleware())
+	e.GET("api/stats/aggregates/order_count", AdminHandler.CountOrder, middleware.JWTMiddleware())
+	e.GET("api/stats/aggregates/truck_type_count", AdminHandler.CountTruck, middleware.JWTMiddleware())
+
 	order := e.Group("/api/orders", middleware.JWTMiddleware())
 	order.GET("", AdminHandler.ListOrders)
 	order.GET("/:orderID", AdminHandler.DetailOrder)

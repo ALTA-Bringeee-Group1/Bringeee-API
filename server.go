@@ -49,7 +49,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	customerHandler := handlers.NewCustomerHandler(userService, orderService)
 	driverHandler := handlers.NewDriverHandler(userService, orderService)
-	adminHandler := handlers.NewAdminHandler(userService, orderService)
+	adminHandler := handlers.NewAdminHandler(userService, orderService, truckTypeService)
 	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
 	regionHandler := handlers.NewRegionHandler(regionService)
 	orderHandler := handlers.NewOrderHandler(orderService, userService)
