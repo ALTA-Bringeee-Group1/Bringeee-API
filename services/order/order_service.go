@@ -5,6 +5,7 @@ import (
 	"bringeee-capstone/deliveries/validations"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	distanceMatrixRepository "bringeee-capstone/repositories/distance_matrix"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
 	paymentRepository "bringeee-capstone/repositories/payment"
@@ -20,11 +21,12 @@ import (
 )
 
 type OrderService struct {
-	orderRepository        orderRepository.OrderRepositoryInterface
-	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface
-	userRepository         userRepository.UserRepositoryInterface
-	paymentRepository      paymentRepository.PaymentRepositoryInterface
-	validate               *validator.Validate
+	orderRepository        		orderRepository.OrderRepositoryInterface
+	orderHistoryRepository 		orderHistoryRepository.OrderHistoryRepositoryInterface
+	userRepository         		userRepository.UserRepositoryInterface
+	paymentRepository      		paymentRepository.PaymentRepositoryInterface
+	distanceMatrixRepository	distanceMatrixRepository.DistanceMatrixRepositoryInterface
+	validate               		*validator.Validate
 }
 
 func NewOrderService(
@@ -32,13 +34,15 @@ func NewOrderService(
 	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface,
 	userRepository userRepository.UserRepositoryInterface,
 	paymentRepository paymentRepository.PaymentRepositoryInterface,
+	distanceMatrixRepository distanceMatrixRepository.DistanceMatrixRepositoryInterface,
 ) *OrderService {
 	return &OrderService{
-		orderRepository:        repository,
-		orderHistoryRepository: orderHistoryRepository,
-		userRepository:         userRepository,
-		paymentRepository:      paymentRepository,
-		validate:               validator.New(),
+		orderRepository:         	repository,
+		orderHistoryRepository:  	orderHistoryRepository,
+		userRepository:          	userRepository,
+		paymentRepository:       	paymentRepository,
+		distanceMatrixRepository: 	distanceMatrixRepository,
+		validate:               	validator.New(),
 	}
 }
 
@@ -659,4 +663,39 @@ func (service OrderService) CountOrder(filters []map[string]interface{}) (int, e
 		return 0, err
 	}
 	return int(count), err
+}
+/*
+ * Estimate order price
+ * -------------------------------
+ * Melakukan estimasi harga berdasarkan koordinat destinasi origin yang dimasukkan
+ * 
+ * @var orderID 		int 		order id
+ * @var originLat 		string 		koordinat lintang titik asal
+ * @var originLong 		string		koordinat bujur titik asal
+ * @var destinationLat 	string		koordinat lintang titik tujuan
+ * @var destinationLat 	string		koordinat bujur titik tujuan
+ */
+func (service OrderService) EstimatePriceOrder(orderID int) (int64, error) {
+
+	// find order
+	order, err := service.orderRepository.Find(orderID)
+	if err != nil {
+		return 0, err
+	}
+	
+	// get distance
+	distance, err := service.distanceMatrixRepository.EstimateShortest(
+		order.Destination.DestinationStartLat,
+		order.Destination.DestinationStartLong,
+		order.Destination.DestinationEndLat,
+		order.Destination.DestinationEndLong,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	// calculate distance
+	price := order.TruckType.PricePerDistance * int64(distance.DistanceValue / 1000)
+	
+	return price, nil
 }
