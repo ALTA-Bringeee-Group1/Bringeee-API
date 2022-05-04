@@ -661,6 +661,30 @@ components:
                 updated_at:
                     type: string
                     example: 2012-07-28T07:02:13:000+07:00
+        estimate_response:
+            type: object
+            properties:
+                distance:
+                    type: string
+                    example: '128 km'
+                distance_value:
+                    type: string
+                    example: 128520
+                estimate_duration:
+                    type: string
+                    example: '5 Hours 2 Mins'
+                estimate_duration_value:
+                    type: string
+                    example: 23020
+                origin_address:
+                    type: string
+                    example: 'Jl. Malioboro No.21, Sosromenduran, Gedong Tengen, Kota Yogyakarta, Daerah Istimewa Yogyakarta 55271, Indonesia'
+                destination_address:
+                    type: string
+                    example: 'JL. Lodan 2 Blok A/2-4, Jakarta, 14430, RT.8/RW.11, Ancol, Pademangan, North Jakarta City, Jakarta 14430, Indonesia'
+                estimated_price:
+                    type: string
+                    example: 2700000
         truck_type_response:
             type: object
             properties:
@@ -1301,17 +1325,10 @@ paths:
         post:
             tags:
                 - 'Customer'
-            description: Calculate price in realtime based on 2 coordinate
-            summary: Calculate price in realtime based on 2 coordinate
+            description: Calculate price and distance in realtime based on 2 coordinate
+            summary: Calculate price and distance
             security:
                 - JWTAuthCustomer: []
-            parameters:
-                - in: path
-                  name: orderID
-                  required: true
-                  schema:
-                      type: number
-                      example: 27
             requestBody:
                 required: true
                 content:
@@ -1321,22 +1338,22 @@ paths:
                             properties:
                                 destination_start_lat:
                                     type: string
-                                    example: '72.0239123'
+                                    example: '-6.129634'
                                 destination_start_long:
                                     type: string
-                                    example: '72.0239123'
-                                destination_long_lat:
+                                    example: '106.827312'
+                                destination_end_lat:
                                     type: string
-                                    example: '72.0239123'
-                                destination_long_long:
+                                    example: '-7.795688637022531'
+                                destination_end_long:
                                     type: string
-                                    example: '72.0239123'
+                                    example: '110.3653103342137'
                                 truck_type:
                                     type: number
-                                    example: 223
+                                    example: 3
             responses:
                 '200':
-                    description: Success getting of single customer's order
+                    description: Success getting estimation of price and distance order
                     content:
                         application/json:
                             schema:
@@ -1358,11 +1375,7 @@ paths:
                                                 type: string
                                                 example: 'somelink'
                                     data:
-                                        type: object
-                                        properties:
-                                            estimated_price:
-                                                type: number
-                                                example: 230000
+                                        $ref: '#/components/schemas/estimate_response'
                 '401':
                     description: Unauthorized user
                     content:
