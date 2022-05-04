@@ -652,3 +652,11 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 
 	return err
 }
+
+func (service OrderService) CountOrder(filters []map[string]interface{}) (int, error) {
+	count, err := service.orderRepository.CountAll(filters)
+	if err != nil {
+		return 0, err
+	}
+	return int(count), err
+}

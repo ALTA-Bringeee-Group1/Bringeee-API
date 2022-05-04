@@ -2487,7 +2487,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
 
-    /api/stats/aggregates/order_count:
+    /api/stats/aggregates/orders_count:
         get:
             tags:
                 - 'Admin'
@@ -2625,7 +2625,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
-    /api/stats/aggregates/customer_count:
+    /api/stats/aggregates/customers_count:
         get:
             tags:
                 - 'Admin'

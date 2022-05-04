@@ -706,3 +706,19 @@ func (service UserService) VerifiedDriverAccount(id int) error {
 
 	return err
 }
+
+func (service UserService) CountCustomer(filters []map[string]string) (int, error) {
+	count, err := service.userRepo.CountAllCustomer(filters)
+	if err != nil {
+		return 0, err
+	}
+	return int(count), err
+}
+
+func (service UserService) CountDriver(filters []map[string]string) (int, error) {
+	count, err := service.userRepo.CountAllDriver(filters)
+	if err != nil {
+		return 0, err
+	}
+	return int(count), err
+}
