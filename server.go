@@ -4,6 +4,7 @@ import (
 	"bringeee-capstone/configs"
 	"bringeee-capstone/deliveries/handlers"
 	"bringeee-capstone/deliveries/routes"
+	distanceMatrixRepository "bringeee-capstone/repositories/distance_matrix"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
 	paymentRepository "bringeee-capstone/repositories/payment"
@@ -16,6 +17,7 @@ import (
 	truckTypeService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"bringeee-capstone/utils"
+	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -39,6 +41,7 @@ func main() {
 	orderRepository := orderRepository.NewOrderRepository(db)
 	orderHistoryRepository := orderHistoryRepository.NewOrderHistoryRepository(db)
 	midtransPaymentRepository := paymentRepository.NewMidtransPaymentRepository()
+	distanceMatrixRepository := distanceMatrixRepository.NewDistanceMatrixRepository()
 
 	authService := authService.NewAuthService(userRepository)
 	userService := userService.NewUserService(userRepository, truckTypeRepository, orderRepository)
@@ -64,5 +67,15 @@ func main() {
 	routes.RegisterCustomerRoute(e, customerHandler, orderHandler)
 	routes.RegisterPaymentRoute(e, paymentHandler)
 
-	e.Logger.Fatal(e.Start(":" + config.App.Port))
+	data, _ := distanceMatrixRepository.EstimateShortest(
+		"-6.129634", 
+		"106.827312", 
+		"-7.795688637022531", 
+		"110.3653103342137",
+	)
+	fmt.Println(utils.JsonEncode(data))
+
+	fmt.Println("Awok?")
+
+	// e.Logger.Fatal(e.Start(":" + config.App.Port))
 }
