@@ -183,10 +183,14 @@ type OrderServiceInterface interface {
 	 * Melakukan estimasi harga berdasarkan koordinat destinasi origin yang dimasukkan
 	 * 
 	 * @var orderID 		int 		order id
-	 * @var originLat 		string 		koordinat lintang titik asal
-	 * @var originLong 		string		koordinat bujur titik asal
-	 * @var destinationLat 	string		koordinat lintang titik tujuan
-	 * @var destinationLat 	string		koordinat bujur titik tujuan
 	 */
 	EstimatePriceOrder(orderID int) (int64, error)
+
+	/*
+	 * Estimate order price
+	 * -------------------------------
+	 * Melakukan estimasi harga berdasarkan EstimateOrderPriceRequest
+	 * dan mengembalikan nilai harga kalkulasi jarak x truckType
+	 */
+	EstimateDistancePrice(entities.EstimateOrderPriceRequest) (entities.DistanceAPIResponse, error)
 }
