@@ -5,9 +5,11 @@ import (
 	"bringeee-capstone/deliveries/validations"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	distanceMatrixRepository "bringeee-capstone/repositories/distance_matrix"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
 	paymentRepository "bringeee-capstone/repositories/payment"
+	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	"mime/multipart"
 	"strconv"
@@ -20,11 +22,13 @@ import (
 )
 
 type OrderService struct {
-	orderRepository        orderRepository.OrderRepositoryInterface
-	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface
-	userRepository         userRepository.UserRepositoryInterface
-	paymentRepository      paymentRepository.PaymentRepositoryInterface
-	validate               *validator.Validate
+	orderRepository        		orderRepository.OrderRepositoryInterface
+	orderHistoryRepository 		orderHistoryRepository.OrderHistoryRepositoryInterface
+	userRepository         		userRepository.UserRepositoryInterface
+	paymentRepository      		paymentRepository.PaymentRepositoryInterface
+	distanceMatrixRepository	distanceMatrixRepository.DistanceMatrixRepositoryInterface
+	truckTypeRepository			truckTypeRepository.TruckTypeRepositoryInterface
+	validate               		*validator.Validate
 }
 
 func NewOrderService(
@@ -32,13 +36,17 @@ func NewOrderService(
 	orderHistoryRepository orderHistoryRepository.OrderHistoryRepositoryInterface,
 	userRepository userRepository.UserRepositoryInterface,
 	paymentRepository paymentRepository.PaymentRepositoryInterface,
-) *OrderService {
-	return &OrderService{
-		orderRepository:        repository,
-		orderHistoryRepository: orderHistoryRepository,
-		userRepository:         userRepository,
-		paymentRepository:      paymentRepository,
-		validate:               validator.New(),
+	distanceMatrixRepository distanceMatrixRepository.DistanceMatrixRepositoryInterface,
+	truckTypeRepository truckTypeRepository.TruckTypeRepositoryInterface,
+	) *OrderService {
+		return &OrderService{
+			orderRepository:         	repository,
+			orderHistoryRepository:  	orderHistoryRepository,
+			userRepository:          	userRepository,
+			paymentRepository:       	paymentRepository,
+			distanceMatrixRepository: 	distanceMatrixRepository,
+			truckTypeRepository: 		truckTypeRepository,
+		validate:               	validator.New(),
 	}
 }
 
@@ -172,6 +180,12 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 		return entities.OrderResponse{}, err
 	}
 
+	// define trucktype data
+	truckType, err := service.truckTypeRepository.Find(orderRequest.TruckTypeID)
+	if err != nil {
+		return entities.OrderResponse{}, err
+	}
+
 	// convert request to domain
 	order := entities.Order{}
 	destination := entities.Destination{}
@@ -198,6 +212,21 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 			order.OrderPicture = fileUrl
 		}
 	}
+
+	// Price Estimation
+	var price int64
+	distance, err := service.distanceMatrixRepository.EstimateShortest(
+		orderRequest.DestinationStartLat,
+		orderRequest.DestinationStartLong,
+		orderRequest.DestinationEndLat,
+		orderRequest.DestinationEndLong,
+	)
+	if err != nil {
+		price = 0
+	}
+	price = int64(distance.DistanceValue / 1000) * truckType.PricePerDistance
+	order.EstimatedPrice = price
+	order.Distance = distance.DistanceValue / 1000
 
 	// repository call
 	order, err = service.orderRepository.Store(order, destination)
@@ -659,4 +688,44 @@ func (service OrderService) CountOrder(filters []map[string]interface{}) (int, e
 		return 0, err
 	}
 	return int(count), err
+}
+
+/*
+ * Estimate order price
+ * -------------------------------
+ * Melakukan estimasi harga berdasarkan EstimateOrderPriceRequest
+ * dan mengembalikan nilai harga kalkulasi jarak x truckType
+ */
+func (service OrderService) EstimateDistancePrice(request entities.EstimateOrderPriceRequest) (entities.DistanceAPIResponse, error) {
+	// validation
+	err := validations.ValidateSimpleStruct(service.validate, request)
+	if err != nil {
+		return entities.DistanceAPIResponse{}, err
+	}
+
+	// find order
+	truckTypeID, _ := strconv.Atoi(request.TruckTypeID)
+	truckType, err := service.truckTypeRepository.Find(truckTypeID)
+	if err != nil {
+		return entities.DistanceAPIResponse{}, err
+	}
+	
+	// get distance
+	distance, err := service.distanceMatrixRepository.EstimateShortest(
+		request.DestinationStartLat,
+		request.DestinationStartLong,
+		request.DestinationEndLat,
+		request.DestinationEndLong,
+	)
+	if err != nil {
+		return entities.DistanceAPIResponse{}, err
+	}
+
+	// calculate distance
+	price := truckType.PricePerDistance * int64(distance.DistanceValue / 1000)
+	distanceAPIRes := entities.DistanceAPIResponse{}
+	copier.Copy(&distanceAPIRes, &distance)
+	distanceAPIRes.EstimatedPrice = price
+	
+	return distanceAPIRes, nil
 }

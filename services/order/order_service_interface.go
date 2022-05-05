@@ -176,4 +176,12 @@ type OrderServiceInterface interface {
 	 * @var int 	return jumlah data
 	 */
 	CountOrder(filters []map[string]interface{}) (int, error)
+
+	/*
+	 * Estimate order price
+	 * -------------------------------
+	 * Melakukan estimasi harga berdasarkan EstimateOrderPriceRequest
+	 * dan mengembalikan nilai harga kalkulasi jarak x truckType
+	 */
+	EstimateDistancePrice(entities.EstimateOrderPriceRequest) (entities.DistanceAPIResponse, error)
 }

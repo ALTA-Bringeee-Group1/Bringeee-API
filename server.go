@@ -4,6 +4,7 @@ import (
 	"bringeee-capstone/configs"
 	"bringeee-capstone/deliveries/handlers"
 	"bringeee-capstone/deliveries/routes"
+	distanceMatrixRepository "bringeee-capstone/repositories/distance_matrix"
 	orderRepository "bringeee-capstone/repositories/order"
 	orderHistoryRepository "bringeee-capstone/repositories/order_history"
 	paymentRepository "bringeee-capstone/repositories/payment"
@@ -39,12 +40,14 @@ func main() {
 	orderRepository := orderRepository.NewOrderRepository(db)
 	orderHistoryRepository := orderHistoryRepository.NewOrderHistoryRepository(db)
 	midtransPaymentRepository := paymentRepository.NewMidtransPaymentRepository()
+	distanceMatrixRepository := distanceMatrixRepository.NewDistanceMatrixRepository()
 
 	authService := authService.NewAuthService(userRepository)
 	userService := userService.NewUserService(userRepository, truckTypeRepository, orderRepository)
-	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository, userRepository, midtransPaymentRepository)
+	orderService := orderService.NewOrderService(orderRepository, orderHistoryRepository, userRepository, midtransPaymentRepository, distanceMatrixRepository, truckTypeRepository)
 	regionService := regionService.NewRegionService(regionRepository)
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
+
 
 	authHandler := handlers.NewAuthHandler(authService)
 	customerHandler := handlers.NewCustomerHandler(userService, orderService)

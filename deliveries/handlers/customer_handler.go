@@ -730,3 +730,30 @@ func (handler CustomerHandler) CancelPayment(c echo.Context) error {
 		},
 	})
 }
+
+/*
+ * Estimate Price order
+ * -------------------------------
+ * Melakukan estimasi harga berdasarkan
+ * koordinat dan jenis truck
+ */
+func (handler CustomerHandler) Estimate(c echo.Context) error {
+	links := map[string]string{}
+	links["self"] = fmt.Sprintf("%s/api/customers/orders/estimate", configs.Get().App.BaseURL)
+
+	estimateRequest := entities.EstimateOrderPriceRequest{}
+	c.Bind(&estimateRequest)
+
+	estimateRes, err := handler.orderService.EstimateDistancePrice(estimateRequest)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	return c.JSON(http.StatusOK, web.SuccessResponse {
+		Status: "OK",
+		Code: http.StatusOK,
+		Error: nil,
+		Links: links,
+		Data: estimateRes,
+	})
+}
