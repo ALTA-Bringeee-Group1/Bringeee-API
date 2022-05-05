@@ -255,9 +255,9 @@ func (repository OrderRepository) DeleteBatch(filters []map[string]interface{}) 
 			for _, orQuery := range orGroupMap {
 				orBuilder = orBuilder.Or(fmt.Sprintf("%s %s ?", orQuery["field"], orQuery["operator"]), orQuery["value"])
 			}
-			builder.Where(orBuilder)
+			builder = builder.Where(orBuilder)
 		} else {
-			builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+			builder = builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
 		}
 	}
 	builder.Find(&orders)
