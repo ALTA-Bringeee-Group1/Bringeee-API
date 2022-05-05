@@ -285,7 +285,6 @@ func (repository OrderRepository) FindByDate(day int) ([]map[string]interface{},
 	start := time.Now().AddDate(0, 0, -(day))
 	end := time.Now()
 	for d := start; d.After(end) == false; d = d.AddDate(0, 0, 1) {
-		// fmt.Println(d.Format("2006-01-02"))
 		orders := []entities.Order{}
 		repository.db.Where("created_at LIKE ?", "%"+d.Format("2006-01-02")+"%").Find(&orders).Count(&count)
 		result = append(result, map[string]interface{}{
