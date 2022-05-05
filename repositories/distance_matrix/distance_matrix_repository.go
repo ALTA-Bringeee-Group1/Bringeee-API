@@ -45,8 +45,8 @@ func (repository DistanceMatrixRepository) EstimateShortest(originLat, originLon
 		}
 	}
 	q := request.URL.Query()
-	q.Add("destinations", fmt.Sprintf("%s,%s", originLat, originLong))
-	q.Add("origins", fmt.Sprintf("%s,%s", destinationLat, destinationLong))
+	q.Add("origins", fmt.Sprintf("%s,%s", originLat, originLong))
+	q.Add("destinations", fmt.Sprintf("%s,%s", destinationLat, destinationLong))
 	q.Add("key", repository.apiKey)
 	request.URL.RawQuery = q.Encode()
 	request.Header.Set("Accept", "application/json")
