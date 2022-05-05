@@ -34,7 +34,7 @@ type OrderRepositoryInterface interface {
 	 * @var field 	kolom data
 	 * @var value	nilai data
 	 * @return order	single order dalam bentuk entity domain
-	 * @return error	error	
+	 * @return error	error
 	 */
 	FindBy(field string, value string) (entities.Order, error)
 
@@ -46,7 +46,7 @@ type OrderRepositoryInterface interface {
 	 * @var field 	kolom data
 	 * @var value	nilai data
 	 * @return order	single order dalam bentuk entity domain
-	 * @return error	error	
+	 * @return error	error
 	 */
 	FindFirst(filters []map[string]interface{}) (entities.Order, error)
 
@@ -56,7 +56,7 @@ type OrderRepositoryInterface interface {
 	 * Menghitung semua orders (ini digunakan untuk pagination di service)
 	 *
 	 * @return order	single order dalam bentuk entity domain
-	 * @return error	error	
+	 * @return error	error
 	 */
 	CountAll(filters []map[string]interface{}) (int64, error)
 
@@ -87,7 +87,7 @@ type OrderRepositoryInterface interface {
 	 * -------------------------------
 	 * Delete order berdasarkan ID
 	 *
-	 * @return error	error	
+	 * @return error	error
 	 */
 	Delete(id int, destinationID int) error
 
@@ -97,7 +97,16 @@ type OrderRepositoryInterface interface {
 	 * Delete multiple order berdasarkan filter tertentu
 	 *
 	 * @var filters	query untuk penyaringan data, { field, operator, value }
-	 * @return error	error	
+	 * @return error	error
 	 */
 	DeleteBatch(filters []map[string]interface{}) error
+
+	/*
+	 * Find By Date
+	 * -------------------------------
+	 * Mencari order tunggal berdasarkan tanggal pembuatan
+	 *
+	 * @var day 		rentang waktu pencarian
+	 */
+	FindByDate(day int) ([]map[string]interface{}, error)
 }

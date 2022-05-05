@@ -4,6 +4,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -45,7 +46,7 @@ func (repository OrderRepository) FindAll(limit int, offset int, filters []map[s
 			}
 			builder.Where(orBuilder)
 		} else {
-			builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+			builder.Where(filter["field"].(string)+" "+filter["operator"].(string)+" ?", filter["value"].(string))
 		}
 	}
 	// OrderBy Filters
@@ -85,7 +86,7 @@ func (repository OrderRepository) Find(id int) (entities.Order, error) {
  * @var field 	kolom data
  * @var value	nilai data
  * @return order	single order dalam bentuk entity domain
- * @return error	error	
+ * @return error	error
  */
 func (repository OrderRepository) FindBy(field string, value string) (entities.Order, error) {
 	order := entities.Order{}
@@ -121,7 +122,7 @@ func (repository OrderRepository) FindFirst(filters []map[string]interface{}) (e
 			}
 			builder.Where(orBuilder)
 		} else {
-			builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+			builder.Where(filter["field"].(string)+" "+filter["operator"].(string)+" ?", filter["value"].(string))
 		}
 	}
 	tx := builder.First(&order)
@@ -139,7 +140,7 @@ func (repository OrderRepository) FindFirst(filters []map[string]interface{}) (e
  * Menghitung semua orders (ini digunakan untuk pagination di service)
  *
  * @return order	single order dalam bentuk entity domain
- * @return error	error	
+ * @return error	error
  */
 func (repository OrderRepository) CountAll(filters []map[string]interface{}) (int64, error) {
 	var count int64
@@ -155,7 +156,7 @@ func (repository OrderRepository) CountAll(filters []map[string]interface{}) (in
 			}
 			builder.Where(orBuilder)
 		} else {
-			builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+			builder.Where(filter["field"].(string)+" "+filter["operator"].(string)+" ?", filter["value"].(string))
 		}
 	}
 	tx := builder.Count(&count)
@@ -188,7 +189,7 @@ func (repository OrderRepository) Store(order entities.Order, destination entiti
 		return nil
 	})
 	if err != nil {
-		return entities.Order{}, web.WebError{Code: 500, ProductionMessage: "Server error" ,DevelopmentMessage: err.Error()}
+		return entities.Order{}, web.WebError{Code: 500, ProductionMessage: "Server error", DevelopmentMessage: err.Error()}
 	}
 	return order, nil
 }
@@ -215,7 +216,7 @@ func (repository OrderRepository) Update(order entities.Order, id int) (entities
  * -------------------------------
  * Delete order berdasarkan ID
  *
- * @return error	error	
+ * @return error	error
  */
 func (repository OrderRepository) Delete(id int, destinationID int) error {
 	err := repository.db.Transaction(func(tx *gorm.DB) error {
@@ -241,7 +242,7 @@ func (repository OrderRepository) Delete(id int, destinationID int) error {
  * Delete multiple order berdasarkan filter tertentu
  *
  * @var filters	query untuk penyaringan data, { field, operator, value }
- * @return error	error	
+ * @return error	error
  */
 func (repository OrderRepository) DeleteBatch(filters []map[string]interface{}) error {
 	orders := []entities.Order{}
@@ -257,7 +258,7 @@ func (repository OrderRepository) DeleteBatch(filters []map[string]interface{}) 
 			}
 			builder = builder.Where(orBuilder)
 		} else {
-			builder = builder.Where(filter["field"].(string) + " " + filter["operator"].(string) + " ?", filter["value"].(string))
+			builder = builder.Where(filter["field"].(string)+" "+filter["operator"].(string)+" ?", filter["value"].(string))
 		}
 	}
 	builder.Find(&orders)
@@ -276,4 +277,21 @@ func (repository OrderRepository) DeleteBatch(filters []map[string]interface{}) 
 		})
 	}
 	return nil
+}
+
+func (repository OrderRepository) FindByDate(day int) ([]map[string]interface{}, error) {
+	result := []map[string]interface{}{}
+	var count int64
+	start := time.Now().AddDate(0, 0, -(day))
+	end := time.Now()
+	for d := start; d.After(end) == false; d = d.AddDate(0, 0, 1) {
+		// fmt.Println(d.Format("2006-01-02"))
+		orders := []entities.Order{}
+		repository.db.Where("created_at LIKE ?", "%"+d.Format("2006-01-02")+"%").Find(&orders).Count(&count)
+		result = append(result, map[string]interface{}{
+			"label": d.Format("2006-01-02"),
+			"value": int(count),
+		})
+	}
+	return result, nil
 }
