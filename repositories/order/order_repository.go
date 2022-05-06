@@ -281,16 +281,20 @@ func (repository OrderRepository) DeleteBatch(filters []map[string]interface{}) 
 
 func (repository OrderRepository) FindByDate(day int) ([]map[string]interface{}, error) {
 	result := []map[string]interface{}{}
+	date := []string{}
+	order := []int{}
 	var count int64
 	start := time.Now().AddDate(0, 0, -(day))
 	end := time.Now()
-	for d := start; d.After(end) == false; d = d.AddDate(0, 0, 1) {
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
 		orders := []entities.Order{}
 		repository.db.Where("created_at LIKE ?", "%"+d.Format("2006-01-02")+"%").Find(&orders).Count(&count)
-		result = append(result, map[string]interface{}{
-			"label": d.Format("2006-01-02"),
-			"value": int(count),
-		})
+		date = append(date, d.Format("02-01-2006"))
+		order = append(order, int(count))
 	}
+	result = append(result, map[string]interface{}{
+		"label":       date,
+		"total_order": order,
+	})
 	return result, nil
 }
