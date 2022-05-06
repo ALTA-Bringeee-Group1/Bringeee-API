@@ -170,7 +170,7 @@ type OrderServiceInterface interface {
 	FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader) error
 
 	/*
-	 * Counnt Order
+	 * Count Order
 	 * -------------------------------
 	 * Menghitung jumlah order
 	 * @var int 	return jumlah data
@@ -184,4 +184,12 @@ type OrderServiceInterface interface {
 	 * dan mengembalikan nilai harga kalkulasi jarak x truckType
 	 */
 	EstimateDistancePrice(entities.EstimateOrderPriceRequest) (entities.DistanceAPIResponse, error)
+
+	/*
+	 * Stats Order
+	 * -------------------------------
+	 * Menghitung jumlah order perhari
+	 * @var map 	return jumlah data dan tanggal pembuatan
+	 */
+	StatsOrder(day int) ([]map[string]interface{}, error)
 }

@@ -48,7 +48,6 @@ func main() {
 	regionService := regionService.NewRegionService(regionRepository)
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
 
-
 	authHandler := handlers.NewAuthHandler(authService)
 	customerHandler := handlers.NewCustomerHandler(userService, orderService)
 	driverHandler := handlers.NewDriverHandler(userService, orderService)

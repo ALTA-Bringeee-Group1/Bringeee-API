@@ -22,13 +22,13 @@ import (
 )
 
 type OrderService struct {
-	orderRepository        		orderRepository.OrderRepositoryInterface
-	orderHistoryRepository 		orderHistoryRepository.OrderHistoryRepositoryInterface
-	userRepository         		userRepository.UserRepositoryInterface
-	paymentRepository      		paymentRepository.PaymentRepositoryInterface
-	distanceMatrixRepository	distanceMatrixRepository.DistanceMatrixRepositoryInterface
-	truckTypeRepository			truckTypeRepository.TruckTypeRepositoryInterface
-	validate               		*validator.Validate
+	orderRepository          orderRepository.OrderRepositoryInterface
+	orderHistoryRepository   orderHistoryRepository.OrderHistoryRepositoryInterface
+	userRepository           userRepository.UserRepositoryInterface
+	paymentRepository        paymentRepository.PaymentRepositoryInterface
+	distanceMatrixRepository distanceMatrixRepository.DistanceMatrixRepositoryInterface
+	truckTypeRepository      truckTypeRepository.TruckTypeRepositoryInterface
+	validate                 *validator.Validate
 }
 
 func NewOrderService(
@@ -38,15 +38,15 @@ func NewOrderService(
 	paymentRepository paymentRepository.PaymentRepositoryInterface,
 	distanceMatrixRepository distanceMatrixRepository.DistanceMatrixRepositoryInterface,
 	truckTypeRepository truckTypeRepository.TruckTypeRepositoryInterface,
-	) *OrderService {
-		return &OrderService{
-			orderRepository:         	repository,
-			orderHistoryRepository:  	orderHistoryRepository,
-			userRepository:          	userRepository,
-			paymentRepository:       	paymentRepository,
-			distanceMatrixRepository: 	distanceMatrixRepository,
-			truckTypeRepository: 		truckTypeRepository,
-		validate:               	validator.New(),
+) *OrderService {
+	return &OrderService{
+		orderRepository:          repository,
+		orderHistoryRepository:   orderHistoryRepository,
+		userRepository:           userRepository,
+		paymentRepository:        paymentRepository,
+		distanceMatrixRepository: distanceMatrixRepository,
+		truckTypeRepository:      truckTypeRepository,
+		validate:                 validator.New(),
 	}
 }
 
@@ -224,7 +224,7 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 	if err != nil {
 		price = 0
 	}
-	price = int64(distance.DistanceValue / 1000) * truckType.PricePerDistance
+	price = int64(distance.DistanceValue/1000) * truckType.PricePerDistance
 	order.EstimatedPrice = price
 	order.Distance = distance.DistanceValue / 1000
 
@@ -709,7 +709,7 @@ func (service OrderService) EstimateDistancePrice(request entities.EstimateOrder
 	if err != nil {
 		return entities.DistanceAPIResponse{}, err
 	}
-	
+
 	// get distance
 	distance, err := service.distanceMatrixRepository.EstimateShortest(
 		request.DestinationStartLat,
@@ -722,10 +722,18 @@ func (service OrderService) EstimateDistancePrice(request entities.EstimateOrder
 	}
 
 	// calculate distance
-	price := truckType.PricePerDistance * int64(distance.DistanceValue / 1000)
+	price := truckType.PricePerDistance * int64(distance.DistanceValue/1000)
 	distanceAPIRes := entities.DistanceAPIResponse{}
 	copier.Copy(&distanceAPIRes, &distance)
 	distanceAPIRes.EstimatedPrice = price
-	
+
 	return distanceAPIRes, nil
+}
+
+func (service OrderService) StatsOrder(day int) ([]map[string]interface{}, error) {
+	count, err := service.orderRepository.FindByDate(day)
+	if err != nil {
+		return count, err
+	}
+	return count, nil
 }

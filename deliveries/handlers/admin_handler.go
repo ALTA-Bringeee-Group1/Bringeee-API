@@ -1145,3 +1145,48 @@ func (handler AdminHandler) CountTruck(c echo.Context) error {
 		},
 	})
 }
+
+func (handler AdminHandler) StatsOrder(c echo.Context) error {
+	day, tx := strconv.Atoi(c.Param("day"))
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/stats/orders"}
+	if tx != nil {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Status: "ERROR",
+			Code:   http.StatusBadRequest,
+			Error:  "invalid parameter",
+			Links:  links,
+		})
+	}
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+
+	count, err := handler.orderService.StatsOrder(day)
+	if err != nil {
+		return helpers.WebErrorResponse(c, err, links)
+	}
+
+	// response
+	return c.JSON(200, web.SuccessResponse{
+		Status: "OK",
+		Code:   200,
+		Error:  nil,
+		Links:  links,
+		Data:   count,
+	})
+}
