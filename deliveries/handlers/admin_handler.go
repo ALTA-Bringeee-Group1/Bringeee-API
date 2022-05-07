@@ -560,7 +560,7 @@ func (handler AdminHandler) DetailOrder(c echo.Context) error {
 		})
 	}
 
-	if role != "admin" {
+	if role != "admin" && role != "driver" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
 			Status: "ERROR",
 			Code:   http.StatusUnauthorized,
@@ -1189,4 +1189,49 @@ func (handler AdminHandler) StatsOrder(c echo.Context) error {
 		Links:  links,
 		Data:   count,
 	})
+}
+
+func (handler AdminHandler) ReportOrders(c echo.Context) error {
+	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/export/orders"}
+	token := c.Get("user")
+	_, role, err := middleware.ReadToken(token)
+	if role != "admin" {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "ERROR",
+			Error:  "unauthorized",
+			Links:  links,
+		})
+	}
+	months := c.FormValue("month")
+	month, _ := strconv.Atoi(months)
+	if month == 0 {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "month field required",
+			Links:  links,
+		})
+	}
+	years := c.FormValue("year")
+	year, _ := strconv.Atoi(years)
+	if year == 0 {
+		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Error:  "year field required",
+			Links:  links,
+		})
+	}
+	report, _ := handler.orderService.CsvFile(month, year)
+
+	return c.File(report)
 }
