@@ -2255,7 +2255,7 @@ paths:
                       example: 27
             requestBody:
                 content:
-                    application/json:
+                     application/x-www-form-urlencoded:
                         schema:
                             type: object
                             properties:
@@ -2487,6 +2487,39 @@ paths:
                                                 example: 'somelink'
                                     data:
                                         $ref: '#/components/schemas/customer_response'
+                '401':
+                    description: Unauthorized user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_unauthorized'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/error_server_response'
+        delete:
+            tags:
+                - 'Admin'
+            description: Close/delete authenticated customer
+            summary: Close/delete authenticated customer
+            security:
+                - JWTAuthCustomer: []
+            parameters:
+                - in: path
+                  name: customerID
+                  required: true
+                  schema:
+                      type: number
+                      example: 27
+            responses:
+                '200':
+                    description: Success creating order's payment
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/success_response'
                 '401':
                     description: Unauthorized user
                     content:
