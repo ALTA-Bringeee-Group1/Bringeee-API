@@ -109,4 +109,14 @@ type OrderRepositoryInterface interface {
 	 * @var day 		rentang waktu pencarian
 	 */
 	FindByDate(day int) ([]map[string]interface{}, error)
+
+	/*
+	 * Find By Date
+	 * -------------------------------
+	 * Mencari order tunggal berdasarkan tanggal pembuatan
+	 *
+	 * @var month 		bulan pencarian
+	 * @var year 		tahun pencarian
+	 */
+	FindByMonth(mont int, year int) ([]entities.Order, error)
 }

@@ -11,7 +11,10 @@ import (
 	paymentRepository "bringeee-capstone/repositories/payment"
 	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
+	"encoding/csv"
+	"log"
 	"mime/multipart"
+	"os"
 	"strconv"
 	"strings"
 
@@ -736,4 +739,34 @@ func (service OrderService) StatsOrder(day int) ([]map[string]interface{}, error
 		return count, err
 	}
 	return count, nil
+}
+
+func (service OrderService) CsvFile(month int, year int) (string, error) {
+	orders, tx := service.orderRepository.FindByMonth(month, year)
+	if tx != nil {
+		return "gagal", tx
+	}
+	file, err := os.Create("order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv")
+	defer file.Close()
+	if err != nil {
+		log.Fatalln("failed to open file", err)
+	}
+	w := csv.NewWriter(file)
+	defer w.Flush() // Using Write
+	title := []string{"ID", "Tanggal Pembuatan", "Status", "Metode Pembayaran", "Nama Customer", "Tipe Truk", "Nama Driver", "Dekskripsi", "Total Volume",
+		"Total Berat", "Perkiraan Harga", "Penyesuaian Harga", "ID Transaksi", "Alamat Penjemputan", "Alamat Pembongkaran"}
+	w.Write(title)
+	for _, order := range orders {
+		row := []string{strconv.Itoa(int(order.ID)), order.CreatedAt.Format("02-01-2006"), order.Status, order.PaymentMethod, order.Customer.Name,
+			order.TruckType.TruckType, order.Driver.User.Name, order.Description, strconv.Itoa(order.TotalVolume), strconv.Itoa(order.TotalWeight),
+			strconv.Itoa(int(order.EstimatedPrice)), strconv.Itoa(int(order.FixPrice)), order.TransactionID, order.Destination.DestinationStartAddress +
+				", " + order.Destination.DestinationStartDistrict + ", " + order.Destination.DestinationStartCity + ", " + order.Destination.DestinationStartProvince + ", " + order.Destination.DestinationStartPostal,
+			order.Destination.DestinationEndAddress + ", " + order.Destination.DestinationEndDistrict + ", " + order.Destination.DestinationEndCity + ", " + order.Destination.DestinationEndProvince + ", " +
+				order.Destination.DestinationEndPostal}
+		if err := w.Write(row); err != nil {
+			log.Fatalln("error writing order to file", err)
+		}
+	}
+
+	return "order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv", nil
 }

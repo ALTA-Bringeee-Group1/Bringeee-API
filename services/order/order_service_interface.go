@@ -192,4 +192,12 @@ type OrderServiceInterface interface {
 	 * @var map 	return jumlah data dan tanggal pembuatan
 	 */
 	StatsOrder(day int) ([]map[string]interface{}, error)
+
+	/*
+	 * Csv File
+	 * -------------------------------
+	 * Membuat laporan order perbulan
+	 * @var string return filename dari laporan
+	 */
+	CsvFile(month int, year int) (string, error)
 }

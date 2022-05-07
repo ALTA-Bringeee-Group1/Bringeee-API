@@ -54,6 +54,7 @@ func RegisterAdminRoute(e *echo.Echo, AdminHandler *handlers.AdminHandler) {
 	e.GET("api/stats/aggregates/orders_count", AdminHandler.CountOrder, middleware.JWTMiddleware())
 	e.GET("api/stats/aggregates/truck_types_count", AdminHandler.CountTruck, middleware.JWTMiddleware())
 	e.GET("api/stats/orders/:day", AdminHandler.StatsOrder, middleware.JWTMiddleware())
+	e.POST("api/export/orders", AdminHandler.ReportOrders, middleware.JWTMiddleware())
 
 	order := e.Group("/api/orders", middleware.JWTMiddleware())
 	order.GET("", AdminHandler.ListOrders)
