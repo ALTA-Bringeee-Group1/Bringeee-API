@@ -298,3 +298,13 @@ func (repository OrderRepository) FindByDate(day int) ([]map[string]interface{},
 	})
 	return result, nil
 }
+
+func (repository OrderRepository) FindByMonth(month int, year int) ([]entities.Order, error) {
+	orders := []entities.Order{}
+
+	repository.db.Preload("Destination").Preload("Customer").Preload("Driver").Preload("Driver.TruckType").Preload("Driver.User").Preload("TruckType").
+		Where("created_at BETWEEN ? AND ?", time.Date(year, time.Month(month), 1, 0, 0, 0, 0, &time.Location{}),
+			time.Date(year, time.Month(month), 31, 0, 0, 0, 0, &time.Location{})).Find(&orders)
+
+	return orders, nil
+}
