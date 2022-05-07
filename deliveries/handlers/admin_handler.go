@@ -501,7 +501,7 @@ func (handler AdminHandler) ListOrders(c echo.Context) error {
 	}
 
 	// make pagination data & formatting pagination links
-	paginationRes, err := handler.orderService.GetPagination(page, limit, filters)
+	paginationRes, err := handler.orderService.GetPagination(limit, page, filters)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, web.ErrorResponse{
 			Status: "ERROR",
