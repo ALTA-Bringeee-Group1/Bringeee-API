@@ -2541,6 +2541,12 @@ paths:
             summary: Get orders count for statistic
             security:
                 - JWTAuthAdmin: []
+            parameters:
+                - in: query
+                  name: status
+                  schema:
+                      type: string
+                      example: REQUESTED
             responses:
                 '200':
                     description: Type 200
@@ -2564,15 +2570,9 @@ paths:
                                     data:
                                         type: object
                                         properties:
-                                            count:
+                                            total:
                                                 type: number
                                                 example: 227
-                                            unit:
-                                                type: string
-                                                example: paket kargo
-                                            entity:
-                                                type: string
-                                                example: order
                 '500':
                     description: Server error
                     content:
@@ -2587,6 +2587,18 @@ paths:
             summary: Get drivers count for statistic
             security:
                 - JWTAuthAdmin: []
+            parameters:
+                - in: query
+                  name: status
+                  schema:
+                      type: string
+                      example: IDLE
+                - in: query
+                  name: account_status
+                  schema:
+                      type: string
+                      example: VERIFIED
+                  
             responses:
                 '200':
                     description: Type 200
@@ -2610,15 +2622,9 @@ paths:
                                     data:
                                         type: object
                                         properties:
-                                            count:
+                                            total:
                                                 type: number
                                                 example: 227
-                                            unit:
-                                                type: string
-                                                example: people
-                                            entity:
-                                                type: string
-                                                example: order
                 '500':
                     description: Server error
                     content:
@@ -2656,15 +2662,9 @@ paths:
                                     data:
                                         type: object
                                         properties:
-                                            count:
+                                            total:
                                                 type: number
                                                 example: 227
-                                            unit:
-                                                type: string
-                                                example: type
-                                            entity:
-                                                type: string
-                                                example: truck type
                 '500':
                     description: Server error
                     content:
@@ -2702,15 +2702,9 @@ paths:
                                     data:
                                         type: object
                                         properties:
-                                            count:
+                                            total:
                                                 type: number
                                                 example: 227
-                                            unit:
-                                                type: string
-                                                example: people
-                                            entity:
-                                                type: string
-                                                example: customer
                 '500':
                     description: Server error
                     content:
@@ -2723,6 +2717,8 @@ paths:
                 - 'Admin'
             summary: Order statistic by period of time
             description: Order statistic by period of time
+            security:
+                - JWTAuthAdmin: []
             parameters:
                 - in: query
                   required: true
@@ -2752,16 +2748,19 @@ paths:
                                                 example: 'https://sandbox.somelink.com/'
                                     data:
                                         type: array
-                                        minItems: 3
                                         items:
                                             type: object
                                             properties:
                                                 label:
-                                                    type: string
-                                                    example: 2012-12-07T00:00:00:000+07:00
-                                                value:
-                                                    type: number
-                                                    example: 772
+                                                    type: array
+                                                    minItems: 3
+                                                    items:
+                                                        example: 2012-12-07T00:00:00:000+07:00
+                                                total_order:
+                                                    type: array
+                                                    minItems: 3
+                                                    items:
+                                                        example: 772
                 '400':
                     description: bad request, could be from bad query param
                     content:
@@ -2782,6 +2781,18 @@ paths:
             summary: Get order report
             security:
                 - JWTAuthAdmin: []
+            requestBody:
+                content:
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            properties:
+                                month:
+                                    type: number
+                                    example: 5 
+                                year:
+                                    type: number
+                                    example: 2022
             responses:
                 '200':
                     description: success getting report
