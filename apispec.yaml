@@ -2711,7 +2711,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/error_server_response'
-    /api/stats/orders:
+    /api/stats/orders/{day}:
         get:
             tags:
                 - 'Admin'
@@ -2719,13 +2719,6 @@ paths:
             description: Order statistic by period of time
             security:
                 - JWTAuthAdmin: []
-            parameters:
-                - in: query
-                  required: true
-                  name: periodDay
-                  schema:
-                      type: string
-                      example: 7
             responses:
                 '200':
                     description: success getting statistic order
