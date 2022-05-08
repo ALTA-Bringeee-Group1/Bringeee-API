@@ -584,11 +584,11 @@ func (service OrderService) PaymentWebhook(orderID int, status string) error {
 func (service OrderService) TakeOrder(orderID int, userID int) error {
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "The requested ID doesn't match with any record"}
+		return web.WebError{Code: 400, ProductionMessage: "server error", DevelopmentMessage: "The requested ID doesn't match with any record"}
 	}
 	driver, err := service.userRepository.FindByDriver("user_id", strconv.Itoa(userID))
 	if err != nil {
-		return web.WebError{Code: 500, ProductionMessage: "The requested Driver ID doesn't match with any record", DevelopmentMessage: err.Error()}
+		return web.WebError{Code: 400, ProductionMessage: "The requested Driver ID doesn't match with any record", DevelopmentMessage: err.Error()}
 	}
 	if driver.Status == "BUSY" {
 		return web.WebError{Code: 400, Message: "Finish your current order first"}
