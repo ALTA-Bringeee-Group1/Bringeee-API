@@ -110,6 +110,11 @@ func (repo TruckTypeRepositoryMock) FindAll(limit int, offset int, filters []map
 				if strings.Contains(value, filter["value"]) {
 					filteredCollection = append(filteredCollection, item)
 				}
+			} else if filter["operator"] == "=" {
+				value := reflect.Indirect(reflect.ValueOf(item)).FieldByName(colMapper[filter["field"]]).String()
+				if value == filter["value"] {
+					filteredCollection = append(filteredCollection, item)
+				}
 			}
 		}
 		// Sort
