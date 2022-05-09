@@ -2547,6 +2547,11 @@ paths:
                   schema:
                       type: string
                       example: REQUESTED
+                - in: query
+                  name: truck_type
+                  schema:
+                      type: number
+                      example: 1
             responses:
                 '200':
                     description: Type 200
@@ -2598,6 +2603,11 @@ paths:
                   schema:
                       type: string
                       example: VERIFIED
+                - in: query
+                  name: truck_type
+                  schema:
+                      type: number
+                      example: 1
                   
             responses:
                 '200':
