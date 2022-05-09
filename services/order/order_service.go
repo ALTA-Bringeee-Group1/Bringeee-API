@@ -12,6 +12,7 @@ import (
 	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
 	"encoding/csv"
+	"fmt"
 	"log"
 	"mime/multipart"
 	"os"
@@ -558,14 +559,19 @@ func (service OrderService) FindAllHistory(orderID int, sorts []map[string]inter
  * @return error	error
  */
 func (service OrderService) PaymentWebhook(orderID int, status string) error {
+	fmt.Println(status, orderID)
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
 		return err
 	}
-	if status == "settlement" {
+	switch status {
+	case "settlement":
 		// if status settlement, set order to MANIFESTED
 		order.Status = "MANIFESTED"
-	}
+	case "cancel", "deny", "expire":
+		order.PaymentMethod = ""
+		order.TransactionID = ""
+	} 
 	order.DriverID = null.IntFromPtr(nil)
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {

@@ -73,7 +73,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBCA(order entities
 		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
 	}
 	if data.StatusCode != "201" {
-		return entities.PaymentResponse{}, web.WebError{ Code: 500, Message: "Error creating payment transaction" }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Error creating payment transaction", DevelopmentMessage: "Payment Response fail: " + data.StatusMessage }
 	}
 
 	// translate response
@@ -134,7 +134,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBNI(order entities
 		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
 	}
 	if data.StatusCode != "201" {
-		return entities.PaymentResponse{}, web.WebError{ Code: 500, Message: "Error creating payment transaction" }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Error creating payment transaction", DevelopmentMessage: "Payment Response fail: " + data.StatusMessage }
 	}
 
 	// translate response
@@ -195,7 +195,7 @@ func (repository MidtransPaymentRepository) CreateBankTransferBRI(order entities
 		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Payment server error", DevelopmentMessage: "Parsing response failed: " + err.Error() }
 	}
 	if data.StatusCode != "201" {
-		return entities.PaymentResponse{}, web.WebError{ Code: 500, Message: "Error creating payment transaction" }
+		return entities.PaymentResponse{}, web.WebError{ Code: 500, ProductionMessage: "Error creating payment transaction", DevelopmentMessage: "Payment Response fail: " + data.StatusMessage }
 	}
 
 	// translate response
