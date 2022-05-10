@@ -282,7 +282,7 @@ func (service OrderService) SetFixOrder(orderID int, setPriceRequest entities.Ad
 	}
 
 	// Update via repository
-	order.FixPrice = setPriceRequest.FixedPrice
+	order.FixPrice = int64(setPriceRequest.FixedPrice)
 	order.Status = "NEED_CUSTOMER_CONFIRM"
 	order.TransactionID = ""
 	_, err = service.orderRepository.Update(order, orderID)
@@ -571,7 +571,7 @@ func (service OrderService) PaymentWebhook(orderID int, status string) error {
 	case "cancel", "deny", "expire":
 		order.PaymentMethod = ""
 		order.TransactionID = ""
-	} 
+	}
 	order.DriverID = null.IntFromPtr(nil)
 	_, err = service.orderRepository.Update(order, orderID)
 	if err != nil {
