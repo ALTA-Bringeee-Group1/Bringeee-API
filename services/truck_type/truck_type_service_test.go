@@ -14,26 +14,26 @@ import (
 )
 
 // Truck Repository Mock
-var truckTypeCollection = []entities.TruckType {
+var truckTypeCollection = []entities.TruckType{
 	{
-		Model: gorm.Model{ID: 1, CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		TruckType: "Pickup Truck - A", 
-		MaxVolume: 16000000,
-		MaxWeight: 1000,
+		Model:            gorm.Model{ID: 1, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		TruckType:        "Pickup Truck - A",
+		MaxVolume:        16000000,
+		MaxWeight:        1000,
 		PricePerDistance: 2000,
 	},
 	{
-		Model: gorm.Model{ID: 2, CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		TruckType: "Pickup Truck - B", 
-		MaxVolume: 8000000,
-		MaxWeight: 2000,
+		Model:            gorm.Model{ID: 2, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		TruckType:        "Pickup Truck - B",
+		MaxVolume:        8000000,
+		MaxWeight:        2000,
 		PricePerDistance: 3000,
 	},
 	{
-		Model: gorm.Model{ID: 3, CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		TruckType: "Truck - C", 
-		MaxVolume: 8000000,
-		MaxWeight: 2000,
+		Model:            gorm.Model{ID: 3, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		TruckType:        "Truck - C",
+		MaxVolume:        8000000,
+		MaxWeight:        2000,
 		PricePerDistance: 3000,
 	},
 }
@@ -60,7 +60,7 @@ func TestFindAll(t *testing.T) {
 
 		service := truckTypeService.NewTruckTypeService(truckTypeRepositoryMock)
 		data, err := service.FindAll(0, 0, []map[string]string{
-			{ "field" : "truck_type", "operator" : "LIKE", "value" : "Pickup" },
+			{"field": "truck_type", "operator": "LIKE", "value": "Pickup"},
 		}, []map[string]interface{}{})
 
 		// Konversi expected data ke response
@@ -77,12 +77,11 @@ func TestFindAll(t *testing.T) {
 
 		service := truckTypeService.NewTruckTypeService(truckTypeRepositoryMock)
 		data, err := service.FindAll(0, 0, []map[string]string{}, []map[string]interface{}{})
-		
+
 		assert.Error(t, err, "error data is not returned")
 		assert.Equal(t, []entities.TruckTypeResponse{}, data)
 	})
 }
-
 
 func TestCountTruck(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
@@ -102,7 +101,7 @@ func TestCountTruck(t *testing.T) {
 
 		service := truckTypeService.NewTruckTypeService(truckTypeRepositoryMock)
 		count, err := service.CountTruck([]map[string]string{
-			{ "field" : "truck_type", "operator" : "LIKE", "value" : "Pickup" },
+			{"field": "truck_type", "operator": "LIKE", "value": "Pickup"},
 		})
 
 		assert.Nil(t, err, "error is not nil")
@@ -115,7 +114,7 @@ func TestCountTruck(t *testing.T) {
 
 		service := truckTypeService.NewTruckTypeService(truckTypeRepositoryMock)
 		count, err := service.CountTruck([]map[string]string{})
-		
+
 		assert.Error(t, err, "error data is not returned")
 		assert.Equal(t, 0, count)
 	})
