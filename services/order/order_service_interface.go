@@ -3,6 +3,7 @@ package order
 import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
+	storageProvider "bringeee-capstone/services/storage"
 	"mime/multipart"
 )
 
@@ -65,7 +66,7 @@ type OrderServiceInterface interface {
 	 * @var files				list file request untuk diteruskan ke validation dan upload
 	 * @return OrderResponse	order response
 	 */
-	Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int) (entities.OrderResponse, error)
+	Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int, storageProvider storageProvider.StorageInterface) (entities.OrderResponse, error)
 
 	/*
 	 * Admin Set fixed price order
@@ -167,7 +168,7 @@ type OrderServiceInterface interface {
 	 * @var userID		authenticated user (role: driver)
 	 * @var files		list file request untuk diteruskan ke validation dan upload
 	 */
-	FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader) error
+	FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader, storageProvider storageProvider.StorageInterface) error
 
 	/*
 	 * Count Order
