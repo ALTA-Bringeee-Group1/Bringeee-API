@@ -25,7 +25,7 @@ Bringeee adalah sebuah aplikasi kargo untuk mengangkut barang dengan 1 truck ber
 
 Berikut fitur yang terdapat dalam Bringeee :
 | Feature | Admin | Customer | Driver | Guest
-|:----------| :----------:| :----------:|:----------:|
+|:----------| :----------:| :----------:|:----------:||:----------:|
 | Signup | No | No | No | Yes
 | Login | Yes | Yes | Yes | No
 |---|---|---|---|
@@ -61,7 +61,7 @@ Berikut fitur yang terdapat dalam Bringeee :
 | Truck type Count | Yes | No | No | No
 | Orders count by period day | Yes | No | No | No
 | Monthly Report | Yes | No | No | No
-|---|---|---|---|
+|---|---|---|---||---|
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -75,7 +75,7 @@ Berikut fitur yang terdapat dalam Bringeee :
 - [Assert](https://pkg.go.dev/github.com/stretchr/testify/assert)
 - [VS Code](https://code.visualstudio.com/)
 - [Distance Matrix](https://www.distancematrixapi.com/)
-- [Midtrans](htpps://www.midtrans.com/)
+- [Midtrans](https://www.midtrans.com/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -97,9 +97,9 @@ This is an example of how to list things you need to use the software and how to
     APP_ENV=development 
     DB_HOST= "127.0.0.1"
     DB_PORT= "3306"
-    DB_USERNAME= "root"
-    DB_PASSWORD= ""
-    DB_NAME= "capstone"
+    DB_USERNAME= "<your database username>"
+    DB_PASSWORD= "<your database password>"
+    DB_NAME= "<your database name>"
 ```
 
 ### Installation
