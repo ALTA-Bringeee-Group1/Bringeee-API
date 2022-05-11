@@ -5,7 +5,7 @@
 <div align="center">
 <!--  mengarah ke repo  -->
   <a href="https://github.com/ALTA-Bringeee-Group1/Bringeee-API">
-    <img src="images/Logo.png" width="365" height="70">
+    <img src="images/logo.png" width="365" height="70">
   </a>
 
   <h3 align="center">Bringeee</h3>
@@ -28,18 +28,18 @@ Berikut fitur yang terdapat dalam Bringeee :
 |:----------| :----------:| :----------:|:----------:||:----------:|
 | Signup | No | No | No | Yes
 | Login | Yes | Yes | Yes | No
-|---|---|---|---|
+|---|---|---|---||---|
 | Get all customers | Yes | No | No | No
 | Get customer by id | Yes | Yes | No | No
 | Update customer by id | No | Yes | No | No
 | Delete customer by id | Yes | Yes | No | No
-|---|---|---|---|
+|---|---|---|---||---|
 | Get all drivers | Yes | No | No | No
 | Get driver by id | Yes | No | Yes | No
 | Update driver by id | Yes | No | Yes | No
 | Delete driver by id | Yes | No | No | No
 | Verified driver account | Yes | No | No | No
-|---|---|---|---|
+|---|---|---|---||---|
 | Create order | No | Yes | No | No
 | Get all orders | Yes | No | No | No
 | Get all orders by truck type | Yes | No | Yes | No
@@ -50,11 +50,11 @@ Berikut fitur yang terdapat dalam Bringeee :
 | Estimate price | No | Yes | No | No
 | Take order | No | No | Yes | No
 | Finish order | No | No | Yes | No
-|---|---|---|---|
+|---|---|---|---||---|
 | Create Payment | No | Yes | No | No
 | Get Payment | No | Yes | No | No
 | Cancel Payment | No | Yes | No | No
-|---|---|---|---|
+|---|---|---|---||---|
 | Orders Count | Yes | No | No | No
 | Drivers Count | Yes | No | No | No
 | Customers Count | Yes | No | No | No
