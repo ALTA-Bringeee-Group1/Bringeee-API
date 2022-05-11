@@ -9,6 +9,7 @@ import (
 	orderRepository "bringeee-capstone/repositories/order"
 	truckRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
+	storageProvider "bringeee-capstone/services/storage"
 	"mime/multipart"
 	"net/url"
 	"strconv"
@@ -36,7 +37,7 @@ func NewUserService(repository userRepository.UserRepositoryInterface, truckRepo
 	}
 }
 
-func (service UserService) CreateCustomer(userRequest entities.CreateCustomerRequest, files map[string]*multipart.FileHeader) (entities.CustomerAuthResponse, error) {
+func (service UserService) CreateCustomer(userRequest entities.CreateCustomerRequest, files map[string]*multipart.FileHeader, storageProvider storageProvider.StorageInterface) (entities.CustomerAuthResponse, error) {
 
 	// Validation
 	err := validations.ValidateCreateCustomerRequest(service.validate, userRequest, files)
@@ -71,7 +72,7 @@ func (service UserService) CreateCustomer(userRequest entities.CreateCustomerReq
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, fileFile)
 			if err != nil {
 				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot upload file image"}
 			}
@@ -104,7 +105,7 @@ func (service UserService) CreateCustomer(userRequest entities.CreateCustomerReq
 	return authRes, nil
 }
 
-func (service UserService) CreateDriver(driverRequest entities.CreateDriverRequest, files map[string]*multipart.FileHeader) (entities.DriverAuthResponse, error) {
+func (service UserService) CreateDriver(driverRequest entities.CreateDriverRequest, files map[string]*multipart.FileHeader, storageProvider storageProvider.StorageInterface) (entities.DriverAuthResponse, error) {
 
 	// Validation
 	err := validations.ValidateCreateDriverRequest(service.validate, driverRequest, files)
@@ -141,7 +142,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -156,7 +157,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/ktp/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/ktp/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -171,7 +172,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/stnk/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/stnk/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -186,7 +187,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/driver_license/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/driver_license/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -201,7 +202,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/vehicle_picture/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/vehicle_picture/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -239,7 +240,7 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 	return authRes, nil
 }
 
-func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustomerRequest, id int, files map[string]*multipart.FileHeader) (entities.CustomerResponse, error) {
+func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustomerRequest, id int, files map[string]*multipart.FileHeader, storageProvider storageProvider.StorageInterface ) (entities.CustomerResponse, error) {
 
 	// validation
 	err := validations.ValidateUpdateCustomerRequest(files)
@@ -260,7 +261,7 @@ func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustome
 			if user.Avatar != "" {
 				u, _ := url.Parse(user.Avatar)
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
-				helpers.DeleteFromS3(objectPathS3)
+				storageProvider.Delete(objectPathS3)
 			}
 			fileFile, err := file.Open()
 			if err != nil {
@@ -270,7 +271,7 @@ func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustome
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, fileFile)
 			if err != nil {
 				return entities.CustomerResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -296,7 +297,7 @@ func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustome
 	return userRes, err
 }
 
-func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverRequest, id int, files map[string]*multipart.FileHeader) (entities.DriverResponse, error) {
+func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverRequest, id int, files map[string]*multipart.FileHeader, storageProvider storageProvider.StorageInterface) (entities.DriverResponse, error) {
 
 	// validation
 	err := validations.ValidateUpdateDriverRequest(files)
@@ -317,7 +318,7 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 			if user.Avatar != "" {
 				u, _ := url.Parse(user.Avatar)
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
-				helpers.DeleteFromS3(objectPathS3)
+				storageProvider.Delete(objectPathS3)
 			}
 			fileFile, err := file.Open()
 			if err != nil {
@@ -327,7 +328,7 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("users/avatar/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -366,7 +367,7 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 	return userRes, err
 }
 
-func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriverByAdminRequest, id int, files map[string]*multipart.FileHeader) (entities.DriverResponse, error) {
+func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriverByAdminRequest, id int, files map[string]*multipart.FileHeader, storageProvider storageProvider.StorageInterface) (entities.DriverResponse, error) {
 
 	// validation
 	err := validations.ValidateUpdateDriverRequest(files)
@@ -386,7 +387,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			if driver.KtpFile != "" {
 				u, _ := url.Parse(driver.KtpFile)
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
-				helpers.DeleteFromS3(objectPathS3)
+				storageProvider.Delete(objectPathS3)
 			}
 			fileFile, err := file.Open()
 			if err != nil {
@@ -396,7 +397,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/ktp/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/ktp/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -407,7 +408,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			if driver.StnkFile != "" {
 				u, _ := url.Parse(driver.StnkFile)
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
-				helpers.DeleteFromS3(objectPathS3)
+				storageProvider.Delete(objectPathS3)
 			}
 			fileFile, err := file.Open()
 			if err != nil {
@@ -417,7 +418,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/stnk/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/stnk/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -428,7 +429,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			if driver.DriverLicenseFile != "" {
 				u, _ := url.Parse(driver.DriverLicenseFile)
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
-				helpers.DeleteFromS3(objectPathS3)
+				storageProvider.Delete(objectPathS3)
 			}
 			fileFile, err := file.Open()
 			if err != nil {
@@ -438,7 +439,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/driver_license/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/driver_license/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -449,7 +450,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 			if driver.VehiclePicture != "" {
 				u, _ := url.Parse(driver.VehiclePicture)
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
-				helpers.DeleteFromS3(objectPathS3)
+				storageProvider.Delete(objectPathS3)
 			}
 			fileFile, err := file.Open()
 			if err != nil {
@@ -459,7 +460,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := helpers.UploadFileToS3("drivers/vehicle_picture/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/vehicle_picture/"+filename, fileFile)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -479,7 +480,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 	return userRes, err
 }
 
-func (service UserService) DeleteCustomer(id int) error {
+func (service UserService) DeleteCustomer(id int, storageProvider storageProvider.StorageInterface) error {
 
 	// Cari user berdasarkan ID via repo
 	user, err := service.userRepo.FindCustomer(id)
@@ -494,7 +495,7 @@ func (service UserService) DeleteCustomer(id int) error {
 	if user.Avatar != "" {
 		u, _ := url.Parse(user.Avatar)
 		objectPathS3 := strings.TrimPrefix(u.Path, "/")
-		helpers.DeleteFromS3(objectPathS3)
+		storageProvider.Delete(objectPathS3)
 	}
 	// Delete user order
 	filters := []map[string]interface{}{
@@ -618,7 +619,7 @@ func (service UserService) FindAllDriver(limit, page int, filters []map[string]s
 	return driversRes, err
 }
 
-func (service UserService) DeleteDriver(id int) error {
+func (service UserService) DeleteDriver(id int, storageProvider storageProvider.StorageInterface) error {
 
 	// Cari user berdasarkan ID via repo
 	driver, err := service.userRepo.FindDriver(id)
@@ -634,27 +635,27 @@ func (service UserService) DeleteDriver(id int) error {
 	if user.Avatar != "" {
 		u, _ := url.Parse(user.Avatar)
 		objectPathS3 := strings.TrimPrefix(u.Path, "/")
-		helpers.DeleteFromS3(objectPathS3)
+		storageProvider.Delete(objectPathS3)
 	}
 	if driver.KtpFile != "" {
 		u, _ := url.Parse(driver.KtpFile)
 		objectPathS3 := strings.TrimPrefix(u.Path, "/")
-		helpers.DeleteFromS3(objectPathS3)
+		storageProvider.Delete(objectPathS3)
 	}
 	if driver.StnkFile != "" {
 		u, _ := url.Parse(driver.StnkFile)
 		objectPathS3 := strings.TrimPrefix(u.Path, "/")
-		helpers.DeleteFromS3(objectPathS3)
+		storageProvider.Delete(objectPathS3)
 	}
 	if driver.DriverLicenseFile != "" {
 		u, _ := url.Parse(driver.DriverLicenseFile)
 		objectPathS3 := strings.TrimPrefix(u.Path, "/")
-		helpers.DeleteFromS3(objectPathS3)
+		storageProvider.Delete(objectPathS3)
 	}
 	if driver.VehiclePicture != "" {
 		u, _ := url.Parse(driver.VehiclePicture)
 		objectPathS3 := strings.TrimPrefix(u.Path, "/")
-		helpers.DeleteFromS3(objectPathS3)
+		storageProvider.Delete(objectPathS3)
 	}
 
 	// Delete via repository
