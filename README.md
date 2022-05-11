@@ -24,22 +24,22 @@
 Bringeee adalah sebuah aplikasi kargo untuk mengangkut barang dengan 1 truck berdasarkan berat dan volume barang yang anda akan kirimkan.
 
 Berikut fitur yang terdapat dalam Bringeee :
-| Feature | Admin | Customer | Driver | Guest
-|:----------| :----------:| :----------:|:----------:||:----------:|
+| Feature | Admin | Customer | Driver | Guest |
+|:----------| :----------:| :----------:|:----------:|:----------:|
 | Signup | No | No | No | Yes |
 | Login | Yes | Yes | Yes | No |
-|---|---|---|---||---|
+|---|---|---|---|---|
 | Get all customers | Yes | No | No | No |
 | Get customer by id | Yes | Yes | No | No |
 | Update customer by id | No | Yes | No | No |
 | Delete customer by id | Yes | Yes | No | No |
-|---|---|---|---||---|
+|---|---|---|---|---|
 | Get all drivers | Yes | No | No | No |
 | Get driver by id | Yes | No | Yes | No |
 | Update driver by id | Yes | No | Yes | No |
 | Delete driver by id | Yes | No | No | No |
 | Verified driver account | Yes | No | No | No |
-|---|---|---|---||---|
+|---|---|---|---|---|
 | Create order | No | Yes | No | No |
 | Get all orders | Yes | No | No | No |
 | Get all orders by truck type | Yes | No | Yes | No |
@@ -50,18 +50,18 @@ Berikut fitur yang terdapat dalam Bringeee :
 | Estimate price | No | Yes | No | No |
 | Take order | No | No | Yes | No |
 | Finish order | No | No | Yes | No |
-|---|---|---|---||---|
+|---|---|---|---|---|
 | Create Payment | No | Yes | No | No |
 | Get Payment | No | Yes | No | No |
 | Cancel Payment | No | Yes | No | No |
-|---|---|---|---||---|
+|---|---|---|---|---|
 | Orders Count | Yes | No | No | No |
 | Drivers Count | Yes | No | No | No |
 | Customers Count | Yes | No | No | No |
 | Truck type Count | Yes | No | No | No |
 | Orders count by period day | Yes | No | No | No |
 | Monthly Report | Yes | No | No | No |
-|---|---|---|---||---|
+|---|---|---|---|---|
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
