@@ -7,6 +7,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderService "bringeee-capstone/services/order"
+	storageService "bringeee-capstone/services/storage"
 	truckService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"fmt"
@@ -22,13 +23,15 @@ type AdminHandler struct {
 	userService  *userService.UserService
 	truckService *truckService.TruckTypeService
 	orderService orderService.OrderServiceInterface
+	storageService storageService.StorageInterface
 }
 
-func NewAdminHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, truckService *truckService.TruckTypeService) *AdminHandler {
+func NewAdminHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, truckService *truckService.TruckTypeService, storageService storageService.StorageInterface) *AdminHandler {
 	return &AdminHandler{
 		userService:  service,
 		orderService: orderService,
 		truckService: truckService,
+		storageService: storageService,
 	}
 }
 
@@ -64,7 +67,7 @@ func (handler AdminHandler) DeleteDriver(c echo.Context) error {
 	}
 
 	// call delete service
-	err = handler.userService.DeleteDriver(id)
+	err = handler.userService.DeleteDriver(id, handler.storageService)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -145,7 +148,7 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 	}
 
 	// Update via user service call
-	userRes, err := handler.userService.UpdateDriverByAdmin(userReq, id, files)
+	userRes, err := handler.userService.UpdateDriverByAdmin(userReq, id, files, handler.storageService)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -919,7 +922,7 @@ func (handler AdminHandler) DeleteCustomer(c echo.Context) error {
 	}
 
 	// call delete service
-	err = handler.userService.DeleteCustomer(id)
+	err = handler.userService.DeleteCustomer(id, handler.storageService)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}

@@ -7,6 +7,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderService "bringeee-capstone/services/order"
+	storageProvider "bringeee-capstone/services/storage"
 	userService "bringeee-capstone/services/user"
 	"fmt"
 	"mime/multipart"
@@ -19,12 +20,14 @@ import (
 type DriverHandler struct {
 	userService  *userService.UserService
 	orderService orderService.OrderServiceInterface
+	storageProvider storageProvider.StorageInterface
 }
 
-func NewDriverHandler(service *userService.UserService, orderService orderService.OrderServiceInterface) *DriverHandler {
+func NewDriverHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, storageProvider storageProvider.StorageInterface) *DriverHandler {
 	return &DriverHandler{
 		userService:  service,
 		orderService: orderService,
+		storageProvider: storageProvider,
 	}
 }
 
@@ -57,7 +60,7 @@ func (handler DriverHandler) CreateDriver(c echo.Context) error {
 	files["vehicle_picture"] = vehicle_picture
 
 	// registrasi user via call user service
-	userRes, err := handler.userService.CreateDriver(driverReq, files)
+	userRes, err := handler.userService.CreateDriver(driverReq, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -119,7 +122,7 @@ func (handler DriverHandler) UpdateDriver(c echo.Context) error {
 	}
 
 	// Update via user service call
-	userRes, err := handler.userService.UpdateDriver(userReq, tokenId, files)
+	userRes, err := handler.userService.UpdateDriver(userReq, tokenId, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}

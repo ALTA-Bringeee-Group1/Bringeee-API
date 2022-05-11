@@ -7,6 +7,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderService "bringeee-capstone/services/order"
+	storageProvider "bringeee-capstone/services/storage"
 	userService "bringeee-capstone/services/user"
 	"fmt"
 	"mime/multipart"
@@ -20,12 +21,14 @@ import (
 type CustomerHandler struct {
 	userService  *userService.UserService
 	orderService orderService.OrderServiceInterface
+	storageProvider storageProvider.StorageInterface
 }
 
-func NewCustomerHandler(service *userService.UserService, orderService orderService.OrderServiceInterface) *CustomerHandler {
+func NewCustomerHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, storageProvider storageProvider.StorageInterface) *CustomerHandler {
 	return &CustomerHandler{
 		userService:  service,
 		orderService: orderService,
+		storageProvider: storageProvider,
 	}
 }
 
@@ -52,7 +55,7 @@ func (handler CustomerHandler) CreateCustomer(c echo.Context) error {
 	}
 
 	// registrasi user via call user service
-	userRes, err := handler.userService.CreateCustomer(userReq, files)
+	userRes, err := handler.userService.CreateCustomer(userReq, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -113,7 +116,7 @@ func (handler CustomerHandler) UpdateCustomer(c echo.Context) error {
 		})
 	}
 	// Update via user service call
-	userRes, err := handler.userService.UpdateCustomer(userReq, tokenId, files)
+	userRes, err := handler.userService.UpdateCustomer(userReq, tokenId, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -151,7 +154,7 @@ func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 	}
 
 	// call delete service
-	err = handler.userService.DeleteCustomer(tokenId)
+	err = handler.userService.DeleteCustomer(tokenId, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
