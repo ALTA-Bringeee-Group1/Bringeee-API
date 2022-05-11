@@ -373,7 +373,7 @@ func (handler DriverHandler) FinishOrder(c echo.Context) error {
 	arrived_picture, _ := c.FormFile("arrived_picture")
 	files["arrived_picture"] = arrived_picture
 
-	err = handler.orderService.FinishOrder(id, tokenID, files)
+	err = handler.orderService.FinishOrder(id, tokenID, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}

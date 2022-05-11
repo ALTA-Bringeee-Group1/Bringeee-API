@@ -1,7 +1,6 @@
 package order
 
 import (
-	"bringeee-capstone/deliveries/helpers"
 	"bringeee-capstone/deliveries/validations"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
@@ -11,6 +10,7 @@ import (
 	paymentRepository "bringeee-capstone/repositories/payment"
 	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
+	storageProvider "bringeee-capstone/services/storage"
 	"encoding/csv"
 	"fmt"
 	"log"
@@ -177,7 +177,7 @@ func (service OrderService) FindFirst(filters []map[string]interface{}) (entitie
  * @var files				list file request untuk diteruskan ke validation dan upload
  * @return OrderResponse	order response
  */
-func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int) (entities.OrderResponse, error) {
+func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int, storageProvider storageProvider.StorageInterface) (entities.OrderResponse, error) {
 	// validation
 	err := validations.ValidateCustomerCreateOrderRequest(service.validate, orderRequest, files)
 	if err != nil {
@@ -209,7 +209,7 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 			defer fileFile.Close()
 
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := helpers.UploadFileToS3("orders/order_picture/"+fileName, fileFile)
+			fileUrl, err := storageProvider.UploadFromRequest("orders/order_picture/" + fileName, fileFile)
 			if err != nil {
 				return entities.OrderResponse{}, web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
@@ -632,7 +632,7 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
  * @var orderID 	order id terkait
  * @var userID		authenticated user (role: driver)
  */
-func (service OrderService) FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader) error {
+func (service OrderService) FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader, storageProvider storageProvider.StorageInterface) error {
 	// validation
 	err := validations.ValidateUpdateOrderRequest(files)
 	if err != nil {
@@ -667,7 +667,7 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 			defer fileFile.Close()
 
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := helpers.UploadFileToS3("orders/arrived_picture/"+fileName, fileFile)
+			fileUrl, err := storageProvider.UploadFromRequest("orders/arrived_picture/"+fileName, fileFile)
 			if err != nil {
 				return web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
@@ -753,10 +753,10 @@ func (service OrderService) CsvFile(month int, year int) (string, error) {
 		return "gagal", tx
 	}
 	file, err := os.Create("order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv")
-	defer file.Close()
 	if err != nil {
 		log.Fatalln("failed to open file", err)
 	}
+	defer file.Close()
 	w := csv.NewWriter(file)
 	defer w.Flush() // Using Write
 	title := []string{"ID", "Tanggal Pembuatan", "Status", "Metode Pembayaran", "Nama Customer", "Tipe Truk", "Nama Driver", "Dekskripsi", "Total Volume",

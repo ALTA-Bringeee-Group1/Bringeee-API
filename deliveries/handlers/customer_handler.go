@@ -427,7 +427,7 @@ func (handler CustomerHandler) CreateOrder(c echo.Context) error {
 	c.Bind(&orderReq)
 	filesReq["order_picture"], _ = c.FormFile("order_picture")
 
-	orderRes, err := handler.orderService.Create(orderReq, filesReq, userID)
+	orderRes, err := handler.orderService.Create(orderReq, filesReq, userID, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
