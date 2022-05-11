@@ -2,10 +2,6 @@ package truck_type
 
 import (
 	"bringeee-capstone/entities"
-	"bringeee-capstone/entities/web"
-	"reflect"
-	"sort"
-	"strings"
 	"time"
 
 	"github.com/stretchr/testify/mock"
@@ -22,7 +18,7 @@ type TruckTypeRepositoryMock struct {
  * kumpulan mock data jenis truk untuk dapat dilakukan
  * query dan command sama halnya dengan repository sebenarnya 
  */
-var truckTypeCollection = []entities.TruckType {
+var TruckTypeCollection = []entities.TruckType {
 	{
 		Model: gorm.Model{ID: 1, CreatedAt: time.Now(), UpdatedAt: time.Now()},
 		TruckType: "Pickup Truck - A", 
@@ -84,53 +80,8 @@ func NewTruckTypeRepositoryMock(mock *mock.Mock) *TruckTypeRepositoryMock {
  * @return error		error
  */
 func (repo TruckTypeRepositoryMock) FindAll(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.TruckType, error) {
-
-	// Mock data source
-	args := repo.Mock.Called()
-	switch args.Get(0).(type) {
-	case []entities.TruckType:
-		truckTypeCollection = args.Get(0).([]entities.TruckType)
-	}
-
-	// Mock errors
-	if args.String(1) == "SERVER_ERROR" {
-		return []entities.TruckType{}, web.WebError{Code: 500, DevelopmentMessage: "server error", ProductionMessage: "server error"}
-	}
-
-	// Return all data if filter is empty
-	var filteredCollection []entities.TruckType
-	if len(filters) <= 0 {
-		return truckTypeCollection, nil
-	}
-	for _, item := range truckTypeCollection {
-		// Filtering
-		for _, filter := range filters {
-			if filter["operator"] == "LIKE" {
-				value := reflect.Indirect(reflect.ValueOf(item)).FieldByName(colMapper[filter["field"]]).String()
-				if strings.Contains(value, filter["value"]) {
-					filteredCollection = append(filteredCollection, item)
-				}
-			} else if filter["operator"] == "=" {
-				value := reflect.Indirect(reflect.ValueOf(item)).FieldByName(colMapper[filter["field"]]).String()
-				if value == filter["value"] {
-					filteredCollection = append(filteredCollection, item)
-				}
-			}
-		}
-		// Sort
-		for _, sortItem := range sorts {
-			sort.Slice(filteredCollection, func(i, j int) bool {
-				value := reflect.Indirect(reflect.ValueOf(filteredCollection[0])).FieldByName(colMapper[sortItem["field"].(string)]).String()
-				value2 := reflect.Indirect(reflect.ValueOf(filteredCollection[1])).FieldByName(colMapper[sortItem["field"].(string)]).String()
-				if sortItem["desc"].(bool) {
-					return value > value2 
-				} else {
-					return value < value2 
-				}
-			})
-		}
-	}
-	return filteredCollection, nil
+	param := repo.Mock.Called(limit, offset, filters, sorts)
+	return param.Get(0).([]entities.TruckType), param.Error(1) 
 }
 
 /*
@@ -141,24 +92,8 @@ func (repo TruckTypeRepositoryMock) FindAll(limit int, offset int, filters []map
  * @var id 		data id
  */
 func (repo TruckTypeRepositoryMock) Find(id int) (entities.TruckType, error) {
-	// Mock data source
-	args := repo.Mock.Called(id)
-	switch args.Get(0).(type) {
-	case []entities.TruckType:
-		truckTypeCollection = args.Get(0).([]entities.TruckType)
-	}
-
-	// Mock errors
-	if args.String(1) == "SERVER_ERROR" {
-		return entities.TruckType{}, web.WebError{Code: 500, DevelopmentMessage: "server error", ProductionMessage: "server error"}
-	}
-
-	for _, truckType := range truckTypeCollection {
-		if truckType.ID == uint(id) {
-			return truckType, nil
-		}
-	}
-	return entities.TruckType{}, web.WebError{Code: 400, DevelopmentMessage: "cannot get truck type data with specified id", ProductionMessage: "data error"}
+	param := repo.Mock.Called(id)
+	return param.Get(0).(entities.TruckType), param.Error(1) 
 }
 /*
  * Find User
@@ -171,8 +106,8 @@ func (repo TruckTypeRepositoryMock) Find(id int) (entities.TruckType, error) {
  * @return error		error	
  */
 func (repo TruckTypeRepositoryMock) FindBy(field string, value string) (entities.TruckType, error) {
-	panic("Implement Me")
-
+	param := repo.Mock.Called(field, value)
+	return param.Get(0).(entities.TruckType), param.Error(1) 
 }
 /*
  * CountAll
@@ -180,39 +115,11 @@ func (repo TruckTypeRepositoryMock) FindBy(field string, value string) (entities
  * Menghitung semua truckTypes (ini digunakan untuk pagination di service)
  *
  * @return truckType	single truckType dalam bentuk entity domain
- * @return error		error	
+ * @return error		error
  */
 func (repo TruckTypeRepositoryMock) CountAll(filters []map[string]string) (int64, error) {
-	// Mock data source
-	args := repo.Mock.Called()
-	switch args.Get(0).(type) {
-	case []entities.TruckType:
-		truckTypeCollection = args.Get(0).([]entities.TruckType)
-	}
-
-	// Mock errors
-	if args.String(1) == "SERVER_ERROR" {
-		return 0, web.WebError{Code: 500, DevelopmentMessage: "server error", ProductionMessage: "server error"}
-	}
-
-	// Return all data if filter is empty
-	var filteredCollection []entities.TruckType
-	if len(filters) <= 0 {
-		return int64(len(truckTypeCollection)), nil
-	}
-	for _, item := range truckTypeCollection {
-		// Filtering
-		for _, filter := range filters {
-			if filter["operator"] == "LIKE" {
-				value := reflect.Indirect(reflect.ValueOf(item)).FieldByName(colMapper[filter["field"]]).String()
-				if strings.Contains(value, filter["value"]) {
-					filteredCollection = append(filteredCollection, item)
-				}
-			}
-		}
-	}
-	return int64(len(filteredCollection)), nil
-
+	param := repo.Mock.Called(filters)
+	return int64(param.Int(0)), param.Error(1)
 }
 /*
  * Store
@@ -223,8 +130,8 @@ func (repo TruckTypeRepositoryMock) CountAll(filters []map[string]string) (int64
  * @return truckType	single truckType dalam bentuk entity domain
  */
 func (repo TruckTypeRepositoryMock) Store(truckType entities.TruckType) (entities.TruckType, error) {
-	panic("Implement Me")
-
+	param := repo.Mock.Called(truckType)
+	return param.Get(0).(entities.TruckType), param.Error(1)
 }
 /*
  * Update
@@ -236,8 +143,8 @@ func (repo TruckTypeRepositoryMock) Store(truckType entities.TruckType) (entitie
  * @return error		error
  */
 func (repo TruckTypeRepositoryMock) Update(truckType entities.TruckType, id int) (entities.TruckType, error) {
-	panic("Implement Me")
-
+	param := repo.Mock.Called(truckType)
+	return param.Get(0).(entities.TruckType), param.Error(1)
 }
 /*
  * Delete
@@ -247,7 +154,8 @@ func (repo TruckTypeRepositoryMock) Update(truckType entities.TruckType, id int)
  * @return error		error	
  */
 func (repo TruckTypeRepositoryMock) Delete(id int) error {
-	panic("Gud")
+	param := repo.Mock.Called(id)
+	return param.Error(1)
 }
 /*
  * Delete Batch
@@ -259,5 +167,6 @@ func (repo TruckTypeRepositoryMock) Delete(id int) error {
  * @return error		error	
  */
 func (repo TruckTypeRepositoryMock) DeleteBatch(filters []map[string]string) error {
-	panic("Gud")
+	param := repo.Mock.Called(filters)
+	return param.Error(1)
 }
