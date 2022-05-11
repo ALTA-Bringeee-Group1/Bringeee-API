@@ -89,6 +89,40 @@ var OrderCollection = []entities.Order{
 		Status: "NEED_CUSTOMER_CONFIRM",
 		ArrivedPicture: "",
 	},
+	{
+		Model: gorm.Model{ ID: 3, CreatedAt: time.Now(), UpdatedAt: time.Now() },
+		DriverID: null.IntFromPtr(nil),
+		CustomerID: userRepository.UserCollection[0].ID,
+		Customer: userRepository.UserCollection[0],
+		DestinationID: 3,
+		Destination: entities.Destination{
+			Model: gorm.Model{ ID: 3, CreatedAt: time.Now(), UpdatedAt: time.Now() },
+			DestinationStartProvince: "DI YOGYAKARTA",
+			DestinationStartCity: "YOGYAKARTA",
+			DestinationStartDistrict: "DANUREJAN",
+			DestinationStartAddress: "Suryatmajan, Kec. Danurejan, Kota Yogyakarta, Daerah Istimewa Yogyakarta",
+			DestinationStartPostal: "55213",
+			DestinationStartLat: "-7.793050394271023",
+			DestinationStartLong: "110.36756312713727",
+			DestinationEndProvince: "JAWA TENGAH",
+			DestinationEndCity: "SURAKARTA (SOLO)",
+			DestinationEndDistrict: "JEBRES",
+			DestinationEndAddress: "Tegalharjo, Kec. Jebres, Kota Surakarta, Jawa Tengah",
+			DestinationEndPostal: "57129",
+			DestinationEndLat: "-7.561160260537138",
+			DestinationEndLong: "110.83655443176414",
+		},
+		TruckTypeID: int(truckTypeRepository.TruckTypeCollection[0].ID),
+		TruckType: truckTypeRepository.TruckTypeCollection[0],
+		OrderPicture: "https://source.unsplash.com/600x600/?cargo",
+		TotalVolume: 16000330,
+		TotalWeight: 1000,
+		Distance: 140,
+		EstimatedPrice: 3000000,
+		FixPrice: 0,
+		Status: "REQUESTED",
+		ArrivedPicture: "",
+	},
 }
 
 func NewOrderRepositoryMock(mock *mock.Mock) *OrderRepositoryMock {
@@ -180,7 +214,7 @@ func (repository OrderRepositoryMock) CountAll(filters []map[string]interface{})
  * @return order	single order dalam bentuk entity domain
  */
 func (repository OrderRepositoryMock) Store(order entities.Order, destination entities.Destination) (entities.Order, error) {
-	args := repository.Mock.Called(order)
+	args := repository.Mock.Called()
 	return args.Get(0).(entities.Order), args.Error(1)
 }
 
@@ -194,7 +228,7 @@ func (repository OrderRepositoryMock) Store(order entities.Order, destination en
  * @return error	error
  */
 func (repository OrderRepositoryMock) Update(order entities.Order, id int) (entities.Order, error) {
-	args := repository.Mock.Called(order, id)
+	args := repository.Mock.Called(order)
 	return args.Get(0).(entities.Order), args.Error(1)
 }
 

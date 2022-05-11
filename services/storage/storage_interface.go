@@ -15,7 +15,7 @@ type StorageInterface interface {
 	 * @return 	string			fileUrl hasil kembalian dari hasil upload
 	 * @return 	error			error
 	 */
-	UploadFromRequest(fileNamePath string, fileHeader multipart.File) (string, error)
+	UploadFromRequest(fileNamePath string, fileHeader *multipart.FileHeader) (string, error)
 
 	/*
 	 * Delete file

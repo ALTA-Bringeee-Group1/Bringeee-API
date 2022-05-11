@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bringeee-capstone/configs"
+	"bringeee-capstone/entities/web"
 	"context"
 	"mime/multipart"
 
@@ -44,14 +45,20 @@ func NewS3() *S3 {
  * @return 	string			fileUrl hasil kembalian dari hasil upload
  * @return 	error			error
  */
-func (storage S3) UploadFromRequest(fileNamePath string, file multipart.File) (string, error) {
+func (storage S3) UploadFromRequest(fileNamePath string, file *multipart.FileHeader) (string, error) {
+	fileFile, err := file.Open()
+	if err != nil {
+		return "", web.WebError{Code: 500, Message: "Cannot process the requested file"}
+	}
+	defer fileFile.Close()
+
 	// s3 Client
 	client := s3.NewFromConfig(storage.awsConfig)
 	uploader := manager.NewUploader(client)
 	result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(configs.Get().AwsS3.Bucket),
 		Key:    aws.String(fileNamePath),
-		Body:   file,
+		Body:   fileFile,
 	})
 	if err != nil {
 		return "", err

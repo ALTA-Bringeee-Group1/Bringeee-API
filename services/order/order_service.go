@@ -12,7 +12,6 @@ import (
 	userRepository "bringeee-capstone/repositories/user"
 	storageProvider "bringeee-capstone/services/storage"
 	"encoding/csv"
-	"fmt"
 	"log"
 	"mime/multipart"
 	"os"
@@ -202,14 +201,8 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 	for field, file := range files {
 		switch field {
 		case "order_picture":
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.OrderResponse{}, web.WebError{Code: 500, Message: "Cannot process the requested file"}
-			}
-			defer fileFile.Close()
-
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := storageProvider.UploadFromRequest("orders/order_picture/" + fileName, fileFile)
+			fileUrl, err := storageProvider.UploadFromRequest("orders/order_picture/" + fileName, file)
 			if err != nil {
 				return entities.OrderResponse{}, web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
@@ -474,7 +467,7 @@ func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, e
 	// get order
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
-		return entities.PaymentResponse{}, nil
+		return entities.PaymentResponse{}, err
 	}
 
 	// get payment
@@ -496,7 +489,7 @@ func (service OrderService) CancelPayment(orderID int) error {
 	// get order
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
-		return nil
+		return err
 	}
 	// reject if status is other than confirmed
 	if order.Status != "CONFIRMED" {
@@ -559,7 +552,6 @@ func (service OrderService) FindAllHistory(orderID int, sorts []map[string]inter
  * @return error	error
  */
 func (service OrderService) PaymentWebhook(orderID int, status string) error {
-	fmt.Println(status, orderID)
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
 		return err
@@ -660,14 +652,8 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 	for field, file := range files {
 		switch field {
 		case "arrived_picture":
-			fileFile, err := file.Open()
-			if err != nil {
-				return web.WebError{Code: 500, Message: "Cannot process the requested file"}
-			}
-			defer fileFile.Close()
-
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := storageProvider.UploadFromRequest("orders/arrived_picture/"+fileName, fileFile)
+			fileUrl, err := storageProvider.UploadFromRequest("orders/arrived_picture/"+fileName, file)
 			if err != nil {
 				return web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}

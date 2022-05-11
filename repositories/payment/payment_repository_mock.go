@@ -80,7 +80,7 @@ var PaymentResponseCollection = []entities.PaymentResponse {
  * @return any	Response dari layanan pihak ketiga
  */
 func (repo PaymentRepositoryMock) CreateBankTransferBCA(order entities.Order) (entities.PaymentResponse, error) {
-	param := repo.Mock.Called(order)
+	param := repo.Mock.Called()
 	return param.Get(0).(entities.PaymentResponse), param.Error(1)
 }
 /*
@@ -92,7 +92,7 @@ func (repo PaymentRepositoryMock) CreateBankTransferBCA(order entities.Order) (e
  * @return any	Response dari layanan pihak ketiga
  */
 func (repo PaymentRepositoryMock) CreateBankTransferBNI(order entities.Order) (entities.PaymentResponse, error) {
-	param := repo.Mock.Called(order)
+	param := repo.Mock.Called()
 	return param.Get(0).(entities.PaymentResponse), param.Error(1)
 }
 /*
@@ -104,7 +104,7 @@ func (repo PaymentRepositoryMock) CreateBankTransferBNI(order entities.Order) (e
  * @return any	Response dari layanan pihak ketiga
  */
 func (repo PaymentRepositoryMock) CreateBankTransferBRI(order entities.Order) (entities.PaymentResponse, error) {
-	param := repo.Mock.Called(order)
+	param := repo.Mock.Called()
 	return param.Get(0).(entities.PaymentResponse), param.Error(1)
 }
 /*
@@ -116,7 +116,7 @@ func (repo PaymentRepositoryMock) CreateBankTransferBRI(order entities.Order) (e
  * @return any	Response dari layanan pihak ketiga
  */
 func (repo PaymentRepositoryMock) CreateBankTransferMandiri(order entities.Order) (entities.PaymentResponse, error) {
-	param := repo.Mock.Called(order)
+	param := repo.Mock.Called()
 	return param.Get(0).(entities.PaymentResponse), param.Error(1)
 }
 /*
@@ -128,7 +128,7 @@ func (repo PaymentRepositoryMock) CreateBankTransferMandiri(order entities.Order
  * @return any	Response dari layanan pihak ketiga
  */
 func (repo PaymentRepositoryMock) CreateBankTransferPermata(order entities.Order) (entities.PaymentResponse, error) {
-	param := repo.Mock.Called(order)
+	param := repo.Mock.Called()
 	return param.Get(0).(entities.PaymentResponse), param.Error(1)
 }
 /*
@@ -140,7 +140,7 @@ func (repo PaymentRepositoryMock) CreateBankTransferPermata(order entities.Order
 * @return PaymentResponse	Response
 */
 func (repo PaymentRepositoryMock) GetPaymentStatus(transactionID string, paymentMethod string) (entities.PaymentResponse, error) {
-	param := repo.Mock.Called(transactionID)
+	param := repo.Mock.Called()
 	return param.Get(0).(entities.PaymentResponse), param.Error(1)
 }
 /*
@@ -152,7 +152,7 @@ func (repo PaymentRepositoryMock) GetPaymentStatus(transactionID string, payment
 * @return PaymentResponse	Response
 */
 func (repo PaymentRepositoryMock) CancelPayment(transactionID string, paymentMethod string) error {
-	param := repo.Mock.Called(transactionID)
+	param := repo.Mock.Called()
 	return param.Error(0)
 }
 

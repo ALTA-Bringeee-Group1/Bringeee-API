@@ -26,8 +26,8 @@ func NewStorageMock(mock *mock.Mock) *StorageMock {
  * @return 	string			fileUrl hasil kembalian dari hasil upload
  * @return 	error			error
  */
-func (storage StorageMock) UploadFromRequest(fileNamePath string, fileHeader multipart.File) (string, error) {
-	args := storage.Mock.Called(fileNamePath, fileHeader)
+func (storage StorageMock) UploadFromRequest(fileNamePath string, fileHeader *multipart.FileHeader) (string, error) {
+	args := storage.Mock.Called()
 	return args.String(0), args.Error(1)
 }
 
