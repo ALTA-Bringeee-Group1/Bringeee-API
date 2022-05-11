@@ -64,15 +64,8 @@ func (service UserService) CreateCustomer(userRequest entities.CreateCustomerReq
 	for field, file := range files {
 		switch field {
 		case "avatar":
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
-
-			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, file)
 			if err != nil {
 				return entities.CustomerAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot upload file image"}
 			}
@@ -134,75 +127,45 @@ func (service UserService) CreateDriver(driverRequest entities.CreateDriverReque
 	for field, file := range files {
 		switch field {
 		case "avatar":
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
-
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, file)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			user.Avatar = fileURL
 
 		case "ktp_file":
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
-
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("drivers/ktp/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/ktp/"+filename, file)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.KtpFile = fileURL
 
 		case "stnk_file":
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
-
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("drivers/stnk/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/stnk/"+filename, file)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.StnkFile = fileURL
 
 		case "driver_license_file":
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
-
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("drivers/driver_license/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/driver_license/"+filename, file)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
 			driver.DriverLicenseFile = fileURL
 
 		case "vehicle_picture":
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
-
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("drivers/vehicle_picture/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/vehicle_picture/"+filename, file)
 			if err != nil {
 				return entities.DriverAuthResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -263,15 +226,10 @@ func (service UserService) UpdateCustomer(customerRequest entities.UpdateCustome
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
 				storageProvider.Delete(objectPathS3)
 			}
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.CustomerResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, file)
 			if err != nil {
 				return entities.CustomerResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -328,7 +286,7 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("users/avatar/"+filename, file)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -397,7 +355,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("drivers/ktp/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/ktp/"+filename, file)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -418,7 +376,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("drivers/stnk/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/stnk/"+filename, file)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -439,7 +397,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("drivers/driver_license/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/driver_license/"+filename, file)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
@@ -460,7 +418,7 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
-			fileURL, err := storageProvider.UploadFromRequest("drivers/vehicle_picture/"+filename, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("drivers/vehicle_picture/"+filename, file)
 			if err != nil {
 				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: err.Error()}
 			}
