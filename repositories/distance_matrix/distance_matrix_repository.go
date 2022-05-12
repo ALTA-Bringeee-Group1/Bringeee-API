@@ -1,4 +1,4 @@
-package distance_matrix
+package distanceMatrix
 
 import (
 	"bringeee-capstone/configs"
@@ -11,14 +11,14 @@ import (
 
 type DistanceMatrixRepository struct {
 	client *http.Client
-	baseUrl string
+	baseURL string
 	apiKey string
 }
 
 func NewDistanceMatrixRepository() *DistanceMatrixRepository {
 	return &DistanceMatrixRepository{
 		client: &http.Client{},
-		baseUrl: configs.Get().DistanceMatrix.DistanceMatrixBaseURL,
+		baseURL: configs.Get().DistanceMatrix.DistanceMatrixBaseURL,
 		apiKey: configs.Get().DistanceMatrix.DistanceMatrixAPIKey,
 	}
 }
@@ -36,7 +36,7 @@ func NewDistanceMatrixRepository() *DistanceMatrixRepository {
  */
 func (repository DistanceMatrixRepository) EstimateShortest(originLat, originLong, destinationLat, destinationLong string) (entities.DistanceMatrix, error) {
 	// request
-	request, err := http.NewRequest(http.MethodGet, repository.baseUrl + "/distancematrix/json", nil)
+	request, err := http.NewRequest(http.MethodGet, repository.baseURL + "/distancematrix/json", nil)
 	if err != nil {
 		return entities.DistanceMatrix{}, web.WebError{
 			Code: 500, 
