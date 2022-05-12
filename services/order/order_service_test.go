@@ -157,6 +157,28 @@ func TestGetPagination(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, expected, actual)
 	})
+	t.Run("empty", func(t *testing.T) {
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("CountAll", []map[string]interface{}{}).Return(0, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		actual, err := orderService.GetPagination(1, 1, []map[string]interface{}{})
+		expected := web.Pagination {
+			Page: 1,
+			Limit: 1,
+			TotalPages: 1,
+			TotalRecords: 0,
+		}
+		assert.Nil(t, err)
+		assert.Equal(t, expected, actual)
+	})
 	t.Run("error", func(t *testing.T) {
 		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
 		orderRepositoryMock.Mock.On("CountAll", []map[string]interface{}{}).Return(0, web.WebError{ Code: 500, Message: "Error" })
@@ -369,6 +391,532 @@ func TestCreate(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, expected, actual)
 	})
+	t.Run("validation-fail", func(t *testing.T) {
+		// Request
+		user := _userRepository.UserCollection[0]
+		orderRequest := entities.CustomerCreateOrderRequest {
+			DestinationStartProvince: "DI YOGYAKARTA",
+			DestinationStartCity: "YOGYAKARTA",
+			DestinationStartDistrict: "DANUREJAN",
+			DestinationStartAddress: "Suryatmajan, Kec. Danurejan, Kota Yogyakarta, Daerah Istimewa Yogyakarta",
+			DestinationStartPostal: "55213",
+			DestinationStartLat: "-7.793050394271023",
+			DestinationStartLong: "110.36756312713727",
+			DestinationEndProvince: "JAWA TENGAH",
+			TruckTypeID: 1, 
+			TotalVolume: 8000, 
+			TotalWeight: 200, 
+			Description: "", 
+		}
+		files := map[string]*multipart.FileHeader{
+			"order_picture": {
+				Filename: "order.png",
+				Size: 1024 * 56,
+			},
+		}
+
+		// Truck Type Exists
+		truckTypeOutput := _truckTypeRepository.TruckTypeCollection[0]
+		truckTypeRepository := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepository.Mock.On("Find", 1).Return(truckTypeOutput, nil)
+
+		// Storage Upload Mock
+		storage := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageOutput := "example.com/orders/order_picture/" + files["order_picture"].Filename
+		storage.Mock.On("UploadFromRequest").Return(storageOutput, nil)
+
+		// Distance Matrix Mock
+		distanceMatrixOutput := _distanceMatrixRepository.DistanceMatrixCollection[0]
+		distanceMatrixRepository := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepository.Mock.On(
+			"EstimateShortest", 
+			orderRequest.DestinationStartLat,
+			orderRequest.DestinationStartLong,
+			orderRequest.DestinationEndLat,
+			orderRequest.DestinationEndLong,
+		).Return(
+			distanceMatrixOutput,
+			nil,
+		)
+
+		// order repository mock
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderOutput := _orderRepository.OrderCollection[0]
+		orderRepositoryMock.Mock.On("Store").Return(orderOutput, nil)
+		orderRepositoryMock.Mock.On("Find", int(orderOutput.ID)).Return(orderOutput, nil)
+		
+		// order history mock
+		orderHistoryOutput := _orderHistoryRepository.OrderHistoryCollection[0]
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryRepositoryMock.Mock.On(
+			"Create", 
+			int(orderOutput.ID), 
+			"Order dibuat dan diajukan oleh customer", 
+			"customer",
+		).Return(orderHistoryOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepository,
+			truckTypeRepository,
+		)
+
+		_, err := orderService.Create(orderRequest, files, int(user.ID), storage)
+		// convert to response
+		expected := entities.OrderResponse{}
+		copier.Copy(&expected, &orderOutput)
+		copier.Copy(&expected, &orderOutput.Destination)
+		copier.Copy(&expected.Driver, &orderOutput.Driver.User)
+		expected.ID = orderOutput.ID // fix: overlap destinationID vs orderID
+
+		assert.Error(t, err)
+	})
+	t.Run("invalid-truck", func(t *testing.T) {
+		// Request
+		user := _userRepository.UserCollection[0]
+		orderRequest := entities.CustomerCreateOrderRequest {
+			DestinationStartProvince: "DI YOGYAKARTA",
+			DestinationStartCity: "YOGYAKARTA",
+			DestinationStartDistrict: "DANUREJAN",
+			DestinationStartAddress: "Suryatmajan, Kec. Danurejan, Kota Yogyakarta, Daerah Istimewa Yogyakarta",
+			DestinationStartPostal: "55213",
+			DestinationStartLat: "-7.793050394271023",
+			DestinationStartLong: "110.36756312713727",
+			DestinationEndProvince: "JAWA TENGAH",
+			DestinationEndCity: "SURAKARTA (SOLO)",
+			DestinationEndDistrict: "JEBRES",
+			DestinationEndAddress: "Tegalharjo, Kec. Jebres, Kota Surakarta, Jawa Tengah",
+			DestinationEndPostal: "57129",
+			DestinationEndLat: "-7.561160260537138",
+			DestinationEndLong: "110.83655443176414",
+			TruckTypeID: 1, 
+			TotalVolume: 8000, 
+			TotalWeight: 200, 
+			Description: "", 
+		}
+		files := map[string]*multipart.FileHeader{
+			"order_picture": {
+				Filename: "order.png",
+				Size: 1024 * 56,
+			},
+		}
+
+		// Truck Type Exists
+		truckTypeRepository := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepository.Mock.On("Find", 1).Return(entities.TruckType{}, web.WebError{})
+
+		// Storage Upload Mock
+		storage := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageOutput := "example.com/orders/order_picture/" + files["order_picture"].Filename
+		storage.Mock.On("UploadFromRequest").Return(storageOutput, nil)
+
+		// Distance Matrix Mock
+		distanceMatrixOutput := _distanceMatrixRepository.DistanceMatrixCollection[0]
+		distanceMatrixRepository := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepository.Mock.On(
+			"EstimateShortest", 
+			orderRequest.DestinationStartLat,
+			orderRequest.DestinationStartLong,
+			orderRequest.DestinationEndLat,
+			orderRequest.DestinationEndLong,
+		).Return(
+			distanceMatrixOutput,
+			nil,
+		)
+
+		// order repository mock
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderOutput := _orderRepository.OrderCollection[0]
+		orderRepositoryMock.Mock.On("Store").Return(orderOutput, nil)
+		orderRepositoryMock.Mock.On("Find", int(orderOutput.ID)).Return(orderOutput, nil)
+		
+		// order history mock
+		orderHistoryOutput := _orderHistoryRepository.OrderHistoryCollection[0]
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryRepositoryMock.Mock.On(
+			"Create", 
+			int(orderOutput.ID), 
+			"Order dibuat dan diajukan oleh customer", 
+			"customer",
+		).Return(orderHistoryOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepository,
+			truckTypeRepository,
+		)
+
+		_, err := orderService.Create(orderRequest, files, int(user.ID), storage)
+		// convert to response
+		expected := entities.OrderResponse{}
+		copier.Copy(&expected, &orderOutput)
+		copier.Copy(&expected, &orderOutput.Destination)
+		copier.Copy(&expected.Driver, &orderOutput.Driver.User)
+		expected.ID = orderOutput.ID // fix: overlap destinationID vs orderID
+
+		assert.Error(t, err)
+	})
+	t.Run("upload-fail", func(t *testing.T) {
+		// Request
+		user := _userRepository.UserCollection[0]
+		orderRequest := entities.CustomerCreateOrderRequest {
+			DestinationStartProvince: "DI YOGYAKARTA",
+			DestinationStartCity: "YOGYAKARTA",
+			DestinationStartDistrict: "DANUREJAN",
+			DestinationStartAddress: "Suryatmajan, Kec. Danurejan, Kota Yogyakarta, Daerah Istimewa Yogyakarta",
+			DestinationStartPostal: "55213",
+			DestinationStartLat: "-7.793050394271023",
+			DestinationStartLong: "110.36756312713727",
+			DestinationEndProvince: "JAWA TENGAH",
+			DestinationEndCity: "SURAKARTA (SOLO)",
+			DestinationEndDistrict: "JEBRES",
+			DestinationEndAddress: "Tegalharjo, Kec. Jebres, Kota Surakarta, Jawa Tengah",
+			DestinationEndPostal: "57129",
+			DestinationEndLat: "-7.561160260537138",
+			DestinationEndLong: "110.83655443176414",
+			TruckTypeID: 1, 
+			TotalVolume: 8000, 
+			TotalWeight: 200, 
+			Description: "", 
+		}
+		files := map[string]*multipart.FileHeader{
+			"order_picture": {
+				Filename: "order.png",
+				Size: 1024 * 56,
+			},
+		}
+
+		// Truck Type Exists
+		truckTypeOutput := _truckTypeRepository.TruckTypeCollection[0]
+		truckTypeRepository := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepository.Mock.On("Find", 1).Return(truckTypeOutput, nil)
+
+		// Storage Upload Mock
+		storage := _storageProvider.NewStorageMock(&mock.Mock{})
+		storage.Mock.On("UploadFromRequest").Return("", web.WebError{})
+
+		// Distance Matrix Mock
+		distanceMatrixOutput := _distanceMatrixRepository.DistanceMatrixCollection[0]
+		distanceMatrixRepository := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepository.Mock.On(
+			"EstimateShortest", 
+			orderRequest.DestinationStartLat,
+			orderRequest.DestinationStartLong,
+			orderRequest.DestinationEndLat,
+			orderRequest.DestinationEndLong,
+		).Return(
+			distanceMatrixOutput,
+			nil,
+		)
+
+		// order repository mock
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderOutput := _orderRepository.OrderCollection[0]
+		orderRepositoryMock.Mock.On("Store").Return(orderOutput, nil)
+		orderRepositoryMock.Mock.On("Find", int(orderOutput.ID)).Return(orderOutput, nil)
+		
+		// order history mock
+		orderHistoryOutput := _orderHistoryRepository.OrderHistoryCollection[0]
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryRepositoryMock.Mock.On(
+			"Create", 
+			int(orderOutput.ID), 
+			"Order dibuat dan diajukan oleh customer", 
+			"customer",
+		).Return(orderHistoryOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepository,
+			truckTypeRepository,
+		)
+
+		_, err := orderService.Create(orderRequest, files, int(user.ID), storage)
+		// convert to response
+		expected := entities.OrderResponse{}
+		copier.Copy(&expected, &orderOutput)
+		copier.Copy(&expected, &orderOutput.Destination)
+		copier.Copy(&expected.Driver, &orderOutput.Driver.User)
+		expected.ID = orderOutput.ID // fix: overlap destinationID vs orderID
+
+		assert.Error(t, err)
+	})
+	t.Run("distance-fail", func(t *testing.T) {
+		// Request
+		user := _userRepository.UserCollection[0]
+		orderRequest := entities.CustomerCreateOrderRequest {
+			DestinationStartProvince: "DI YOGYAKARTA",
+			DestinationStartCity: "YOGYAKARTA",
+			DestinationStartDistrict: "DANUREJAN",
+			DestinationStartAddress: "Suryatmajan, Kec. Danurejan, Kota Yogyakarta, Daerah Istimewa Yogyakarta",
+			DestinationStartPostal: "55213",
+			DestinationStartLat: "-7.793050394271023",
+			DestinationStartLong: "110.36756312713727",
+			DestinationEndProvince: "JAWA TENGAH",
+			DestinationEndCity: "SURAKARTA (SOLO)",
+			DestinationEndDistrict: "JEBRES",
+			DestinationEndAddress: "Tegalharjo, Kec. Jebres, Kota Surakarta, Jawa Tengah",
+			DestinationEndPostal: "57129",
+			DestinationEndLat: "-7.561160260537138",
+			DestinationEndLong: "110.83655443176414",
+			TruckTypeID: 1, 
+			TotalVolume: 8000, 
+			TotalWeight: 200, 
+			Description: "", 
+		}
+		files := map[string]*multipart.FileHeader{
+			"order_picture": {
+				Filename: "order.png",
+				Size: 1024 * 56,
+			},
+		}
+
+		// Truck Type Exists
+		truckTypeOutput := _truckTypeRepository.TruckTypeCollection[0]
+		truckTypeRepository := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepository.Mock.On("Find", 1).Return(truckTypeOutput, nil)
+
+		// Storage Upload Mock
+		storage := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageOutput := "example.com/orders/order_picture/" + files["order_picture"].Filename
+		storage.Mock.On("UploadFromRequest").Return(storageOutput, nil)
+
+		// Distance Matrix Mock
+		distanceMatrixRepository := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepository.Mock.On(
+			"EstimateShortest", 
+			orderRequest.DestinationStartLat,
+			orderRequest.DestinationStartLong,
+			orderRequest.DestinationEndLat,
+			orderRequest.DestinationEndLong,
+		).Return(
+			entities.DistanceMatrix{},
+			web.WebError{},
+		)
+
+		// order repository mock
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderOutput := _orderRepository.OrderCollection[0]
+		orderRepositoryMock.Mock.On("Store").Return(orderOutput, nil)
+		orderRepositoryMock.Mock.On("Find", int(orderOutput.ID)).Return(orderOutput, nil)
+		
+		// order history mock
+		orderHistoryOutput := _orderHistoryRepository.OrderHistoryCollection[0]
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryRepositoryMock.Mock.On(
+			"Create", 
+			int(orderOutput.ID), 
+			"Order dibuat dan diajukan oleh customer", 
+			"customer",
+		).Return(orderHistoryOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepository,
+			truckTypeRepository,
+		)
+
+		actual, err := orderService.Create(orderRequest, files, int(user.ID), storage)
+		// convert to response
+		expected := entities.OrderResponse{}
+		copier.Copy(&expected, &orderOutput)
+		copier.Copy(&expected, &orderOutput.Destination)
+		copier.Copy(&expected.Driver, &orderOutput.Driver.User)
+		expected.ID = orderOutput.ID // fix: overlap destinationID vs orderID
+
+		assert.Nil(t, err)
+		assert.Equal(t, expected, actual)
+	})
+	t.Run("repository-fail", func(t *testing.T) {
+		// Request
+		user := _userRepository.UserCollection[0]
+		orderRequest := entities.CustomerCreateOrderRequest {
+			DestinationStartProvince: "DI YOGYAKARTA",
+			DestinationStartCity: "YOGYAKARTA",
+			DestinationStartDistrict: "DANUREJAN",
+			DestinationStartAddress: "Suryatmajan, Kec. Danurejan, Kota Yogyakarta, Daerah Istimewa Yogyakarta",
+			DestinationStartPostal: "55213",
+			DestinationStartLat: "-7.793050394271023",
+			DestinationStartLong: "110.36756312713727",
+			DestinationEndProvince: "JAWA TENGAH",
+			DestinationEndCity: "SURAKARTA (SOLO)",
+			DestinationEndDistrict: "JEBRES",
+			DestinationEndAddress: "Tegalharjo, Kec. Jebres, Kota Surakarta, Jawa Tengah",
+			DestinationEndPostal: "57129",
+			DestinationEndLat: "-7.561160260537138",
+			DestinationEndLong: "110.83655443176414",
+			TruckTypeID: 1, 
+			TotalVolume: 8000, 
+			TotalWeight: 200, 
+			Description: "", 
+		}
+		files := map[string]*multipart.FileHeader{
+			"order_picture": {
+				Filename: "order.png",
+				Size: 1024 * 56,
+			},
+		}
+
+		// Truck Type Exists
+		truckTypeOutput := _truckTypeRepository.TruckTypeCollection[0]
+		truckTypeRepository := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepository.Mock.On("Find", 1).Return(truckTypeOutput, nil)
+
+		// Storage Upload Mock
+		storage := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageOutput := "example.com/orders/order_picture/" + files["order_picture"].Filename
+		storage.Mock.On("UploadFromRequest").Return(storageOutput, nil)
+
+		// Distance Matrix Mock
+		distanceMatrixOutput := _distanceMatrixRepository.DistanceMatrixCollection[0]
+		distanceMatrixRepository := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepository.Mock.On(
+			"EstimateShortest", 
+			orderRequest.DestinationStartLat,
+			orderRequest.DestinationStartLong,
+			orderRequest.DestinationEndLat,
+			orderRequest.DestinationEndLong,
+		).Return(
+			distanceMatrixOutput,
+			nil,
+		)
+
+		// order repository mock
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderOutput := _orderRepository.OrderCollection[0]
+		orderRepositoryMock.Mock.On("Store").Return(entities.Order{}, web.WebError{})
+		orderRepositoryMock.Mock.On("Find", int(orderOutput.ID)).Return(orderOutput, nil)
+		
+		// order history mock
+		orderHistoryOutput := _orderHistoryRepository.OrderHistoryCollection[0]
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryRepositoryMock.Mock.On(
+			"Create", 
+			int(orderOutput.ID), 
+			"Order dibuat dan diajukan oleh customer", 
+			"customer",
+		).Return(orderHistoryOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepository,
+			truckTypeRepository,
+		)
+
+		_, err := orderService.Create(orderRequest, files, int(user.ID), storage)
+		// convert to response
+		expected := entities.OrderResponse{}
+		copier.Copy(&expected, &orderOutput)
+		copier.Copy(&expected, &orderOutput.Destination)
+		copier.Copy(&expected.Driver, &orderOutput.Driver.User)
+		expected.ID = orderOutput.ID // fix: overlap destinationID vs orderID
+
+		assert.Error(t, err)
+	})
+	t.Run("newly-failed", func(t *testing.T) {
+		// Request
+		user := _userRepository.UserCollection[0]
+		orderRequest := entities.CustomerCreateOrderRequest {
+			DestinationStartProvince: "DI YOGYAKARTA",
+			DestinationStartCity: "YOGYAKARTA",
+			DestinationStartDistrict: "DANUREJAN",
+			DestinationStartAddress: "Suryatmajan, Kec. Danurejan, Kota Yogyakarta, Daerah Istimewa Yogyakarta",
+			DestinationStartPostal: "55213",
+			DestinationStartLat: "-7.793050394271023",
+			DestinationStartLong: "110.36756312713727",
+			DestinationEndProvince: "JAWA TENGAH",
+			DestinationEndCity: "SURAKARTA (SOLO)",
+			DestinationEndDistrict: "JEBRES",
+			DestinationEndAddress: "Tegalharjo, Kec. Jebres, Kota Surakarta, Jawa Tengah",
+			DestinationEndPostal: "57129",
+			DestinationEndLat: "-7.561160260537138",
+			DestinationEndLong: "110.83655443176414",
+			TruckTypeID: 1, 
+			TotalVolume: 8000, 
+			TotalWeight: 200, 
+			Description: "", 
+		}
+		files := map[string]*multipart.FileHeader{
+			"order_picture": {
+				Filename: "order.png",
+				Size: 1024 * 56,
+			},
+		}
+
+		// Truck Type Exists
+		truckTypeOutput := _truckTypeRepository.TruckTypeCollection[0]
+		truckTypeRepository := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepository.Mock.On("Find", 1).Return(truckTypeOutput, nil)
+
+		// Storage Upload Mock
+		storage := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageOutput := "example.com/orders/order_picture/" + files["order_picture"].Filename
+		storage.Mock.On("UploadFromRequest").Return(storageOutput, nil)
+
+		// Distance Matrix Mock
+		distanceMatrixOutput := _distanceMatrixRepository.DistanceMatrixCollection[0]
+		distanceMatrixRepository := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepository.Mock.On(
+			"EstimateShortest", 
+			orderRequest.DestinationStartLat,
+			orderRequest.DestinationStartLong,
+			orderRequest.DestinationEndLat,
+			orderRequest.DestinationEndLong,
+		).Return(
+			distanceMatrixOutput,
+			nil,
+		)
+
+		// order repository mock
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderOutput := _orderRepository.OrderCollection[0]
+		orderRepositoryMock.Mock.On("Store").Return(orderOutput, nil)
+		orderRepositoryMock.Mock.On("Find", int(orderOutput.ID)).Return(entities.Order{}, web.WebError{})
+		
+		// order history mock
+		orderHistoryOutput := _orderHistoryRepository.OrderHistoryCollection[0]
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryRepositoryMock.Mock.On(
+			"Create", 
+			int(orderOutput.ID), 
+			"Order dibuat dan diajukan oleh customer", 
+			"customer",
+		).Return(orderHistoryOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepository,
+			truckTypeRepository,
+		)
+
+		_, err := orderService.Create(orderRequest, files, int(user.ID), storage)
+		// convert to response
+		expected := entities.OrderResponse{}
+		copier.Copy(&expected, &orderOutput)
+		copier.Copy(&expected, &orderOutput.Destination)
+		copier.Copy(&expected.Driver, &orderOutput.Driver.User)
+		expected.ID = orderOutput.ID // fix: overlap destinationID vs orderID
+
+		assert.Error(t, err)
+	})
 }
 
 
@@ -460,6 +1008,89 @@ func TestSetFixOrder(t *testing.T) {
 		)
 		err := orderService.SetFixOrder(int(orderSample.ID), setPriceRequest)
 		assert.NotNil(t, err)
+	})
+	t.Run("validation-fail", func(t *testing.T) {
+		setPriceRequest := entities.AdminSetPriceOrderRequest{}
+
+		orderSample := _orderRepository.OrderCollection[2]
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+		orderUpdateSample := orderSample
+		orderUpdateSample.Status = "NEED_CUSTOMER_CONFIRM"
+		orderRepositoryMock.Mock.On("Update", orderUpdateSample).Return(orderUpdateSample, nil)
+
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		historyOutput := _orderHistoryRepository.OrderHistoryCollection[1]
+		orderHistoryRepositoryMock.Mock.On("Create", int(orderSample.ID), historyOutput.Log, historyOutput.Actor).Return(historyOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.SetFixOrder(int(orderSample.ID), setPriceRequest)
+		assert.Error(t, err)
+	})
+	t.Run("order-invalid", func(t *testing.T) {
+		fixPriceSample := int64(800000)
+		setPriceRequest := entities.AdminSetPriceOrderRequest{
+			FixedPrice: uint64(fixPriceSample),
+		}
+
+		orderSample := _orderRepository.OrderCollection[2]
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(entities.Order{}, web.WebError{})
+		orderUpdateSample := orderSample
+		orderUpdateSample.FixPrice = fixPriceSample
+		orderUpdateSample.Status = "NEED_CUSTOMER_CONFIRM"
+		orderRepositoryMock.Mock.On("Update", orderUpdateSample).Return(orderUpdateSample, nil)
+
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		historyOutput := _orderHistoryRepository.OrderHistoryCollection[1]
+		orderHistoryRepositoryMock.Mock.On("Create", int(orderSample.ID), historyOutput.Log, historyOutput.Actor).Return(historyOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.SetFixOrder(int(orderSample.ID), setPriceRequest)
+		assert.Error(t, err)
+	})
+	t.Run("repo-failed", func(t *testing.T) {
+		fixPriceSample := int64(800000)
+		setPriceRequest := entities.AdminSetPriceOrderRequest{
+			FixedPrice: uint64(fixPriceSample),
+		}
+
+		orderSample := _orderRepository.OrderCollection[2]
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+		orderUpdateSample := orderSample
+		orderUpdateSample.FixPrice = fixPriceSample
+		orderUpdateSample.Status = "NEED_CUSTOMER_CONFIRM"
+		orderRepositoryMock.Mock.On("Update", orderUpdateSample).Return(entities.Order{}, web.WebError{})
+
+		orderHistoryRepositoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		historyOutput := _orderHistoryRepository.OrderHistoryCollection[1]
+		orderHistoryRepositoryMock.Mock.On("Create", int(orderSample.ID), historyOutput.Log, historyOutput.Actor).Return(historyOutput, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryRepositoryMock,
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.SetFixOrder(int(orderSample.ID), setPriceRequest)
+		assert.Error(t, err)
 	})
 }
 
@@ -1491,4 +2122,896 @@ func TestTakeOrder(t *testing.T) {
 		err := orderService.TakeOrder(int(orderSample.ID), int(driverSample.UserID))
 		assert.Error(t, err)
 	})
+	t.Run("driver-busy", func(t *testing.T) {
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "MANIFESTED"
+		orderSample.DriverID = null.IntFromPtr(nil)
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "BUSY"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		orderUpdateOutput := orderSample
+		driverID := int64(driverSample.ID)
+        orderUpdateOutput.DriverID = null.IntFromPtr(&driverID)
+        orderUpdateOutput.Status = "ON_PROCESS"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order diambil oleh " + driverSample.User.Name
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.TakeOrder(int(orderSample.ID), int(driverSample.UserID))
+		assert.Error(t, err)
+	})
+	t.Run("invalid-order-status", func(t *testing.T) {
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFromPtr(nil)
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		orderUpdateOutput := orderSample
+		driverID := int64(driverSample.ID)
+        orderUpdateOutput.DriverID = null.IntFromPtr(&driverID)
+        orderUpdateOutput.Status = "ON_PROCESS"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order diambil oleh " + driverSample.User.Name
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.TakeOrder(int(orderSample.ID), int(driverSample.UserID))
+		assert.Error(t, err)
+	})
+	t.Run("repo-update-failed", func(t *testing.T) {
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "MANIFESTED"
+		orderSample.DriverID = null.IntFromPtr(nil)
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		orderUpdateOutput := orderSample
+		driverID := int64(driverSample.ID)
+        orderUpdateOutput.DriverID = null.IntFromPtr(&driverID)
+        orderUpdateOutput.Status = "ON_PROCESS"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(entities.Order{}, web.WebError{})
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order diambil oleh " + driverSample.User.Name
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.TakeOrder(int(orderSample.ID), int(driverSample.UserID))
+		assert.Error(t, err)
+	})
+	t.Run("repo-update-driver-failed", func(t *testing.T) {
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "MANIFESTED"
+		orderSample.DriverID = null.IntFromPtr(nil)
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		orderUpdateOutput := orderSample
+		driverID := int64(driverSample.ID)
+        orderUpdateOutput.DriverID = null.IntFromPtr(&driverID)
+        orderUpdateOutput.Status = "ON_PROCESS"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(entities.Driver{}, web.WebError{})
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order diambil oleh " + driverSample.User.Name
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.TakeOrder(int(orderSample.ID), int(driverSample.UserID))
+		assert.Error(t, err)
+	})
 }
+
+func TestFinishOrder(t *testing.T) {
+	filesRequest := map[string]*multipart.FileHeader{}
+	t.Run("success", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 128,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFrom(int64(driverSample.ID))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Nil(t, err)
+	})
+	t.Run("validation-error", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 2048,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFrom(int64(driverSample.ID))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})
+	t.Run("order-repository-failed", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 512,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFrom(int64(driverSample.ID))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(entities.Order{}, web.WebError{})
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})
+	t.Run("driver-not-found", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 512,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFrom(int64(driverSample.ID))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(entities.Driver{}, web.WebError{})
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})
+	t.Run("invalid-order-status", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 512,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "CONFIRMED"
+		orderSample.DriverID = null.IntFrom(int64(driverSample.ID))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})	
+	t.Run("empty-driver", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 512,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFromPtr(nil)
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})
+	t.Run("driver-doesnt-belong", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 512,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFrom(int64(999))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})
+	t.Run("upload-failed", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 512,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFrom(int64(driverSample.ID))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("", web.WebError{})
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})
+	t.Run("update-repo-failed", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 512,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFrom(int64(driverSample.ID))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(entities.Order{}, web.WebError{})
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(driverUpdateOutput, nil)
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})
+	t.Run("update-driver-failed", func(t *testing.T) {
+		filesRequest["arrived_picture"] = &multipart.FileHeader{
+			Filename: "yes.png",
+			Size: 1024 * 512,
+		}
+		orderSample := _orderRepository.OrderCollection[1]
+		driverSample := _userRepository.DriverCollection[1]
+
+		orderSample.Status = "ON_PROCESS"
+		orderSample.DriverID = null.IntFrom(int64(driverSample.ID))
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("Find", int(orderSample.ID)).Return(orderSample, nil)
+
+		driverSample.Status = "IDLE"
+		driverSample.TruckTypeID = orderSample.TruckTypeID
+		userRepositoryMock := _userRepository.NewUserRepositoryMock(&mock.Mock{})
+		userRepositoryMock.Mock.On("FindByDriver").Return(driverSample, nil)
+
+		storageProvider := _storageProvider.NewStorageMock(&mock.Mock{})
+		storageProvider.Mock.On("UploadFromRequest").Return("example.com/test.png", nil)
+		
+		orderUpdateOutput := orderSample
+		orderUpdateOutput.ArrivedPicture = "example.com/test.png"
+        orderUpdateOutput.Status = "DELIVERED"
+		orderRepositoryMock.Mock.On("Update", orderUpdateOutput).Return(orderUpdateOutput, nil)
+
+		driverUpdateOutput := driverSample
+		driverUpdateOutput.Status = "IDLE"
+		userRepositoryMock.Mock.On("UpdateDriver").Return(entities.Driver{}, web.WebError{})
+
+		orderHistorySample := _orderHistoryRepository.OrderHistoryCollection[5]
+		orderHistorySample.Log = "Order yang diantar " + driverSample.User.Name + " telah sampai di tujuan"
+		orderHistorySample.Actor = "driver"
+		orderHistoryMock := _orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{})
+		orderHistoryMock.Mock.On("Create", int(orderSample.ID) ,orderHistorySample.Log, orderHistorySample.Actor).Return(orderHistorySample, nil)
+
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			orderHistoryMock,
+			userRepositoryMock,
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		err := orderService.FinishOrder(int(orderSample.ID), int(driverSample.UserID), filesRequest, storageProvider)
+		assert.Error(t, err)
+	})
+}
+
+func TestCountOrder(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("CountAll", []map[string]interface{}{}).Return(5, nil)
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		count, err := orderService.CountOrder([]map[string]interface{}{})
+		assert.Nil(t, err)
+		assert.Equal(t, 5, count)
+	})
+	t.Run("error", func(t *testing.T) {
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("CountAll", []map[string]interface{}{}).Return(0, web.WebError{})
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		count, err := orderService.CountOrder([]map[string]interface{}{})
+		assert.Error(t, err)
+		assert.Equal(t, 0, count)
+	})
+}
+
+func TestEstimateDistancePrice(t *testing.T) {
+	requestSample := entities.EstimateOrderPriceRequest{
+		TruckTypeID: "1",
+	}
+	t.Run("success", func(t *testing.T) {
+		orderSample := _orderRepository.OrderCollection[1]
+
+		requestSample.DestinationStartLat = orderSample.Destination.DestinationStartLat
+		requestSample.DestinationStartLong = orderSample.Destination.DestinationStartLong
+		requestSample.DestinationEndLat = orderSample.Destination.DestinationEndLat
+		requestSample.DestinationEndLong = orderSample.Destination.DestinationEndLong
+
+		truckTypeSample := _truckTypeRepository.TruckTypeCollection[0]
+		truckTypeRepositoryMock := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepositoryMock.Mock.On("Find", 1).Return(truckTypeSample, nil)
+
+		distanceMatrixSample := _distanceMatrixRepository.DistanceMatrixCollection[0]
+		distanceMatrixRepositoryMock := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepositoryMock.Mock.On(
+			"EstimateShortest",
+			requestSample.DestinationStartLat,
+			requestSample.DestinationStartLong,
+			requestSample.DestinationEndLat,
+			requestSample.DestinationEndLong,
+		).Return(distanceMatrixSample, nil)
+
+		orderService := _orderService.NewOrderService(
+			_orderRepository.NewOrderRepositoryMock(&mock.Mock{}),
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepositoryMock,
+			truckTypeRepositoryMock,
+		)
+
+		actual, err := orderService.EstimateDistancePrice(requestSample)
+		expected := entities.DistanceAPIResponse{}
+        copier.Copy(&expected, &distanceMatrixSample)
+        expected.EstimatedPrice = truckTypeSample.PricePerDistance * int64(distanceMatrixSample.DistanceValue/1000)
+
+		assert.Nil(t, err)
+		assert.Equal(t, expected, actual)
+	})
+	t.Run("validation-error", func(t *testing.T) {
+		orderSample := _orderRepository.OrderCollection[1]
+
+		requestSample.DestinationStartLat = orderSample.Destination.DestinationStartLat
+		requestSample.DestinationStartLong = orderSample.Destination.DestinationStartLong
+		requestSample.DestinationEndLat = orderSample.Destination.DestinationEndLat
+		requestSample.DestinationEndLong = ""
+
+		truckTypeSample := _truckTypeRepository.TruckTypeCollection[0]
+		truckTypeRepositoryMock := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepositoryMock.Mock.On("Find", 1).Return(truckTypeSample, nil)
+
+		distanceMatrixSample := _distanceMatrixRepository.DistanceMatrixCollection[0]
+		distanceMatrixRepositoryMock := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepositoryMock.Mock.On(
+			"EstimateShortest",
+			requestSample.DestinationStartLat,
+			requestSample.DestinationStartLong,
+			requestSample.DestinationEndLat,
+			requestSample.DestinationEndLong,
+		).Return(distanceMatrixSample, nil)
+
+		orderService := _orderService.NewOrderService(
+			_orderRepository.NewOrderRepositoryMock(&mock.Mock{}),
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepositoryMock,
+			truckTypeRepositoryMock,
+		)
+
+		actual, err := orderService.EstimateDistancePrice(requestSample)
+		expected := entities.DistanceAPIResponse{}
+		assert.Error(t, err)
+		assert.Equal(t, expected, actual)
+	})
+	t.Run("missing-truck", func(t *testing.T) {
+		orderSample := _orderRepository.OrderCollection[1]
+
+		requestSample.DestinationStartLat = orderSample.Destination.DestinationStartLat
+		requestSample.DestinationStartLong = orderSample.Destination.DestinationStartLong
+		requestSample.DestinationEndLat = orderSample.Destination.DestinationEndLat
+		requestSample.DestinationEndLong = orderSample.Destination.DestinationEndLong
+
+		truckTypeRepositoryMock := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepositoryMock.Mock.On("Find", 1).Return(entities.TruckType{}, web.WebError{})
+
+		distanceMatrixSample := _distanceMatrixRepository.DistanceMatrixCollection[0]
+		distanceMatrixRepositoryMock := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepositoryMock.Mock.On(
+			"EstimateShortest",
+			requestSample.DestinationStartLat,
+			requestSample.DestinationStartLong,
+			requestSample.DestinationEndLat,
+			requestSample.DestinationEndLong,
+		).Return(distanceMatrixSample, nil)
+
+		orderService := _orderService.NewOrderService(
+			_orderRepository.NewOrderRepositoryMock(&mock.Mock{}),
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepositoryMock,
+			truckTypeRepositoryMock,
+		)
+
+		actual, err := orderService.EstimateDistancePrice(requestSample)
+		expected := entities.DistanceAPIResponse{}
+		assert.Error(t, err)
+		assert.Equal(t, expected, actual)
+	})
+	t.Run("distance-matrix-failed", func(t *testing.T) {
+		orderSample := _orderRepository.OrderCollection[1]
+
+		requestSample.DestinationStartLat = orderSample.Destination.DestinationStartLat
+		requestSample.DestinationStartLong = orderSample.Destination.DestinationStartLong
+		requestSample.DestinationEndLat = orderSample.Destination.DestinationEndLat
+		requestSample.DestinationEndLong = orderSample.Destination.DestinationEndLong
+
+		truckTypeSample := _truckTypeRepository.TruckTypeCollection[0]
+		truckTypeRepositoryMock := _truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{})
+		truckTypeRepositoryMock.Mock.On("Find", 1).Return(truckTypeSample, nil)
+
+		distanceMatrixRepositoryMock := _distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{})
+		distanceMatrixRepositoryMock.Mock.On(
+			"EstimateShortest",
+			requestSample.DestinationStartLat,
+			requestSample.DestinationStartLong,
+			requestSample.DestinationEndLat,
+			requestSample.DestinationEndLong,
+		).Return(entities.DistanceMatrix{}, web.WebError{})
+
+		orderService := _orderService.NewOrderService(
+			_orderRepository.NewOrderRepositoryMock(&mock.Mock{}),
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			distanceMatrixRepositoryMock,
+			truckTypeRepositoryMock,
+		)
+
+		actual, err := orderService.EstimateDistancePrice(requestSample)
+		expected := entities.DistanceAPIResponse{}
+		assert.Error(t, err)
+		assert.Equal(t, expected, actual)
+	})
+}
+
+func TestStatsOrder(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		statsSample := []map[string]interface{} {
+			{
+				"label": []string{ "15-02-2020", "16-02-2020", "17-02-2020", "18-02-2020" },
+				"total_order": []int{ 88, 81, 90, 97 },
+			},
+		}
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("FindByDate", 7).Return(statsSample, nil)
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		_, err := orderService.StatsOrder(7)
+		assert.Nil(t, err)
+	})
+	t.Run("error", func(t *testing.T) {
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("FindByDate", 7).Return([]map[string]interface {}{}, web.WebError{})
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		_, err := orderService.StatsOrder(7)
+		assert.Error(t, err)
+	})
+}
+
+func TestCsvFile(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		ordersSample := _orderRepository.OrderCollection
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("FindByMonth", 5, 2022).Return(ordersSample, nil)
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		_, err := orderService.CsvFile(5, 2022)
+		assert.Nil(t, err)
+	})
+	t.Run("fail-repo", func(t *testing.T) {
+		orderRepositoryMock := _orderRepository.NewOrderRepositoryMock(&mock.Mock{})
+		orderRepositoryMock.Mock.On("FindByMonth", 5, 2022).Return([]entities.Order{}, web.WebError{})
+		orderService := _orderService.NewOrderService(
+			orderRepositoryMock,
+			_orderHistoryRepository.NewOrderHistoryMock(&mock.Mock{}),
+			_userRepository.NewUserRepositoryMock(&mock.Mock{}),
+			_paymentRepository.NewPaymentRepositoryMock(&mock.Mock{}),
+			_distanceMatrixRepository.NewDistanceMatrixRepositoryMock(&mock.Mock{}),
+			_truckTypeRepository.NewTruckTypeRepositoryMock(&mock.Mock{}),
+		)
+		_, err := orderService.CsvFile(5, 2022)
+		assert.Error(t, err)
+	})
+}
+
