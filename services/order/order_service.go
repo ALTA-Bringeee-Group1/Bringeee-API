@@ -12,7 +12,6 @@ import (
 	userRepository "bringeee-capstone/repositories/user"
 	storageProvider "bringeee-capstone/services/storage"
 	"encoding/csv"
-	"log"
 	"mime/multipart"
 	"os"
 	"strconv"
@@ -738,10 +737,7 @@ func (service OrderService) CsvFile(month int, year int) (string, error) {
 	if tx != nil {
 		return "gagal", tx
 	}
-	file, err := os.Create("order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv")
-	if err != nil {
-		log.Fatalln("failed to open file", err)
-	}
+	file, _ := os.Create("order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv")
 	defer file.Close()
 	w := csv.NewWriter(file)
 	defer w.Flush() // Using Write
@@ -755,9 +751,7 @@ func (service OrderService) CsvFile(month int, year int) (string, error) {
 				", " + order.Destination.DestinationStartDistrict + ", " + order.Destination.DestinationStartCity + ", " + order.Destination.DestinationStartProvince + ", " + order.Destination.DestinationStartPostal,
 			order.Destination.DestinationEndAddress + ", " + order.Destination.DestinationEndDistrict + ", " + order.Destination.DestinationEndCity + ", " + order.Destination.DestinationEndProvince + ", " +
 				order.Destination.DestinationEndPostal}
-		if err := w.Write(row); err != nil {
-			log.Fatalln("error writing order to file", err)
-		}
+		w.Write(row)
 	}
 
 	return "order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv", nil
