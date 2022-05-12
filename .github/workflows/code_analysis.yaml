@@ -1,0 +1,38 @@
+name: deployment
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    analysis:
+        name: build,
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Setup Go
+              uses: actions/setup-go@v2
+              with:
+                  go-version: '1.17.0'
+            - name: Install dependencies
+              run: |
+                  go version
+                  go get -u golang.org/x/lint/golint
+            - name: Run build
+              run: go build .
+            - name: Run testing
+              run: go test ./services/... -v
+    static-analysis:
+        name: build,
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Run Revive Action by pulling pre-built image
+              uses: docker://morphy/revive-action:v2
+              with:
+                  # Path to your Revive config within the repo (optional)
+                  config: revive.toml
+                  # Path pattern (default: ./...)
+                  path: './...'
