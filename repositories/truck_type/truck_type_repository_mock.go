@@ -118,7 +118,7 @@ func (repo TruckTypeRepositoryMock) FindBy(field string, value string) (entities
  * @return error		error
  */
 func (repo TruckTypeRepositoryMock) CountAll(filters []map[string]string) (int64, error) {
-	param := repo.Mock.Called(filters)
+	param := repo.Mock.Called()
 	return int64(param.Int(0)), param.Error(1)
 }
 /*
