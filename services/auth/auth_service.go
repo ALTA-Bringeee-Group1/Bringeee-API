@@ -104,15 +104,15 @@ func (service AuthService) Login(authReq entities.AuthRequest) (interface{}, err
  * -------------------------------
  * Mendapatkan userdata yang sedang login
  */
-func (service AuthService) Me(Id int, token interface{}) (interface{}, error) {
+func (service AuthService) Me(ID int, token interface{}) (interface{}, error) {
 
 	userJWT := token.(*jwt.Token)
 	// Get userdata via repository
-	user, err := service.userRepo.FindCustomer(Id)
+	user, err := service.userRepo.FindCustomer(ID)
 
 	// Konversi user ke user response
 	if user.Role == "driver" {
-		driver, _ := service.userRepo.FindByDriver("user_id", strconv.Itoa(Id))
+		driver, _ := service.userRepo.FindByDriver("user_id", strconv.Itoa(ID))
 		userRes := entities.DriverResponse{}
 		copier.Copy(&userRes, &user)
 		copier.Copy(&userRes, &driver)
