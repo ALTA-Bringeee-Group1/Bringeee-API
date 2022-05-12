@@ -1,7 +1,6 @@
 package order
 
 import (
-	"bringeee-capstone/deliveries/helpers"
 	"bringeee-capstone/deliveries/validations"
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
@@ -11,9 +10,8 @@ import (
 	paymentRepository "bringeee-capstone/repositories/payment"
 	truckTypeRepository "bringeee-capstone/repositories/truck_type"
 	userRepository "bringeee-capstone/repositories/user"
+	storageProvider "bringeee-capstone/services/storage"
 	"encoding/csv"
-	"fmt"
-	"log"
 	"mime/multipart"
 	"os"
 	"strconv"
@@ -177,7 +175,7 @@ func (service OrderService) FindFirst(filters []map[string]interface{}) (entitie
  * @var files				list file request untuk diteruskan ke validation dan upload
  * @return OrderResponse	order response
  */
-func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int) (entities.OrderResponse, error) {
+func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequest, files map[string]*multipart.FileHeader, userID int, storageProvider storageProvider.StorageInterface) (entities.OrderResponse, error) {
 	// validation
 	err := validations.ValidateCustomerCreateOrderRequest(service.validate, orderRequest, files)
 	if err != nil {
@@ -202,18 +200,12 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 	for field, file := range files {
 		switch field {
 		case "order_picture":
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.OrderResponse{}, web.WebError{Code: 500, Message: "Cannot process the requested file"}
-			}
-			defer fileFile.Close()
-
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := helpers.UploadFileToS3("orders/order_picture/"+fileName, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("orders/order_picture/" + fileName, file)
 			if err != nil {
 				return entities.OrderResponse{}, web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
-			order.OrderPicture = fileUrl
+			order.OrderPicture = fileURL
 		}
 	}
 
@@ -474,7 +466,7 @@ func (service OrderService) GetPayment(orderID int) (entities.PaymentResponse, e
 	// get order
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
-		return entities.PaymentResponse{}, nil
+		return entities.PaymentResponse{}, err
 	}
 
 	// get payment
@@ -496,7 +488,7 @@ func (service OrderService) CancelPayment(orderID int) error {
 	// get order
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
-		return nil
+		return err
 	}
 	// reject if status is other than confirmed
 	if order.Status != "CONFIRMED" {
@@ -559,7 +551,6 @@ func (service OrderService) FindAllHistory(orderID int, sorts []map[string]inter
  * @return error	error
  */
 func (service OrderService) PaymentWebhook(orderID int, status string) error {
-	fmt.Println(status, orderID)
 	order, err := service.orderRepository.Find(orderID)
 	if err != nil {
 		return err
@@ -632,7 +623,7 @@ func (service OrderService) TakeOrder(orderID int, userID int) error {
  * @var orderID 	order id terkait
  * @var userID		authenticated user (role: driver)
  */
-func (service OrderService) FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader) error {
+func (service OrderService) FinishOrder(orderID int, userID int, files map[string]*multipart.FileHeader, storageProvider storageProvider.StorageInterface) error {
 	// validation
 	err := validations.ValidateUpdateOrderRequest(files)
 	if err != nil {
@@ -660,18 +651,12 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 	for field, file := range files {
 		switch field {
 		case "arrived_picture":
-			fileFile, err := file.Open()
-			if err != nil {
-				return web.WebError{Code: 500, Message: "Cannot process the requested file"}
-			}
-			defer fileFile.Close()
-
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := helpers.UploadFileToS3("orders/arrived_picture/"+fileName, fileFile)
+			fileURL, err := storageProvider.UploadFromRequest("orders/arrived_picture/"+fileName, file)
 			if err != nil {
 				return web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
-			order.ArrivedPicture = fileUrl
+			order.ArrivedPicture = fileURL
 		}
 	}
 
@@ -752,11 +737,8 @@ func (service OrderService) CsvFile(month int, year int) (string, error) {
 	if tx != nil {
 		return "gagal", tx
 	}
-	file, err := os.Create("order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv")
+	file, _ := os.Create("order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv")
 	defer file.Close()
-	if err != nil {
-		log.Fatalln("failed to open file", err)
-	}
 	w := csv.NewWriter(file)
 	defer w.Flush() // Using Write
 	title := []string{"ID", "Tanggal Pembuatan", "Status", "Metode Pembayaran", "Nama Customer", "Tipe Truk", "Nama Driver", "Dekskripsi", "Total Volume",
@@ -769,9 +751,7 @@ func (service OrderService) CsvFile(month int, year int) (string, error) {
 				", " + order.Destination.DestinationStartDistrict + ", " + order.Destination.DestinationStartCity + ", " + order.Destination.DestinationStartProvince + ", " + order.Destination.DestinationStartPostal,
 			order.Destination.DestinationEndAddress + ", " + order.Destination.DestinationEndDistrict + ", " + order.Destination.DestinationEndCity + ", " + order.Destination.DestinationEndProvince + ", " +
 				order.Destination.DestinationEndPostal}
-		if err := w.Write(row); err != nil {
-			log.Fatalln("error writing order to file", err)
-		}
+		w.Write(row)
 	}
 
 	return "order-report-" + strconv.Itoa(month) + "-" + strconv.Itoa(year) + ".csv", nil

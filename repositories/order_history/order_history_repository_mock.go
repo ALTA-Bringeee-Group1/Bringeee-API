@@ -1,4 +1,4 @@
-package order_history
+package orderHistory
 
 import (
 	"bringeee-capstone/entities"
@@ -29,14 +29,14 @@ var OrderHistoryCollection = []entities.OrderHistory {
 	},
 	{
 		Model: gorm.Model{ ID: 2, CreatedAt: time.Now().Add(time.Minute * -9), UpdatedAt: time.Now().Add(time.Minute * -9) },
-		Log: "Order dikonfirmasi oleh admin",
+		Log: "Perubahan detail order oleh admin",
 		Actor: "admin",
 		OrderID: 1,
 		Order: orderRepository.OrderCollection[0],
 	},
 	{
 		Model: gorm.Model{ ID: 3, CreatedAt: time.Now().Add(time.Minute * -7), UpdatedAt: time.Now().Add(time.Minute * -7) },
-		Log: "Order sudah dibayarkan dan siap diambil oleh driver",
+		Log: "Order dikonfirmasi",
 		Actor: "customer",
 		OrderID: 1,
 		Order: orderRepository.OrderCollection[0],
@@ -71,8 +71,22 @@ var OrderHistoryCollection = []entities.OrderHistory {
 	},
 	{
 		Model: gorm.Model{ ID: 8, CreatedAt: time.Now().Add(time.Hour * -8), UpdatedAt: time.Now().Add(time.Hour * -8) },
-		Log: "Order sudah dibayarkan dan siap diambil oleh driver",
+		Log: "Pesanan sudah di bayarkan",
 		Actor: "customer",
+		OrderID: 2,
+		Order: orderRepository.OrderCollection[1],
+	},
+	{
+		Model: gorm.Model{ ID: 8, CreatedAt: time.Now().Add(time.Hour * -8), UpdatedAt: time.Now().Add(time.Hour * -8) },
+		Log: "Order dibatalkan",
+		Actor: "customer",
+		OrderID: 2,
+		Order: orderRepository.OrderCollection[1],
+	},
+	{
+		Model: gorm.Model{ ID: 8, CreatedAt: time.Now().Add(time.Hour * -8), UpdatedAt: time.Now().Add(time.Hour * -8) },
+		Log: "Order dibatalkan",
+		Actor: "admin",
 		OrderID: 2,
 		Order: orderRepository.OrderCollection[1],
 	},

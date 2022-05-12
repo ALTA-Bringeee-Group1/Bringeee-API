@@ -1,4 +1,4 @@
-package order_history
+package orderHistory
 
 import (
 	"bringeee-capstone/entities"

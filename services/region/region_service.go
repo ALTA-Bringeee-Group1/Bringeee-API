@@ -4,8 +4,6 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	regionRepository "bringeee-capstone/repositories/region"
-	"bringeee-capstone/utils"
-	"fmt"
 
 	"github.com/jinzhu/copier"
 )
@@ -49,8 +47,7 @@ func (service RegionService) FindAllCity(provinceID int, sort []map[string]inter
 	cities, err := service.regionRepository.FindAllCity(provinceID, sort)
 	if err != nil {
 		return []entities.CityResponse{}, err
-	} 
-	fmt.Println(utils.JsonEncode(cities))
+	}
 	citiesRes := []entities.CityResponse{}
 	copier.Copy(&citiesRes, &cities)
 	return citiesRes, nil

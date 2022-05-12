@@ -7,6 +7,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderService "bringeee-capstone/services/order"
+	storageService "bringeee-capstone/services/storage"
 	truckService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"fmt"
@@ -22,13 +23,15 @@ type AdminHandler struct {
 	userService  *userService.UserService
 	truckService *truckService.TruckTypeService
 	orderService orderService.OrderServiceInterface
+	storageService storageService.StorageInterface
 }
 
-func NewAdminHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, truckService *truckService.TruckTypeService) *AdminHandler {
+func NewAdminHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, truckService *truckService.TruckTypeService, storageService storageService.StorageInterface) *AdminHandler {
 	return &AdminHandler{
 		userService:  service,
 		orderService: orderService,
 		truckService: truckService,
+		storageService: storageService,
 	}
 }
 
@@ -64,7 +67,7 @@ func (handler AdminHandler) DeleteDriver(c echo.Context) error {
 	}
 
 	// call delete service
-	err = handler.userService.DeleteDriver(id)
+	err = handler.userService.DeleteDriver(id, handler.storageService)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -119,21 +122,21 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 
 	// avatar
 	files := map[string]*multipart.FileHeader{}
-	stnk_file, _ := c.FormFile("stnk_file")
-	ktp_file, _ := c.FormFile("ktp_file")
-	driver_license_file, _ := c.FormFile("driver_license_file")
-	vehicle_picture, _ := c.FormFile("vehicle_picture")
-	if stnk_file != nil {
-		files["stnk_file"] = stnk_file
+	stnkFile, _ := c.FormFile("stnk_file")
+	ktpFile, _ := c.FormFile("ktp_file")
+	driverLicenseFile, _ := c.FormFile("driver_license_file")
+	vehiclePicture, _ := c.FormFile("vehicle_picture")
+	if stnkFile != nil {
+		files["stnk_file"] = stnkFile
 	}
-	if ktp_file != nil {
-		files["ktp_file"] = ktp_file
+	if ktpFile != nil {
+		files["ktp_file"] = ktpFile
 	}
-	if driver_license_file != nil {
-		files["driver_license_file"] = driver_license_file
+	if driverLicenseFile != nil {
+		files["driver_license_file"] = driverLicenseFile
 	}
-	if vehicle_picture != nil {
-		files["vehicle_picture"] = vehicle_picture
+	if vehiclePicture != nil {
+		files["vehicle_picture"] = vehiclePicture
 	}
 	if userReq.NIK == "" && userReq.TruckTypeID == 0 && userReq.VehicleIdentifier == "" && len(files) == 0 {
 		return c.JSON(http.StatusBadRequest, web.ErrorResponse{
@@ -145,7 +148,7 @@ func (handler AdminHandler) UpdateDriverByAdmin(c echo.Context) error {
 	}
 
 	// Update via user service call
-	userRes, err := handler.userService.UpdateDriverByAdmin(userReq, id, files)
+	userRes, err := handler.userService.UpdateDriverByAdmin(userReq, id, files, handler.storageService)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -192,20 +195,20 @@ func (handler AdminHandler) GetAllDriver(c echo.Context) error {
 			"value":    status,
 		})
 	}
-	account_status := c.QueryParam("account_status")
-	if account_status != "" {
+	accountStatus := c.QueryParam("account_status")
+	if accountStatus != "" {
 		filters = append(filters, map[string]string{
 			"field":    "account_status",
 			"operator": "=",
-			"value":    account_status,
+			"value":    accountStatus,
 		})
 	}
-	truck_type := c.QueryParam("truck_type")
-	if truck_type != "" {
+	truckType := c.QueryParam("truck_type")
+	if truckType != "" {
 		filters = append(filters, map[string]string{
 			"field":    "truck_type_id",
 			"operator": "=",
-			"value":    truck_type,
+			"value":    truckType,
 		})
 	}
 
@@ -510,14 +513,14 @@ func (handler AdminHandler) ListOrders(c echo.Context) error {
 			Links:  links,
 		})
 	}
-	pageUrl := fmt.Sprintf("%s/api/orders?page=", configs.Get().App.BaseURL)
-	links["first"] = pageUrl + "1"
-	links["last"] = pageUrl + strconv.Itoa(paginationRes.TotalPages)
+	pageURL := fmt.Sprintf("%s/api/orders?page=", configs.Get().App.BaseURL)
+	links["first"] = pageURL + "1"
+	links["last"] = pageURL + strconv.Itoa(paginationRes.TotalPages)
 	if paginationRes.Page > 1 {
-		links["previous"] = pageUrl + strconv.Itoa(page-1)
+		links["previous"] = pageURL + strconv.Itoa(page-1)
 	}
 	if paginationRes.Page < paginationRes.TotalPages {
-		links["previous"] = pageUrl + strconv.Itoa(page+1)
+		links["previous"] = pageURL + strconv.Itoa(page+1)
 	}
 
 	// Success list response
@@ -919,7 +922,7 @@ func (handler AdminHandler) DeleteCustomer(c echo.Context) error {
 	}
 
 	// call delete service
-	err = handler.userService.DeleteCustomer(id)
+	err = handler.userService.DeleteCustomer(id, handler.storageService)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -1013,21 +1016,21 @@ func (handler AdminHandler) CountDriver(c echo.Context) error {
 			"value":    status,
 		})
 	}
-	account_status := c.QueryParam("account_status")
-	if account_status != "" {
+	accountStatus := c.QueryParam("account_status")
+	if accountStatus != "" {
 		filters = append(filters, map[string]string{
 			"field":    "account_status",
 			"operator": "=",
-			"value":    account_status,
+			"value":    accountStatus,
 		})
 	}
 
-	truck_type := c.QueryParam("truck_type")
-	if truck_type != "" {
+	truckType := c.QueryParam("truck_type")
+	if truckType != "" {
 		filters = append(filters, map[string]string{
 			"field":    "truck_type_id",
 			"operator": "=",
-			"value":    truck_type,
+			"value":    truckType,
 		})
 	}
 
@@ -1080,12 +1083,12 @@ func (handler AdminHandler) CountOrder(c echo.Context) error {
 		})
 	}
 
-	truck_type := c.QueryParam("truck_type")
-	if truck_type != "" {
+	truckType := c.QueryParam("truck_type")
+	if truckType != "" {
 		filters = append(filters, map[string]interface{}{
 			"field":    "truck_type_id",
 			"operator": "=",
-			"value":    truck_type,
+			"value":    truckType,
 		})
 	}
 

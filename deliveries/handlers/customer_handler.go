@@ -7,6 +7,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderService "bringeee-capstone/services/order"
+	storageProvider "bringeee-capstone/services/storage"
 	userService "bringeee-capstone/services/user"
 	"fmt"
 	"mime/multipart"
@@ -20,12 +21,14 @@ import (
 type CustomerHandler struct {
 	userService  *userService.UserService
 	orderService orderService.OrderServiceInterface
+	storageProvider storageProvider.StorageInterface
 }
 
-func NewCustomerHandler(service *userService.UserService, orderService orderService.OrderServiceInterface) *CustomerHandler {
+func NewCustomerHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, storageProvider storageProvider.StorageInterface) *CustomerHandler {
 	return &CustomerHandler{
 		userService:  service,
 		orderService: orderService,
+		storageProvider: storageProvider,
 	}
 }
 
@@ -52,7 +55,7 @@ func (handler CustomerHandler) CreateCustomer(c echo.Context) error {
 	}
 
 	// registrasi user via call user service
-	userRes, err := handler.userService.CreateCustomer(userReq, files)
+	userRes, err := handler.userService.CreateCustomer(userReq, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -75,7 +78,7 @@ func (handler CustomerHandler) UpdateCustomer(c echo.Context) error {
 
 	// Get token
 	token := c.Get("user")
-	tokenId, role, err := middleware.ReadToken(token)
+	tokenID, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
@@ -113,7 +116,7 @@ func (handler CustomerHandler) UpdateCustomer(c echo.Context) error {
 		})
 	}
 	// Update via user service call
-	userRes, err := handler.userService.UpdateCustomer(userReq, tokenId, files)
+	userRes, err := handler.userService.UpdateCustomer(userReq, tokenID, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -131,7 +134,7 @@ func (handler CustomerHandler) UpdateCustomer(c echo.Context) error {
 func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 
 	token := c.Get("user")
-	tokenId, role, err := middleware.ReadToken(token)
+	tokenID, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
 	if role != "customer" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
@@ -151,7 +154,7 @@ func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 	}
 
 	// call delete service
-	err = handler.userService.DeleteCustomer(tokenId)
+	err = handler.userService.DeleteCustomer(tokenID, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -163,7 +166,7 @@ func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 		Error:  nil,
 		Links:  links,
 		Data: map[string]interface{}{
-			"id": tokenId,
+			"id": tokenID,
 		},
 	})
 }
@@ -249,14 +252,14 @@ func (handler CustomerHandler) ListOrders(c echo.Context) error {
 			Links:  links,
 		})
 	}
-	pageUrl := fmt.Sprintf("%s/api/customers/orders?page=", configs.Get().App.BaseURL)
-	links["first"] = pageUrl + "1"
-	links["last"] = pageUrl + strconv.Itoa(paginationRes.TotalPages)
+	pageURL := fmt.Sprintf("%s/api/customers/orders?page=", configs.Get().App.BaseURL)
+	links["first"] = pageURL + "1"
+	links["last"] = pageURL + strconv.Itoa(paginationRes.TotalPages)
 	if paginationRes.Page > 1 {
-		links["previous"] = pageUrl + strconv.Itoa(page-1)
+		links["previous"] = pageURL + strconv.Itoa(page-1)
 	}
 	if paginationRes.Page < paginationRes.TotalPages {
-		links["previous"] = pageUrl + strconv.Itoa(page+1)
+		links["previous"] = pageURL + strconv.Itoa(page+1)
 	}
 
 	// Success list response
@@ -424,7 +427,7 @@ func (handler CustomerHandler) CreateOrder(c echo.Context) error {
 	c.Bind(&orderReq)
 	filesReq["order_picture"], _ = c.FormFile("order_picture")
 
-	orderRes, err := handler.orderService.Create(orderReq, filesReq, userID)
+	orderRes, err := handler.orderService.Create(orderReq, filesReq, userID, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}

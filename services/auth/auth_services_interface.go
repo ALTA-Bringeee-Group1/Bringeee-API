@@ -6,5 +6,5 @@ import (
 
 type AuthServiceInterface interface {
 	Login(AuthReq entities.AuthRequest) (interface{}, error)
-	Me(Id int, token interface{}) (interface{}, error)
+	Me(ID int, token interface{}) (interface{}, error)
 }

@@ -3,8 +3,6 @@ package region
 import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
-	"bringeee-capstone/utils"
-	"fmt"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -34,7 +32,6 @@ func (repository RegionRepository) FindAllProvince(sorts []map[string]interface{
 
 	// OrderBy Filters
 	for _, sort := range sorts {
-		fmt.Println(utils.JsonEncode(sort))
 		builder.Order(clause.OrderByColumn{Column: clause.Column{Name: sort["field"].(string)}, Desc: sort["desc"].(bool)})
 	}
 

@@ -14,6 +14,7 @@ import (
 	authService "bringeee-capstone/services/auth"
 	orderService "bringeee-capstone/services/order"
 	regionService "bringeee-capstone/services/region"
+	storageProvider "bringeee-capstone/services/storage"
 	truckTypeService "bringeee-capstone/services/truck_type"
 	userService "bringeee-capstone/services/user"
 	"bringeee-capstone/utils"
@@ -48,10 +49,12 @@ func main() {
 	regionService := regionService.NewRegionService(regionRepository)
 	truckTypeService := truckTypeService.NewTruckTypeService(*truckTypeRepository)
 
+	s3 := storageProvider.NewS3()
+
 	authHandler := handlers.NewAuthHandler(authService)
-	customerHandler := handlers.NewCustomerHandler(userService, orderService)
-	driverHandler := handlers.NewDriverHandler(userService, orderService)
-	adminHandler := handlers.NewAdminHandler(userService, orderService, truckTypeService)
+	customerHandler := handlers.NewCustomerHandler(userService, orderService, s3)
+	driverHandler := handlers.NewDriverHandler(userService, orderService, s3)
+	adminHandler := handlers.NewAdminHandler(userService, orderService, truckTypeService, s3)
 	truckTypeHandler := handlers.NewTruckTypeHandler(*truckTypeService)
 	regionHandler := handlers.NewRegionHandler(regionService)
 	orderHandler := handlers.NewOrderHandler(orderService, userService)

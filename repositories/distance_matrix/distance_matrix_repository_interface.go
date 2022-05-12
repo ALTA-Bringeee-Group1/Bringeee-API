@@ -1,4 +1,4 @@
-package distance_matrix
+package distanceMatrix
 
 import "bringeee-capstone/entities"
 

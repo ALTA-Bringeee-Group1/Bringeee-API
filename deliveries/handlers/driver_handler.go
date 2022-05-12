@@ -7,6 +7,7 @@ import (
 	"bringeee-capstone/entities"
 	"bringeee-capstone/entities/web"
 	orderService "bringeee-capstone/services/order"
+	storageProvider "bringeee-capstone/services/storage"
 	userService "bringeee-capstone/services/user"
 	"fmt"
 	"mime/multipart"
@@ -19,12 +20,14 @@ import (
 type DriverHandler struct {
 	userService  *userService.UserService
 	orderService orderService.OrderServiceInterface
+	storageProvider storageProvider.StorageInterface
 }
 
-func NewDriverHandler(service *userService.UserService, orderService orderService.OrderServiceInterface) *DriverHandler {
+func NewDriverHandler(service *userService.UserService, orderService orderService.OrderServiceInterface, storageProvider storageProvider.StorageInterface) *DriverHandler {
 	return &DriverHandler{
 		userService:  service,
 		orderService: orderService,
+		storageProvider: storageProvider,
 	}
 }
 
@@ -46,18 +49,18 @@ func (handler DriverHandler) CreateDriver(c echo.Context) error {
 	// Read files
 	files := map[string]*multipart.FileHeader{}
 	avatar, _ := c.FormFile("avatar")
-	stnk_file, _ := c.FormFile("stnk_file")
-	ktp_file, _ := c.FormFile("ktp_file")
-	driver_license_file, _ := c.FormFile("driver_license_file")
-	vehicle_picture, _ := c.FormFile("vehicle_picture")
+	stnkFile, _ := c.FormFile("stnk_file")
+	ktpFile, _ := c.FormFile("ktp_file")
+	driverLicenseFile, _ := c.FormFile("driver_license_file")
+	vehiclePicture, _ := c.FormFile("vehicle_picture")
 	files["avatar"] = avatar
-	files["stnk_file"] = stnk_file
-	files["ktp_file"] = ktp_file
-	files["driver_license_file"] = driver_license_file
-	files["vehicle_picture"] = vehicle_picture
+	files["stnk_file"] = stnkFile
+	files["ktp_file"] = ktpFile
+	files["driver_license_file"] = driverLicenseFile
+	files["vehicle_picture"] = vehiclePicture
 
 	// registrasi user via call user service
-	userRes, err := handler.userService.CreateDriver(driverReq, files)
+	userRes, err := handler.userService.CreateDriver(driverReq, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -80,7 +83,7 @@ func (handler DriverHandler) UpdateDriver(c echo.Context) error {
 
 	// Get token
 	token := c.Get("user")
-	tokenId, role, err := middleware.ReadToken(token)
+	tokenID, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
@@ -119,7 +122,7 @@ func (handler DriverHandler) UpdateDriver(c echo.Context) error {
 	}
 
 	// Update via user service call
-	userRes, err := handler.userService.UpdateDriver(userReq, tokenId, files)
+	userRes, err := handler.userService.UpdateDriver(userReq, tokenID, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -213,14 +216,14 @@ func (handler DriverHandler) ListOrders(c echo.Context) error {
 			Links:  links,
 		})
 	}
-	pageUrl := fmt.Sprintf("%s/api/drivers/orders?page=", configs.Get().App.BaseURL)
-	links["first"] = pageUrl + "1"
-	links["last"] = pageUrl + strconv.Itoa(paginationRes.TotalPages)
+	pageURL := fmt.Sprintf("%s/api/drivers/orders?page=", configs.Get().App.BaseURL)
+	links["first"] = pageURL + "1"
+	links["last"] = pageURL + strconv.Itoa(paginationRes.TotalPages)
 	if paginationRes.Page > 1 {
-		links["previous"] = pageUrl + strconv.Itoa(page-1)
+		links["previous"] = pageURL + strconv.Itoa(page-1)
 	}
 	if paginationRes.Page < paginationRes.TotalPages {
-		links["previous"] = pageUrl + strconv.Itoa(page+1)
+		links["previous"] = pageURL + strconv.Itoa(page+1)
 	}
 
 	// Success list response
@@ -367,10 +370,10 @@ func (handler DriverHandler) FinishOrder(c echo.Context) error {
 	}
 	// Read files
 	files := map[string]*multipart.FileHeader{}
-	arrived_picture, _ := c.FormFile("arrived_picture")
-	files["arrived_picture"] = arrived_picture
+	arrivedPicture, _ := c.FormFile("arrived_picture")
+	files["arrived_picture"] = arrivedPicture
 
-	err = handler.orderService.FinishOrder(id, tokenID, files)
+	err = handler.orderService.FinishOrder(id, tokenID, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -460,14 +463,14 @@ func (handler DriverHandler) FinishedListOrders(c echo.Context) error {
 			Links:  links,
 		})
 	}
-	pageUrl := fmt.Sprintf("%s/api/drivers/history_orders?page=", configs.Get().App.BaseURL)
-	links["first"] = pageUrl + "1"
-	links["last"] = pageUrl + strconv.Itoa(paginationRes.TotalPages)
+	pageURL := fmt.Sprintf("%s/api/drivers/history_orders?page=", configs.Get().App.BaseURL)
+	links["first"] = pageURL + "1"
+	links["last"] = pageURL + strconv.Itoa(paginationRes.TotalPages)
 	if paginationRes.Page > 1 {
-		links["previous"] = pageUrl + strconv.Itoa(page-1)
+		links["previous"] = pageURL + strconv.Itoa(page-1)
 	}
 	if paginationRes.Page < paginationRes.TotalPages {
-		links["previous"] = pageUrl + strconv.Itoa(page+1)
+		links["previous"] = pageURL + strconv.Itoa(page+1)
 	}
 
 	// Success list response
