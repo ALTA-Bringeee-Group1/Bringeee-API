@@ -18,14 +18,14 @@ type MidtransPaymentRepository struct {
 }
 
 func NewMidtransPaymentRepository() *MidtransPaymentRepository {
-	baseUrl := ""
+	baseURL := ""
 	if configs.Get().App.ENV == "production" {
-		baseUrl = configs.Get().Payment.MidtransBaseURLProduction
+		baseURL = configs.Get().Payment.MidtransBaseURLProduction
 	} else {
-		baseUrl = configs.Get().Payment.MidtransBaseURLDevelopment
+		baseURL = configs.Get().Payment.MidtransBaseURLDevelopment
 	}
 	return &MidtransPaymentRepository{
-		baseURL: baseUrl,
+		baseURL: baseURL,
 		client: &http.Client{},
 	}
 }

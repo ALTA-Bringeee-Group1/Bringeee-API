@@ -157,8 +157,8 @@ func (repo OrderRepositoryMock) FindAll(limit int, offset int, filters []map[str
  * @return order	single order dalam bentuk entity domain
  * @return error	error
  */
-func (repository OrderRepositoryMock) Find(id int) (entities.Order, error) {
-	args := repository.Mock.Called(id)
+func (repo OrderRepositoryMock) Find(id int) (entities.Order, error) {
+	args := repo.Mock.Called(id)
 	return args.Get(0).(entities.Order), args.Error(1)
 }
 
@@ -172,8 +172,8 @@ func (repository OrderRepositoryMock) Find(id int) (entities.Order, error) {
  * @return order	single order dalam bentuk entity domain
  * @return error	error
  */
-func (repository OrderRepositoryMock) FindBy(field string, value string) (entities.Order, error) {
-	args := repository.Mock.Called(field, value)
+func (repo OrderRepositoryMock) FindBy(field string, value string) (entities.Order, error) {
+	args := repo.Mock.Called(field, value)
 	return args.Get(0).(entities.Order), args.Error(1)
 }
 
@@ -186,8 +186,8 @@ func (repository OrderRepositoryMock) FindBy(field string, value string) (entiti
  * @return order	order dalam bentuk entity domain
  * @return error	error
  */
-func (repository OrderRepositoryMock) FindFirst(filters []map[string]interface{}) (entities.Order, error) {
-	args := repository.Mock.Called(filters)
+func (repo OrderRepositoryMock) FindFirst(filters []map[string]interface{}) (entities.Order, error) {
+	args := repo.Mock.Called(filters)
 	return args.Get(0).(entities.Order), args.Error(1)
 }
 
@@ -199,8 +199,8 @@ func (repository OrderRepositoryMock) FindFirst(filters []map[string]interface{}
  * @return order	single order dalam bentuk entity domain
  * @return error	error
  */
-func (repository OrderRepositoryMock) CountAll(filters []map[string]interface{}) (int64, error) {
-	args := repository.Mock.Called(filters)
+func (repo OrderRepositoryMock) CountAll(filters []map[string]interface{}) (int64, error) {
+	args := repo.Mock.Called(filters)
 	return int64(args.Int(0)), args.Error(1)
 }
 
@@ -213,8 +213,8 @@ func (repository OrderRepositoryMock) CountAll(filters []map[string]interface{})
  * @var destination	single destination entity
  * @return order	single order dalam bentuk entity domain
  */
-func (repository OrderRepositoryMock) Store(order entities.Order, destination entities.Destination) (entities.Order, error) {
-	args := repository.Mock.Called()
+func (repo OrderRepositoryMock) Store(order entities.Order, destination entities.Destination) (entities.Order, error) {
+	args := repo.Mock.Called()
 	return args.Get(0).(entities.Order), args.Error(1)
 }
 
@@ -227,8 +227,8 @@ func (repository OrderRepositoryMock) Store(order entities.Order, destination en
  * @return order	single order dalam bentuk entity domain
  * @return error	error
  */
-func (repository OrderRepositoryMock) Update(order entities.Order, id int) (entities.Order, error) {
-	args := repository.Mock.Called(order)
+func (repo OrderRepositoryMock) Update(order entities.Order, id int) (entities.Order, error) {
+	args := repo.Mock.Called(order)
 	return args.Get(0).(entities.Order), args.Error(1)
 }
 
@@ -239,8 +239,8 @@ func (repository OrderRepositoryMock) Update(order entities.Order, id int) (enti
  *
  * @return error	error
  */
-func (repository OrderRepositoryMock) Delete(id int, destinationID int) error {
-	args := repository.Mock.Called(id)
+func (repo OrderRepositoryMock) Delete(id int, destinationID int) error {
+	args := repo.Mock.Called(id)
 	return args.Error(1)
 }
 
@@ -252,17 +252,17 @@ func (repository OrderRepositoryMock) Delete(id int, destinationID int) error {
  * @var filters	query untuk penyaringan data, { field, operator, value }
  * @return error	error
  */
-func (repository OrderRepositoryMock) DeleteBatch(filters []map[string]interface{}) error {
-	args := repository.Mock.Called(filters)
+func (repo OrderRepositoryMock) DeleteBatch(filters []map[string]interface{}) error {
+	args := repo.Mock.Called(filters)
 	return args.Error(1)
 }
 
-func (repository OrderRepositoryMock) FindByDate(day int) ([]map[string]interface{}, error) {
-	args := repository.Mock.Called(day)
+func (repo OrderRepositoryMock) FindByDate(day int) ([]map[string]interface{}, error) {
+	args := repo.Mock.Called(day)
 	return args.Get(0).([]map[string]interface{}), args.Error(1)
 }
 
-func (repository OrderRepositoryMock) FindByMonth(month int, year int) ([]entities.Order, error) {
-	args := repository.Mock.Called(month, year)
+func (repo OrderRepositoryMock) FindByMonth(month int, year int) ([]entities.Order, error) {
+	args := repo.Mock.Called(month, year)
 	return args.Get(0).([]entities.Order), args.Error(1)
 }
