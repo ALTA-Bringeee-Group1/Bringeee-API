@@ -1,4 +1,4 @@
-package truck_type_test
+package truckType_test
 
 import (
 	"bringeee-capstone/entities"
