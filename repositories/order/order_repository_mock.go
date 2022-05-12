@@ -259,10 +259,10 @@ func (repository OrderRepositoryMock) DeleteBatch(filters []map[string]interface
 
 func (repository OrderRepositoryMock) FindByDate(day int) ([]map[string]interface{}, error) {
 	args := repository.Mock.Called(day)
-	return args.Get(0).([]map[string]interface{}), nil
+	return args.Get(0).([]map[string]interface{}), args.Error(1)
 }
 
 func (repository OrderRepositoryMock) FindByMonth(month int, year int) ([]entities.Order, error) {
 	args := repository.Mock.Called(month, year)
-	return args.Get(0).([]entities.Order), nil
+	return args.Get(0).([]entities.Order), args.Error(1)
 }
