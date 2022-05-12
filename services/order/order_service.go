@@ -201,11 +201,11 @@ func (service OrderService) Create(orderRequest entities.CustomerCreateOrderRequ
 		switch field {
 		case "order_picture":
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := storageProvider.UploadFromRequest("orders/order_picture/" + fileName, file)
+			fileURL, err := storageProvider.UploadFromRequest("orders/order_picture/" + fileName, file)
 			if err != nil {
 				return entities.OrderResponse{}, web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
-			order.OrderPicture = fileUrl
+			order.OrderPicture = fileURL
 		}
 	}
 
@@ -652,11 +652,11 @@ func (service OrderService) FinishOrder(orderID int, userID int, files map[strin
 		switch field {
 		case "arrived_picture":
 			fileName := uuid.New().String() + file.Filename
-			fileUrl, err := storageProvider.UploadFromRequest("orders/arrived_picture/"+fileName, file)
+			fileURL, err := storageProvider.UploadFromRequest("orders/arrived_picture/"+fileName, file)
 			if err != nil {
 				return web.WebError{Code: 500, ProductionMessage: "Cannot upload requested file", DevelopmentMessage: err.Error()}
 			}
-			order.ArrivedPicture = fileUrl
+			order.ArrivedPicture = fileURL
 		}
 	}
 

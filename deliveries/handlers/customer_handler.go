@@ -78,7 +78,7 @@ func (handler CustomerHandler) UpdateCustomer(c echo.Context) error {
 
 	// Get token
 	token := c.Get("user")
-	tokenId, role, err := middleware.ReadToken(token)
+	tokenID, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
@@ -116,7 +116,7 @@ func (handler CustomerHandler) UpdateCustomer(c echo.Context) error {
 		})
 	}
 	// Update via user service call
-	userRes, err := handler.userService.UpdateCustomer(userReq, tokenId, files, handler.storageProvider)
+	userRes, err := handler.userService.UpdateCustomer(userReq, tokenID, files, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -134,7 +134,7 @@ func (handler CustomerHandler) UpdateCustomer(c echo.Context) error {
 func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 
 	token := c.Get("user")
-	tokenId, role, err := middleware.ReadToken(token)
+	tokenID, role, err := middleware.ReadToken(token)
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/customers"}
 	if role != "customer" {
 		return c.JSON(http.StatusUnauthorized, web.ErrorResponse{
@@ -154,7 +154,7 @@ func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 	}
 
 	// call delete service
-	err = handler.userService.DeleteCustomer(tokenId, handler.storageProvider)
+	err = handler.userService.DeleteCustomer(tokenID, handler.storageProvider)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
@@ -166,7 +166,7 @@ func (handler CustomerHandler) DeleteCustomer(c echo.Context) error {
 		Error:  nil,
 		Links:  links,
 		Data: map[string]interface{}{
-			"id": tokenId,
+			"id": tokenID,
 		},
 	})
 }
@@ -252,14 +252,14 @@ func (handler CustomerHandler) ListOrders(c echo.Context) error {
 			Links:  links,
 		})
 	}
-	pageUrl := fmt.Sprintf("%s/api/customers/orders?page=", configs.Get().App.BaseURL)
-	links["first"] = pageUrl + "1"
-	links["last"] = pageUrl + strconv.Itoa(paginationRes.TotalPages)
+	pageURL := fmt.Sprintf("%s/api/customers/orders?page=", configs.Get().App.BaseURL)
+	links["first"] = pageURL + "1"
+	links["last"] = pageURL + strconv.Itoa(paginationRes.TotalPages)
 	if paginationRes.Page > 1 {
-		links["previous"] = pageUrl + strconv.Itoa(page-1)
+		links["previous"] = pageURL + strconv.Itoa(page-1)
 	}
 	if paginationRes.Page < paginationRes.TotalPages {
-		links["previous"] = pageUrl + strconv.Itoa(page+1)
+		links["previous"] = pageURL + strconv.Itoa(page+1)
 	}
 
 	// Success list response

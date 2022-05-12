@@ -52,7 +52,7 @@ func (handler AuthHandler) Me(c echo.Context) error {
 
 	// Token and Read Token
 	token := c.Get("user")
-	Id, _, err := middleware.ReadToken(token)
+	ID, _, err := middleware.ReadToken(token)
 
 	// Define link
 	links := map[string]string{"self": configs.Get().App.BaseURL + "/api/auth/me"}
@@ -66,7 +66,7 @@ func (handler AuthHandler) Me(c echo.Context) error {
 	}
 
 	// Memanggil service auth me
-	authRes, err := handler.authService.Me(Id, token)
+	authRes, err := handler.authService.Me(ID, token)
 	if err != nil {
 		return helpers.WebErrorResponse(c, err, links)
 	}
