@@ -13,7 +13,7 @@ jobs:
               with:
                   # project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
                   # or
-                  api-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+                  project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
                   coverage-reports: cover.out
                   language: go
                   force-coverage-parser: go
