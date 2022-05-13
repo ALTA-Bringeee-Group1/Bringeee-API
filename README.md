@@ -140,8 +140,8 @@ Berikut fitur yang terdapat dalam Bringeee :
 ![Visual Studio Code](https://img.shields.io/badge/-Visual%20Studio%20Code-05122A?style=flat&logo=visual-studio-code&logoColor=007ACC)&nbsp;
 ![MySQL](https://img.shields.io/badge/-MySQL-05122A?style=flat&logo=mysql&logoColor=4479A1)&nbsp;
 ![Golang](https://img.shields.io/badge/-Golang-05122A?style=flat&logo=go&logoColor=4479A1)&nbsp;
-![Echo](https://img.shields.io/badge/-Echo-05122A?style=flat&logo=echo)&nbsp;
-![Gorm](https://img.shields.io/badge/-Gorm-05122A?style=flat&logo=gorm)&nbsp;
+![Echo](https://img.shields.io/badge/-Echo-05122A?style=flat&logo=go)&nbsp;
+![Gorm](https://img.shields.io/badge/-Gorm-05122A?style=flat&logo=go)&nbsp;
 ![AWS](https://img.shields.io/badge/-AWS-05122A?style=flat&logo=amazon)&nbsp;
 ![Insomnia](https://img.shields.io/badge/-Insomnia-05122A?style=flat&logo=insomnia)&nbsp;
 ![Docker](https://img.shields.io/badge/-Docker-05122A?style=flat&logo=docker)&nbsp;
@@ -149,10 +149,10 @@ Berikut fitur yang terdapat dalam Bringeee :
 ![Midtrans](https://img.shields.io/badge/-Midtrans-05122A?style=flat&logo=midtrans)&nbsp;
 ![Codacy](https://img.shields.io/badge/-Codacy-05122A?style=flat&logo=codacy)&nbsp;
 ![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp; 
-![DistanceMatrix](https://img.shields.io/badge/-DistanceMatrix-05122A?style=flat&logo=distancematrix)&nbsp; 
+![Google Maps Platform](https://img.shields.io/badge/-Google_Maps_Platform-05122A?style=flat&logo=google)&nbsp; 
 ![JWT](https://img.shields.io/badge/-JWT-05122A?style=flat&logo=jwt)&nbsp;
 ![Swagger](https://img.shields.io/badge/-Swagger-05122A?style=flat&logo=swagger)&nbsp;
-![LucidChart](https://img.shields.io/badge/-LucidChart-05122A?style=flat&logo=lucidchart)&nbsp;
+![Lucid Chart](https://img.shields.io/badge/-Lucid_Chart-05122A?style=flat&logo=lucidchart)&nbsp;
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
