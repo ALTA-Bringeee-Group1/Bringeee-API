@@ -15,15 +15,18 @@
     <br />
     <a href="https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/"><strong>Explore the docs Open API »</strong></a>
     <br />
+    <a href="https://www.codacy.com/gh/ALTA-Bringeee-Group1/Bringeee-API/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ALTA-Bringeee-Group1/Bringeee-API&amp;utm_campaign=Badge_Grade">
+      <img src="https://app.codacy.com/project/badge/Grade/3f9da093203f45a4b020bcedcb91196c">
+    </a>
   </p>
 </div>
-
 <!-- ABOUT THE PROJECT -->
-## 💻 About The Project 
+## 💻 About The Project
 
 Bringeee adalah sebuah aplikasi kargo untuk mengangkut barang dengan 1 truck. Harga untuk sebuah order dihitung berdasarkan jarak dari lokasi pengambilan order hingga ke tujuan pengiriman.
 
 Berikut fitur yang terdapat dalam Bringeee :
+
 <div>
       <details>
 <summary>🙎 Customers</summary>
@@ -56,8 +59,7 @@ Berikut fitur yang terdapat dalam Bringeee :
 | POST | /api/customers/orders/{orderID}/payment/cancel | orderID | YES | Membatalkan jenis pembayaran |
 | GET | /api/customers/orders/{orderID}/payment | orderID | YES | Mendapatkan jenis pembayaran yang digunakan oleh customer |
 
-
-</details> 
+</details>
 
 <details>
 <summary>🚚 Driver</summary>
@@ -85,9 +87,8 @@ Berikut fitur yang terdapat dalam Bringeee :
 | POST | /api/drivers/orders/{orderID}/take_order | orderID | YES | Mengambil sebuah orderan untuk diantarkan ke tujuan |
 | POST | /api/drivers/orders/{orderID}/finish_order | orderID | YES | Menyelesaikan sebuah orderan dengan mengupload foto pada saat diterima customer |
 
-
 </details> 
-</details> 
+</details>
 
 <details>
 <summary>🖥️ Admin</summary>
@@ -126,13 +127,12 @@ Berikut fitur yang terdapat dalam Bringeee :
 | GET | /api/stats/orders/{day} | day | YES | Mendapatkan jumlah order berdasarkan periode hari yang di inginkan |
 | GET | /api/export/orders | - | YES | Membuat file excel laporan order perbulan |
 
-
-</details> 
-
+</details>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Built With
+
 ### 🛠 &nbsp;Build App & Database
 
 ![JSON](https://img.shields.io/badge/-JSON-05122A?style=flat&logo=json&logoColor=000000)&nbsp;
@@ -140,40 +140,67 @@ Berikut fitur yang terdapat dalam Bringeee :
 ![Visual Studio Code](https://img.shields.io/badge/-Visual%20Studio%20Code-05122A?style=flat&logo=visual-studio-code&logoColor=007ACC)&nbsp;
 ![MySQL](https://img.shields.io/badge/-MySQL-05122A?style=flat&logo=mysql&logoColor=4479A1)&nbsp;
 ![Golang](https://img.shields.io/badge/-Golang-05122A?style=flat&logo=go&logoColor=4479A1)&nbsp;
-![Echo](https://img.shields.io/badge/-Echo-05122A?style=flat&logo=echo)&nbsp;
-![Gorm](https://img.shields.io/badge/-Gorm-05122A?style=flat&logo=gorm)&nbsp;
+![Echo](https://img.shields.io/badge/-Echo-05122A?style=flat&logo=go)&nbsp;
+![Gorm](https://img.shields.io/badge/-Gorm-05122A?style=flat&logo=go)&nbsp;
 ![AWS](https://img.shields.io/badge/-AWS-05122A?style=flat&logo=amazon)&nbsp;
 ![Insomnia](https://img.shields.io/badge/-Insomnia-05122A?style=flat&logo=insomnia)&nbsp;
 ![Docker](https://img.shields.io/badge/-Docker-05122A?style=flat&logo=docker)&nbsp;
 ![Ubuntu](https://img.shields.io/badge/-Ubuntu-05122A?style=flat&logo=ubuntu)&nbsp;
 ![Midtrans](https://img.shields.io/badge/-Midtrans-05122A?style=flat&logo=midtrans)&nbsp;
 ![Codacy](https://img.shields.io/badge/-Codacy-05122A?style=flat&logo=codacy)&nbsp;
-![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp; 
-![DistanceMatrix](https://img.shields.io/badge/-DistanceMatrix-05122A?style=flat&logo=distancematrix)&nbsp; 
-![JWT](https://img.shields.io/badge/-JWT-05122A?style=flat&logo=jwt)&nbsp;
-![Swagger](https://img.shields.io/badge/-Swagger-05122A?style=flat&logo=swagger)&nbsp;
-![LucidChart](https://img.shields.io/badge/-LucidChart-05122A?style=flat&logo=lucidchart)&nbsp;
+<<<<<<< Updated upstream
+![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp;
+![Google Maps Platform](https://img.shields.io/badge/-Google_Maps_Platform-05122A?style=flat&logo=google)&nbsp;
+=======
+![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp;
+![DistanceMatrix](https://img.shields.io/badge/-DistanceMatrix-05122A?style=flat&logo=distancematrix)&nbsp;
 
+> > > > > > > Stashed changes
+> > > > > > > ![JWT](https://img.shields.io/badge/-JWT-05122A?style=flat&logo=jwt)&nbsp; > > > > > > > ![Swagger](https://img.shields.io/badge/-Swagger-05122A?style=flat&logo=swagger)&nbsp; > > > > > > > ![Lucid Chart](https://img.shields.io/badge/-Lucid_Chart-05122A?style=flat&logo=lucidchart)&nbsp;
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+<<<<<<< Updated upstream
+
+## 🗃️ ERD
+
+<img src="images/erd.png">
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+## 📑 Use Case Diagram
+
+=======
 
 ## ERD
+
 <img src="images/erd.png">
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## USe Case Diagram
-<img src="images/UCD.png">
+
+> > > > > > > Stashed changes
+> > > > > > > <img src="images/UCD.png">
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- CONTACT -->
+
+<<<<<<< Updated upstream
+
+## 📱 Contact
+
+=======
+
 ## Contact
+
+> > > > > > > Stashed changes
 
 Project Repository Link : [https://github.com/ALTA-Bringeee-Group1/Bringeee-API](https://github.com/ALTA-Bringeee-Group1/Bringeee-API)<br/>
 Open API Documentation : [https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/](https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/)&nbsp;
 
 <!-- :heart: -->
 <!-- CONTRIBUTOR -->
+
 Contributor :
 <br>
 [![Gmail: M. Badar Wildani](https://img.shields.io/badge/-badar.wildanie@gmail.com-maroon?style=flat&logo=gmail)](https://mail.google.com/mail/u/0/#inbox?compose=CllgCJqTfrDgzWPFFgSKDLmBlPGRmCRXMQVTgqZDWJrxHDMJkSBGGCGnnGJhRKjrbzjJmFqnZFg)
