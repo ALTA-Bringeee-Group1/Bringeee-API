@@ -159,7 +159,7 @@ Berikut fitur yang terdapat dalam Bringeee :
 ![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp;
 ![Google Maps Platform](https://img.shields.io/badge/-Google_Maps_Platform-05122A?style=flat&logo=google)&nbsp;
 ![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp;
-![DistanceMatrix](https://img.shields.io/badge/-DistanceMatrix-05122A?style=flat&logo=distancematrix)&nbsp;
+
 
 ![JWT](https://img.shields.io/badge/-JWT-05122A?style=flat&logo=jwt)&nbsp;
 ![Swagger](https://img.shields.io/badge/-Swagger-05122A?style=flat&logo=swagger)&nbsp;
