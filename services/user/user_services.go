@@ -278,11 +278,6 @@ func (service UserService) UpdateDriver(driverRequest entities.UpdateDriverReque
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
 				storageProvider.Delete(objectPathS3)
 			}
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
@@ -347,11 +342,6 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
 				storageProvider.Delete(objectPathS3)
 			}
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
@@ -368,11 +358,6 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
 				storageProvider.Delete(objectPathS3)
 			}
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
@@ -389,11 +374,6 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
 				storageProvider.Delete(objectPathS3)
 			}
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
@@ -410,11 +390,6 @@ func (service UserService) UpdateDriverByAdmin(driverRequest entities.UpdateDriv
 				objectPathS3 := strings.TrimPrefix(u.Path, "/")
 				storageProvider.Delete(objectPathS3)
 			}
-			fileFile, err := file.Open()
-			if err != nil {
-				return entities.DriverResponse{}, web.WebError{Code: 500, ProductionMessage: "server error", DevelopmentMessage: "Cannot process file image"}
-			}
-			defer fileFile.Close()
 
 			// Upload file to S3
 			filename := uuid.New().String() + file.Filename
