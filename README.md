@@ -158,16 +158,16 @@ Berikut fitur yang terdapat dalam Bringeee :
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
-## ERD
+## 🗃️ ERD
 <img src="images/erd.png">
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-## USe Case Diagram
+## 📑 Use Case Diagram
 <img src="images/UCD.png">
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- CONTACT -->
-## Contact
+## 📱 Contact
 
 Project Repository Link : [https://github.com/ALTA-Bringeee-Group1/Bringeee-API](https://github.com/ALTA-Bringeee-Group1/Bringeee-API)<br/>
 Open API Documentation : [https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/](https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/)&nbsp;
