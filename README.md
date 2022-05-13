@@ -156,19 +156,16 @@ Berikut fitur yang terdapat dalam Bringeee :
 ![Ubuntu](https://img.shields.io/badge/-Ubuntu-05122A?style=flat&logo=ubuntu)&nbsp;
 ![Midtrans](https://img.shields.io/badge/-Midtrans-05122A?style=flat&logo=midtrans)&nbsp;
 ![Codacy](https://img.shields.io/badge/-Codacy-05122A?style=flat&logo=codacy)&nbsp;
-<<<<<<< Updated upstream
 ![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp;
 ![Google Maps Platform](https://img.shields.io/badge/-Google_Maps_Platform-05122A?style=flat&logo=google)&nbsp;
-=======
 ![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp;
 ![DistanceMatrix](https://img.shields.io/badge/-DistanceMatrix-05122A?style=flat&logo=distancematrix)&nbsp;
 
-> > > > > > > Stashed changes
-> > > > > > > ![JWT](https://img.shields.io/badge/-JWT-05122A?style=flat&logo=jwt)&nbsp; > > > > > > > ![Swagger](https://img.shields.io/badge/-Swagger-05122A?style=flat&logo=swagger)&nbsp; > > > > > > > ![Lucid Chart](https://img.shields.io/badge/-Lucid_Chart-05122A?style=flat&logo=lucidchart)&nbsp;
+![JWT](https://img.shields.io/badge/-JWT-05122A?style=flat&logo=jwt)&nbsp;
+![Swagger](https://img.shields.io/badge/-Swagger-05122A?style=flat&logo=swagger)&nbsp;
+![Lucid Chart](https://img.shields.io/badge/-Lucid_Chart-05122A?style=flat&logo=lucidchart)&nbsp;
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-<<<<<<< Updated upstream
 
 ## 🗃️ ERD
 
@@ -177,31 +174,13 @@ Berikut fitur yang terdapat dalam Bringeee :
 
 ## 📑 Use Case Diagram
 
-=======
-
-## ERD
-
-<img src="images/erd.png">
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-## USe Case Diagram
-
-> > > > > > > Stashed changes
-> > > > > > > <img src="images/UCD.png">
+<img src="images/UCD.png">
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- CONTACT -->
 
-<<<<<<< Updated upstream
-
 ## 📱 Contact
-
-=======
-
-## Contact
-
-> > > > > > > Stashed changes
 
 Project Repository Link : [https://github.com/ALTA-Bringeee-Group1/Bringeee-API](https://github.com/ALTA-Bringeee-Group1/Bringeee-API)<br/>
 Open API Documentation : [https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/](https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/)&nbsp;
