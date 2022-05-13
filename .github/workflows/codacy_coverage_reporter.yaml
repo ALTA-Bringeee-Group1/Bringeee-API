@@ -16,3 +16,4 @@ jobs:
                   api-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
                   coverage-reports: cover.out
                   language: go
+                  force-coverage-parser: go
