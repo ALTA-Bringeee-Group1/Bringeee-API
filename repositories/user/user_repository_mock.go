@@ -128,7 +128,7 @@ func (repo UserRepositoryMock) UpdateCustomer(user entities.User, id int) (entit
 }
 func (repo UserRepositoryMock) DeleteCustomer(id int) error {
 	args := repo.Mock.Called()
-	return args.Error(1)
+	return args.Error(0)
 }
 func (repo UserRepositoryMock) FindAllDriver(limit int, offset int, filters []map[string]string, sorts []map[string]interface{}) ([]entities.Driver, error) {
 	args := repo.Mock.Called()
@@ -156,5 +156,5 @@ func (repo UserRepositoryMock) UpdateDriver(driver entities.Driver, id int) (ent
 }
 func (repo UserRepositoryMock) DeleteDriver(id int) error {
 	args := repo.Mock.Called()
-	return args.Error(1)
+	return args.Error(0)
 }
