@@ -133,7 +133,7 @@ Berikut fitur yang terdapat dalam Bringeee :
 | GET | /api/stats/aggregates/truck_types_count | - | YES | Mendapatkan jumlah semua tipe truck |
 | GET | /api/stats/aggregates/customers_count | - | YES | Mendapatkan jumlah semua customer |
 | GET | /api/stats/orders/{day} | day | YES | Mendapatkan jumlah order berdasarkan periode hari yang di inginkan |
-| GET | /api/export/orders | - | YES | Membuat file excel laporan order perbulan |
+| POST | /api/export/orders | - | YES | Membuat file excel laporan order perbulan |
 
 </details>
 
