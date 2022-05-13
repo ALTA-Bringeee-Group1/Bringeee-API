@@ -15,12 +15,20 @@
     <br />
     <a href="https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/"><strong>Explore the docs Open API »</strong></a>
     <br />
+    <br />
     <a href="https://www.codacy.com/gh/ALTA-Bringeee-Group1/Bringeee-API/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ALTA-Bringeee-Group1/Bringeee-API&amp;utm_campaign=Badge_Grade">
       <img src="https://app.codacy.com/project/badge/Grade/3f9da093203f45a4b020bcedcb91196c">
     </a>
+    <a href="https://www.codacy.com/gh/ALTA-Bringeee-Group1/Bringeee-API/dashboard?utm_source=github.com&utm_medium=referral&utm_content=ALTA-Bringeee-Group1/Bringeee-API&utm_campaign=Badge_Coverage">
+      <img src="https://app.codacy.com/project/badge/Coverage/3f9da093203f45a4b020bcedcb91196c">
+    </a>
   </p>
 </div>
+
+<br />
+
 <!-- ABOUT THE PROJECT -->
+
 ## 💻 About The Project
 
 Bringeee adalah sebuah aplikasi kargo untuk mengangkut barang dengan 1 truck. Harga untuk sebuah order dihitung berdasarkan jarak dari lokasi pengambilan order hingga ke tujuan pengiriman.
