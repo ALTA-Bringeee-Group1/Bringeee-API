@@ -109,9 +109,9 @@ var DistrictCollection = []entities.District{
  * @var sort		sort data, { field, sort[bool] }
  * @return Province	list provinsi dalam entity response
  */
-func (repo RegionRepositoryMock) FindAllProvince(sort []map[string]interface{}) ([]entities.ProvinceResponse, error) {
-	args := repo.Mock.Called(sort)
-	return args.Get(0).([]entities.ProvinceResponse), args.Error(1)
+func (repo RegionRepositoryMock) FindAllProvince(sort []map[string]interface{}) ([]entities.Province, error) {
+	args := repo.Mock.Called()
+	return args.Get(0).([]entities.Province), args.Error(1)
 }
 /*
  * Find All City
@@ -121,10 +121,23 @@ func (repo RegionRepositoryMock) FindAllProvince(sort []map[string]interface{}) 
  * @var sort		sort data, { field, sort[bool] }
  * @return City		list kota dalam entity response
  */
-func (repo RegionRepositoryMock) FindAllCity(provinceID int, sort []map[string]interface{}) ([]entities.CityResponse, error) {
-	args := repo.Mock.Called(provinceID, sort)
-	return args.Get(0).([]entities.CityResponse), args.Error(1)
+func (repo RegionRepositoryMock) FindAllCity(provinceID int, sort []map[string]interface{}) ([]entities.City, error) {
+	args := repo.Mock.Called()
+	return args.Get(0).([]entities.City), args.Error(1)
 }
+
+/*
+ * Find City
+ * -------------------------------
+ * Mencari data kota tunggal berdasarkan ID
+ *
+ * @var id 		data id
+ */
+func (repo RegionRepositoryMock) FindCity(id int) (entities.City, error) {
+	args := repo.Mock.Called()
+	return args.Get(0).(entities.City), args.Error(1)
+}
+
 /*
  * Find All District
  * -------------------------------
@@ -133,7 +146,7 @@ func (repo RegionRepositoryMock) FindAllCity(provinceID int, sort []map[string]i
  * @var sort		sort data, { field, sort[bool] }
  * @return District	list kecamatan dalam entity response 
  */
-func (repo RegionRepositoryMock) FindAllDistrict(cityID int, provinceID int, sort []map[string]interface{}) ([]entities.DistrictResponse, error) {
-	args := repo.Mock.Called(cityID, provinceID, sort)
-	return args.Get(0).([]entities.DistrictResponse), args.Error(1)
+func (repo RegionRepositoryMock) FindAllDistrict(cityID int, sort []map[string]interface{}) ([]entities.District, error) {
+	args := repo.Mock.Called()
+	return args.Get(0).([]entities.District), args.Error(1)
 }

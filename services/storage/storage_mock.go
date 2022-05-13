@@ -41,6 +41,6 @@ func (storage StorageMock) UploadFromRequest(fileNamePath string, fileHeader *mu
  * @return 	error			error
  */
 func (storage StorageMock) Delete(fileNamePath string) error {
-	args := storage.Mock.Called(fileNamePath)
+	args := storage.Mock.Called()
 	return args.Error(0)
 }

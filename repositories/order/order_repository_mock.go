@@ -253,8 +253,8 @@ func (repo OrderRepositoryMock) Delete(id int, destinationID int) error {
  * @return error	error
  */
 func (repo OrderRepositoryMock) DeleteBatch(filters []map[string]interface{}) error {
-	args := repo.Mock.Called(filters)
-	return args.Error(1)
+	args := repo.Mock.Called()
+	return args.Error(0)
 }
 
 func (repo OrderRepositoryMock) FindByDate(day int) ([]map[string]interface{}, error) {
