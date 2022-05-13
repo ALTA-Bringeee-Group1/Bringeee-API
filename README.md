@@ -21,7 +21,7 @@
 <!-- ABOUT THE PROJECT -->
 ## 💻 About The Project 
 
-Bringeee adalah sebuah aplikasi kargo untuk mengangkut barang dengan 1 truck berdasarkan berat dan volume barang yang anda akan kirimkan.
+Bringeee adalah sebuah aplikasi kargo untuk mengangkut barang dengan 1 truck. Harga untuk sebuah order dihitung berdasarkan jarak dari lokasi pengambilan order hingga ke tujuan pengiriman.
 
 Berikut fitur yang terdapat dalam Bringeee :
 <div>
@@ -160,6 +160,10 @@ Berikut fitur yang terdapat dalam Bringeee :
 
 ## ERD
 <img src="images/erd.png">
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+## USe Case Diagram
+<img src="images/UCD.png">
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- CONTACT -->

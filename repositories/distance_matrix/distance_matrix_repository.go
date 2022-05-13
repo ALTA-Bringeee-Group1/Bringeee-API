@@ -10,24 +10,24 @@ import (
 )
 
 type DistanceMatrixRepository struct {
-	client *http.Client
+	client  *http.Client
 	baseURL string
-	apiKey string
+	apiKey  string
 }
 
 func NewDistanceMatrixRepository() *DistanceMatrixRepository {
 	return &DistanceMatrixRepository{
-		client: &http.Client{},
+		client:  &http.Client{},
 		baseURL: configs.Get().DistanceMatrix.DistanceMatrixBaseURL,
-		apiKey: configs.Get().DistanceMatrix.DistanceMatrixAPIKey,
+		apiKey:  configs.Get().DistanceMatrix.DistanceMatrixAPIKey,
 	}
 }
 
 /*
  * Estimate Shortest Distance
  * -------------------------------
- * Mendapatkan estimasi jarak berdasarkan berdasarkan 
- * koordinat lintang dan bujur di 2 titik 
+ * Mendapatkan estimasi jarak berdasarkan berdasarkan
+ * koordinat lintang dan bujur di 2 titik
  *
  * @var originLat 		string 		koordinat lintang titik asal
  * @var originLong 		string		koordinat bujur titik asal
@@ -36,11 +36,11 @@ func NewDistanceMatrixRepository() *DistanceMatrixRepository {
  */
 func (repository DistanceMatrixRepository) EstimateShortest(originLat, originLong, destinationLat, destinationLong string) (entities.DistanceMatrix, error) {
 	// request
-	request, err := http.NewRequest(http.MethodGet, repository.baseURL + "/distancematrix/json", nil)
+	request, err := http.NewRequest(http.MethodGet, repository.baseURL+"/json", nil)
 	if err != nil {
 		return entities.DistanceMatrix{}, web.WebError{
-			Code: 500, 
-			ProductionMessage: "Cannot estimate and calculate distance",
+			Code:               500,
+			ProductionMessage:  "Cannot estimate and calculate distance",
 			DevelopmentMessage: "DistanceMatrix Making Request err: " + err.Error(),
 		}
 	}
@@ -51,13 +51,12 @@ func (repository DistanceMatrixRepository) EstimateShortest(originLat, originLon
 	request.URL.RawQuery = q.Encode()
 	request.Header.Set("Accept", "application/json")
 
-
 	// do request
 	response, err := repository.client.Do(request)
 	if err != nil {
 		return entities.DistanceMatrix{}, web.WebError{
-			Code: 500, 
-			ProductionMessage: "Cannot estimate and calculate distance",
+			Code:               500,
+			ProductionMessage:  "Cannot estimate and calculate distance",
 			DevelopmentMessage: "DistanceMatrix Request err: " + err.Error(),
 		}
 	}
@@ -68,20 +67,19 @@ func (repository DistanceMatrixRepository) EstimateShortest(originLat, originLon
 	err = json.NewDecoder(response.Body).Decode(&data)
 	if err != nil {
 		return entities.DistanceMatrix{}, web.WebError{
-			Code: 500, 
-			ProductionMessage: "Cannot estimate and calculate distance",
+			Code:               500,
+			ProductionMessage:  "Cannot estimate and calculate distance",
 			DevelopmentMessage: "DistanceMatrix parsing response err: " + err.Error(),
 		}
 	}
 
-	
 	// Translate to universal entity
 	return entities.DistanceMatrix{
-		Distance: data.Rows[0].Elements[0].Distance.Text,
-		DistanceValue: data.Rows[0].Elements[0].Distance.Value,
-		EstimateDuration: data.Rows[0].Elements[0].Duration.Text,
+		Distance:              data.Rows[0].Elements[0].Distance.Text,
+		DistanceValue:         data.Rows[0].Elements[0].Distance.Value,
+		EstimateDuration:      data.Rows[0].Elements[0].Duration.Text,
 		EstimateDurationValue: data.Rows[0].Elements[0].Duration.Value,
-		DestinationAddress: data.DestinationAddresses[0],
-		OriginAddress: data.OriginAddresses[0],
+		DestinationAddress:    data.DestinationAddresses[0],
+		OriginAddress:         data.OriginAddresses[0],
 	}, nil
 }
