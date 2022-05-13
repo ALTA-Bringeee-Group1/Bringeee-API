@@ -132,7 +132,6 @@ Berikut fitur yang terdapat dalam Bringeee :
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-### Built With
 ### 🛠 &nbsp;Build App & Database
 
 ![JSON](https://img.shields.io/badge/-JSON-05122A?style=flat&logo=json&logoColor=000000)&nbsp;
@@ -154,6 +153,7 @@ Berikut fitur yang terdapat dalam Bringeee :
 ![Swagger](https://img.shields.io/badge/-Swagger-05122A?style=flat&logo=swagger)&nbsp;
 ![Lucid Chart](https://img.shields.io/badge/-Lucid_Chart-05122A?style=flat&logo=lucidchart)&nbsp;
 
+<img src="images/techstack.png">
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
