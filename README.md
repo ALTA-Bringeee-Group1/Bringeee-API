@@ -15,15 +15,26 @@
     <br />
     <a href="https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/"><strong>Explore the docs Open API »</strong></a>
     <br />
+    <br />
+    <a href="https://www.codacy.com/gh/ALTA-Bringeee-Group1/Bringeee-API/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ALTA-Bringeee-Group1/Bringeee-API&amp;utm_campaign=Badge_Grade">
+      <img src="https://app.codacy.com/project/badge/Grade/3f9da093203f45a4b020bcedcb91196c">
+    </a>
+    <a href="https://www.codacy.com/gh/ALTA-Bringeee-Group1/Bringeee-API/dashboard?utm_source=github.com&utm_medium=referral&utm_content=ALTA-Bringeee-Group1/Bringeee-API&utm_campaign=Badge_Coverage">
+      <img src="https://app.codacy.com/project/badge/Coverage/3f9da093203f45a4b020bcedcb91196c">
+    </a>
   </p>
 </div>
 
+<br />
+
 <!-- ABOUT THE PROJECT -->
-## 💻 About The Project 
+
+## 💻 About The Project
 
 Bringeee adalah sebuah aplikasi kargo untuk mengangkut barang dengan 1 truck. Harga untuk sebuah order dihitung berdasarkan jarak dari lokasi pengambilan order hingga ke tujuan pengiriman.
 
 Berikut fitur yang terdapat dalam Bringeee :
+
 <div>
       <details>
 <summary>🙎 Customers</summary>
@@ -56,8 +67,7 @@ Berikut fitur yang terdapat dalam Bringeee :
 | POST | /api/customers/orders/{orderID}/payment/cancel | orderID | YES | Membatalkan jenis pembayaran |
 | GET | /api/customers/orders/{orderID}/payment | orderID | YES | Mendapatkan jenis pembayaran yang digunakan oleh customer |
 
-
-</details> 
+</details>
 
 <details>
 <summary>🚚 Driver</summary>
@@ -85,9 +95,8 @@ Berikut fitur yang terdapat dalam Bringeee :
 | POST | /api/drivers/orders/{orderID}/take_order | orderID | YES | Mengambil sebuah orderan untuk diantarkan ke tujuan |
 | POST | /api/drivers/orders/{orderID}/finish_order | orderID | YES | Menyelesaikan sebuah orderan dengan mengupload foto pada saat diterima customer |
 
-
 </details> 
-</details> 
+</details>
 
 <details>
 <summary>🖥️ Admin</summary>
@@ -124,11 +133,9 @@ Berikut fitur yang terdapat dalam Bringeee :
 | GET | /api/stats/aggregates/truck_types_count | - | YES | Mendapatkan jumlah semua tipe truck |
 | GET | /api/stats/aggregates/customers_count | - | YES | Mendapatkan jumlah semua customer |
 | GET | /api/stats/orders/{day} | day | YES | Mendapatkan jumlah order berdasarkan periode hari yang di inginkan |
-| GET | /api/export/orders | - | YES | Membuat file excel laporan order perbulan |
+| POST | /api/export/orders | - | YES | Membuat file excel laporan order perbulan |
 
-
-</details> 
-
+</details>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -147,8 +154,8 @@ Berikut fitur yang terdapat dalam Bringeee :
 ![Ubuntu](https://img.shields.io/badge/-Ubuntu-05122A?style=flat&logo=ubuntu)&nbsp;
 ![Midtrans](https://img.shields.io/badge/-Midtrans-05122A?style=flat&logo=midtrans)&nbsp;
 ![Codacy](https://img.shields.io/badge/-Codacy-05122A?style=flat&logo=codacy)&nbsp;
-![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp; 
-![Google Maps Platform](https://img.shields.io/badge/-Google_Maps_Platform-05122A?style=flat&logo=google)&nbsp; 
+![CloudFlare](https://img.shields.io/badge/-CloudFlare-05122A?style=flat&logo=cloudflare)&nbsp;
+![Google Maps Platform](https://img.shields.io/badge/-Google_Maps_Platform-05122A?style=flat&logo=google)&nbsp;
 ![JWT](https://img.shields.io/badge/-JWT-05122A?style=flat&logo=jwt)&nbsp;
 ![Swagger](https://img.shields.io/badge/-Swagger-05122A?style=flat&logo=swagger)&nbsp;
 ![Lucid Chart](https://img.shields.io/badge/-Lucid_Chart-05122A?style=flat&logo=lucidchart)&nbsp;
@@ -157,16 +164,19 @@ Berikut fitur yang terdapat dalam Bringeee :
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
 ## 🗃️ ERD
+
 <img src="images/erd.png">
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## 📑 Use Case Diagram
+
 <img src="images/UCD.png">
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- CONTACT -->
+
 ## 📱 Contact
 
 Project Repository Link : [https://github.com/ALTA-Bringeee-Group1/Bringeee-API](https://github.com/ALTA-Bringeee-Group1/Bringeee-API)<br/>
@@ -174,6 +184,7 @@ Open API Documentation : [https://app.swaggerhub.com/apis-docs/wildanie12/Bringe
 
 <!-- :heart: -->
 <!-- CONTRIBUTOR -->
+
 Contributor :
 <br>
 [![Gmail: M. Badar Wildani](https://img.shields.io/badge/-badar.wildanie@gmail.com-maroon?style=flat&logo=gmail)](https://mail.google.com/mail/u/0/#inbox?compose=CllgCJqTfrDgzWPFFgSKDLmBlPGRmCRXMQVTgqZDWJrxHDMJkSBGGCGnnGJhRKjrbzjJmFqnZFg)
