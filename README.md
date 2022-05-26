@@ -189,9 +189,12 @@ Contributor :
 <br>
 [![Gmail: M. Badar Wildani](https://img.shields.io/badge/-badar.wildanie@gmail.com-maroon?style=flat&logo=gmail)](https://mail.google.com/mail/u/0/#inbox?compose=CllgCJqTfrDgzWPFFgSKDLmBlPGRmCRXMQVTgqZDWJrxHDMJkSBGGCGnnGJhRKjrbzjJmFqnZFg)
 [![GitHub M. Badar Wildani](https://img.shields.io/github/followers/wildanie12?label=follow&style=social)](https://github.com/wildanie12)
+[![LinkedIn](https://img.shields.io/badge/M._Badar_Wildani-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/badar-wildanie/)
+  
 
-[![Gmail: Muh. Nasrul](https://img.shields.io/badge/-nasrulmuhammad748@gmail.com-maroon?style=flat&logo=gmail)](https://mail.google.com/mail/u/0/#inbox?compose=CllgCJqTfrDgzWPFFgSKDLmBlPGRmCRXMQVTgqZDWJrxHDMJkSBGGCGnnGJhRKjrbzjJmFqnZFg)
+[![Gmail: Muh. Nasrul](https://img.shields.io/badge/-muh.nasrul8700@gmail.com-maroon?style=flat&logo=gmail)](https://mail.google.com/mail/u/0/#inbox?compose=CllgCJqTfrDgzWPFFgSKDLmBlPGRmCRXMQVTgqZDWJrxHDMJkSBGGCGnnGJhRKjrbzjJmFqnZFg)
 [![GitHub Muh. Nasrul](https://img.shields.io/github/followers/mnasruls?label=follow&style=social)](https://github.com/mnasruls)
+[![LinkedIn](https://img.shields.io/badge/Muh._Nasrul-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/muh-nasrul-1693721ba/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 <h3>
