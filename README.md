@@ -13,7 +13,8 @@
   <p align="center">
     Final Project Capstone Program Immersive Alterra Academy
     <br />
-    <a href="https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/"><strong>Explore the docs Open API »</strong></a>
+    <a href="https://app.swaggerhub.com/apis-docs/wildanie12/Bringee-API/v1.2#/"><strong>Explore the docs Open API »</strong></a><br>
+    <a href="https://docs.google.com/presentation/d/179HRkSDoe5bMIFifX8XKxbbxvYGLKyGqGtjbF8GnoZ8"><strong>Open Project Presentation »</strong></a>
     <br />
     <br />
     <a href="https://www.codacy.com/gh/ALTA-Bringeee-Group1/Bringeee-API/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ALTA-Bringeee-Group1/Bringeee-API&amp;utm_campaign=Badge_Grade">
@@ -190,7 +191,6 @@ Contributor :
 [![Gmail: M. Badar Wildani](https://img.shields.io/badge/-badar.wildanie@gmail.com-maroon?style=flat&logo=gmail)](https://mail.google.com/mail/u/0/#inbox?compose=CllgCJqTfrDgzWPFFgSKDLmBlPGRmCRXMQVTgqZDWJrxHDMJkSBGGCGnnGJhRKjrbzjJmFqnZFg)
 [![GitHub M. Badar Wildani](https://img.shields.io/github/followers/wildanie12?label=follow&style=social)](https://github.com/wildanie12)
 [![LinkedIn](https://img.shields.io/badge/M._Badar_Wildani-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/badar-wildanie/)
-  
 
 [![Gmail: Muh. Nasrul](https://img.shields.io/badge/-muh.nasrul8700@gmail.com-maroon?style=flat&logo=gmail)](https://mail.google.com/mail/u/0/#inbox?compose=CllgCJqTfrDgzWPFFgSKDLmBlPGRmCRXMQVTgqZDWJrxHDMJkSBGGCGnnGJhRKjrbzjJmFqnZFg)
 [![GitHub Muh. Nasrul](https://img.shields.io/github/followers/mnasruls?label=follow&style=social)](https://github.com/mnasruls)
